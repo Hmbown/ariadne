@@ -17,7 +17,8 @@ from qiskit import QuantumCircuit
 from qiskit.circuit.random import random_circuit
 
 from ariadne import simulate
-from ariadne.router import QuantumRouter, BackendType
+from ariadne.route.enhanced_router import EnhancedQuantumRouter
+from ariadne.types import BackendType
 
 
 @dataclass
@@ -51,7 +52,11 @@ class ReproducibleBenchmarks:
     
     def __init__(self, shots: int = 1000):
         self.shots = shots
-        self.router = QuantumRouter()
+        try:
+            self.router = EnhancedQuantumRouter()
+        except Exception as e:
+            print(f"Warning: Failed to initialize EnhancedQuantumRouter: {str(e)}")
+            self.router = None
         
     def create_test_circuits(self) -> Dict[str, QuantumCircuit]:
         """Create standardized test circuits for benchmarking."""
@@ -221,9 +226,22 @@ class ReproducibleBenchmarks:
         qc.measure_all()
         return qc
     
-    def run_benchmark(self, circuit_name: str, circuit: QuantumCircuit, 
+    def run_benchmark(self, circuit_name: str, circuit: QuantumCircuit,
                      expected_backend: Optional[str] = None) -> BenchmarkResult:
         """Run a single benchmark test."""
+        if self.router is None:
+            return BenchmarkResult(
+                circuit_name=circuit_name,
+                backend_used="failed",
+                execution_time=float('inf'),
+                success=False,
+                error="EnhancedQuantumRouter not initialized",
+                shots=self.shots,
+                circuit_qubits=circuit.num_qubits,
+                circuit_depth=circuit.depth(),
+                expected_backend=expected_backend
+            )
+            
         try:
             start_time = time.perf_counter()
             result = simulate(circuit, shots=self.shots)

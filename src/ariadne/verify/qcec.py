@@ -1,4 +1,4 @@
-﻿"""Circuit equivalence helpers."""
+"""Circuit equivalence helpers."""
 
 from __future__ import annotations
 

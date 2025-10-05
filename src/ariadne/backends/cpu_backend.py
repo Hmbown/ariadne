@@ -7,7 +7,6 @@ This module provides a CPU-based quantum circuit simulator using NumPy and Qiski
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -27,30 +26,29 @@ class CPUBackend:
     def simulate(self, circuit: QuantumCircuit, shots: int = 1000) -> dict[str, int]:
         """
         Simulate quantum circuit using CPU statevector method.
-        
+
         Args:
             circuit: Quantum circuit to simulate
             shots: Number of measurement shots
-            
+
         Returns:
             Dictionary of measurement outcomes and counts
         """
         if shots <= 0:
             return {}
-        
+
         # Use Qiskit's statevector simulator as fallback
         try:
-            from qiskit import Aer
-            from qiskit import execute
-            
-            simulator = Aer.get_backend('statevector_simulator')
+            from qiskit import Aer, execute
+
+            simulator = Aer.get_backend("statevector_simulator")
             job = execute(circuit, simulator, shots=shots)
             result = job.result()
             counts = result.get_counts()
-            
+
             # Convert to string keys for consistency
             return {str(k): v for k, v in counts.items()}
-            
+
         except ImportError:
             # Fallback to basic statevector calculation
             return self._basic_statevector_simulation(circuit, shots)
@@ -59,23 +57,23 @@ class CPUBackend:
         """Basic statevector simulation using NumPy."""
         try:
             from qiskit.quantum_info import Statevector
-            
+
             state = Statevector.from_instruction(circuit)
             probabilities = np.abs(state.data) ** 2
-            
+
             # Sample from the probability distribution
             rng = np.random.default_rng()
             outcomes = rng.choice(len(probabilities), size=shots, p=probabilities)
-            
+
             counts = {}
             num_qubits = circuit.num_qubits
-            
+
             for outcome in outcomes:
                 bitstring = format(int(outcome), f"0{num_qubits}b")
                 counts[bitstring] = counts.get(bitstring, 0) + 1
-                
+
             return counts
-            
+
         except Exception as e:
             logger.warning(f"Basic statevector simulation failed: {e}")
             # Final fallback: return uniform distribution for single qubit
@@ -88,6 +86,7 @@ class CPUBackend:
         """Get the statevector for the circuit."""
         try:
             from qiskit.quantum_info import Statevector
+
             return Statevector.from_instruction(circuit).data
         except Exception as e:
             logger.warning(f"Statevector calculation failed: {e}")

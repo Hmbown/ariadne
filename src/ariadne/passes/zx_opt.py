@@ -10,7 +10,9 @@ from qiskit.circuit import Instruction
 _CANCEL_PAIRS = {"h", "x", "y", "z", "cx", "cy", "cz", "swap"}
 
 
-def _instruction_signature(instruction: Instruction, qubits: Iterable) -> tuple[str, tuple[object, ...]]:
+def _instruction_signature(
+    instruction: Instruction, qubits: Iterable
+) -> tuple[str, tuple[object, ...]]:
     return instruction.name, tuple(qubits)
 
 

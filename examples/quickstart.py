@@ -65,7 +65,6 @@ def main():
     print(f"   Clifford circuit analysis:")
     print(f"     - Recommended backend: {decision.recommended_backend}")
     print(f"     - Circuit entropy: {decision.circuit_entropy:.3f}")
-    print(f"     - Expected speedup: {decision.expected_speedup:.1f}x")
     print(f"     - Confidence score: {decision.confidence_score:.2f}")
     print()
     

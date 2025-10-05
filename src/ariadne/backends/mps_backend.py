@@ -5,8 +5,10 @@ from typing import Any
 import numpy as np
 import quimb.tensor as tn
 from qiskit import QuantumCircuit
+from qiskit.quantum_info import Statevector
 
-from .universal_interface import BackendCapability, BackendMetrics, UniversalBackend
+from .universal_interface import (BackendCapability, BackendMetrics,
+                                  UniversalBackend)
 
 
 class MPSBackend(UniversalBackend):
@@ -41,6 +43,18 @@ class MPSBackend(UniversalBackend):
         Returns:
             Dictionary of measurement counts.
         """
+        for item in circuit.data:
+            if hasattr(item, "operation"):
+                instruction = item.operation
+                qargs = list(item.qubits)
+            else:  # Legacy tuple form
+                instruction, qargs, _ = item  # type: ignore[misc]
+            gate_name = getattr(instruction, "name", "")
+            if gate_name in {"measure", "barrier", "reset"}:
+                continue
+            if len(qargs) > 2:
+                return self._simulate_with_statevector(circuit, shots)
+
         n_qubits = circuit.num_qubits
         max_bond = self.max_bond_dimension
 
@@ -54,51 +68,89 @@ class MPSBackend(UniversalBackend):
         mps = tn.MatrixProductState.from_dense(
             zero_state,
         )
-        
+
+        def reverse_bits(index: int, width: int) -> int:
+            return int(format(index, f"0{width}b")[::-1], 2)
+
+        def little_to_big_endian(matrix: np.ndarray, width: int) -> np.ndarray:
+            if width <= 1:
+                return matrix
+            dimension = 1 << width
+            permutation = [reverse_bits(i, width) for i in range(dimension)]
+            return matrix[np.ix_(permutation, permutation)]
+
         # 2. Apply gates from the Qiskit circuit
-        for instruction, qargs, _cargs in circuit.data:
+        for item in circuit.data:
+            if hasattr(item, "operation"):
+                instruction = item.operation
+                qargs = list(item.qubits)
+            else:  # Legacy tuple form
+                instruction, qargs, _ = item  # type: ignore[misc]
+
             gate_name = instruction.name
-            # Qiskit's find_bit is used to map Qubit objects to their integer index
-            qubits = [circuit.find_bit(q).index for q in qargs]
-            
-            # Get the gate matrix (unitary) from Qiskit
+            physical_qubits = [
+                circuit.num_qubits - 1 - circuit.find_bit(q).index for q in qargs
+            ]
+
             try:
                 gate_matrix = instruction.to_matrix()
             except Exception:
-                # Handle gates that don't have a matrix representation (e.g., measurements, barriers)
-                if gate_name in ['measure', 'barrier', 'reset']:
+                if gate_name in ["measure", "barrier", "reset"]:
                     continue
                 raise NotImplementedError(f"Gate '{gate_name}' not supported by MPS backend.")
 
-            # Reshape the matrix for quimb (2^k x 2^k -> 2, 2, ..., 2, 2)
-            k = len(qubits)
-            gate_tensor = gate_matrix.reshape([2] * 2 * k)
-            
-            # Apply the gate to the MPS, truncating bond dimension if necessary
-            mps.gate(
-                gate_tensor,
+            if not physical_qubits:
+                continue
+
+            gate_matrix = little_to_big_endian(gate_matrix, len(physical_qubits))
+
+            order = sorted(range(len(physical_qubits)), key=lambda i: physical_qubits[i])
+            qubits = [physical_qubits[i] for i in order]
+
+            if len(order) > 1 and order != list(range(len(order))):
+                k = len(order)
+                gate_tensor = gate_matrix.reshape([2] * (2 * k))
+                perm = order + [i + k for i in order]
+                gate_tensor = gate_tensor.transpose(perm)
+                gate_matrix = gate_tensor.reshape(2**k, 2**k)
+
+            if len(qubits) == 1:
+                contract_mode = True
+            elif len(qubits) == 2:
+                contract_mode = "swap+split"
+            else:
+                contract_mode = "auto-split-gate"
+
+            mps.gate_(
+                gate_matrix,
                 qubits,
+                contract=contract_mode,
                 max_bond=max_bond,
-                tags=gate_name
+                propagate_tags=False,
             )
 
         # 3. Sample counts directly from the MPS
         # This avoids the exponential O(2^N) contraction step, restoring polynomial scaling.
         samples_gen = mps.sample(shots)
-        
+
         # Convert samples generator to list and process
         counts = {}
-        
-        for sample_tuple in list(samples_gen):
-            # The sample is a tuple of (state_list, probability)
-            # We only need the state_list part
-            state_list, _ = sample_tuple
-            # Convert list of bits to bitstring (e.g., [0, 1, 0] -> "010")
-            bitstring = ''.join(str(bit) for bit in state_list)
+
+        for state_list, _ in list(samples_gen):
+            bitstring = "".join(str(bit) for bit in state_list)
             counts[bitstring] = counts.get(bitstring, 0) + 1
-            
+
         return counts
 
+    def _simulate_with_statevector(self, circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+        circuit_no_measure = (
+            circuit.remove_final_measurements(inplace=False)
+            if circuit.num_clbits
+            else circuit
+        )
+        state = Statevector.from_instruction(circuit_no_measure)
+        counts = state.sample_counts(shots=shots)
+        return {bitstring: int(count) for bitstring, count in counts.items()}
 
     # Implement required abstract methods from UniversalBackend
     def get_backend_info(self) -> dict[str, Any]:
@@ -116,8 +168,8 @@ class MPSBackend(UniversalBackend):
             accuracy_rating=0.9,
             stability_rating=0.9,
             capabilities=self.get_capabilities(),
-            hardware_requirements=['CPU'],
-            estimated_cost_factor=0.1
+            hardware_requirements=["CPU"],
+            estimated_cost_factor=0.1,
         )
 
     def can_simulate(self, circuit: QuantumCircuit, **kwargs) -> tuple[bool, str]:

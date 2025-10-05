@@ -25,7 +25,7 @@ class TestErrorHandling:
         qc.measure_all()
 
         router = EnhancedQuantumRouter()
-        
+
         # Skip this test for now - fallback mechanism needs refinement
         pytest.skip("Backend fallback mechanism needs refinement - skipping for now")
 
@@ -40,15 +40,15 @@ class TestErrorHandling:
         try:
             backend = MetalBackend(allow_cpu_fallback=True)
             result = backend.simulate(qc, shots=100)
-            
+
             # Should work (either Metal or CPU mode)
             assert len(result) > 0
             assert isinstance(result, dict)
-            
+
             # Check backend mode
             print(f"Backend mode: {backend.backend_mode}")
             assert backend.backend_mode in ["metal", "cpu"]
-            
+
         except ImportError:
             pytest.skip("JAX not available for testing")
 
@@ -59,11 +59,11 @@ class TestErrorHandling:
         qc.measure_all()
 
         router = EnhancedQuantumRouter()
-        
+
         # Mock CUDA and Metal as unavailable
         router._cuda_available = False
         router._metal_available = False
-        
+
         # Update capacities
         router.backend_capacities[BackendType.CUDA].clifford_capacity = 0.0
         router.backend_capacities[BackendType.CUDA].general_capacity = 0.0
@@ -71,11 +71,15 @@ class TestErrorHandling:
         if BackendType.JAX_METAL in router.backend_capacities:
             router.backend_capacities[BackendType.JAX_METAL].clifford_capacity = 0.0
             router.backend_capacities[BackendType.JAX_METAL].general_capacity = 0.0
-        
+
         result = router.simulate(qc, shots=100)
-        
+
         # Should use Stim (for Clifford circuit) or Qiskit
-        assert result.backend_used in [BackendType.STIM, BackendType.QISKIT, BackendType.TENSOR_NETWORK]
+        assert result.backend_used in [
+            BackendType.STIM,
+            BackendType.QISKIT,
+            BackendType.TENSOR_NETWORK,
+        ]
         assert len(result.counts) > 0
 
     def test_simulate_function_error_handling(self):
@@ -87,7 +91,7 @@ class TestErrorHandling:
 
         # Should work without any errors
         result = simulate(qc, shots=100)
-        
+
         assert len(result.counts) > 0
         assert result.backend_used is not None
         assert result.execution_time >= 0
@@ -123,7 +127,7 @@ class TestErrorHandling:
         qc.measure_all()
 
         router = EnhancedQuantumRouter()
-        
+
         # Skip this test for now - fallback chain needs refinement
         pytest.skip("Comprehensive fallback chain needs refinement - skipping for now")
 
@@ -135,22 +139,23 @@ class TestErrorHandling:
         qc.measure_all()
 
         router = EnhancedQuantumRouter()
-        
+
         # Force JAX_METAL selection to generate experimental warning
-        with patch.object(router, 'select_optimal_backend') as mock_select:
+        with patch.object(router, "select_optimal_backend") as mock_select:
             from ariadne.router import RoutingDecision
+
             mock_select.return_value = RoutingDecision(
                 circuit_entropy=1.0,
                 recommended_backend=BackendType.JAX_METAL,
                 confidence_score=0.8,
                 expected_speedup=1.5,
                 channel_capacity_match=0.8,
-                alternatives=[]
+                alternatives=[],
             )
-            
+
             try:
                 result = router.simulate(qc, shots=100)
-                
+
                 # Should have warnings about experimental support
                 if result.warnings:
                     assert any("experimental" in warning.lower() for warning in result.warnings)

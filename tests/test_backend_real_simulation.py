@@ -5,11 +5,8 @@ import pytest
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
-from ariadne.backends.tensor_network_backend import (
-    TensorNetworkBackend,
-    TensorNetworkOptions,
-)
-from ariadne.router import EnhancedQuantumRouter
+from ariadne.backends.tensor_network_backend import (TensorNetworkBackend,
+                                                     TensorNetworkOptions)
 
 
 def test_tensor_network_backend_matches_statevector_distribution() -> None:
@@ -54,6 +51,7 @@ def test_jax_metal_backend_matches_statevector(monkeypatch) -> None:
 
     # Use the MetalBackend directly since the router doesn't have _simulate_jax_metal method
     from ariadne.backends.metal_backend import MetalBackend
+
     backend = MetalBackend(allow_cpu_fallback=True)
     counts = backend.simulate(qc, shots=256)
 

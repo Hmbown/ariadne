@@ -1,4 +1,4 @@
-﻿"""Verification helpers."""
+"""Verification helpers."""
 
 from .qcec import assert_equiv, statevector_equiv
 

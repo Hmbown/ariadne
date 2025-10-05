@@ -13,6 +13,7 @@ import numpy as np
 try:
     import cupy as cp
     import cupyx
+
     CUPY_AVAILABLE = True
 except ImportError:
     CUPY_AVAILABLE = False
@@ -20,27 +21,29 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
 class CUDAKernels:
     """Manager for custom CUDA kernels for quantum operations."""
-    
+
     def __init__(self):
         self.kernels: dict[str, Any] = {}
         self._compiled = False
-        
+
         if not CUPY_AVAILABLE:
             logger.warning("CuPy not available, CUDA kernels disabled")
             return
-            
+
         self._compile_kernels()
-    
+
     def _compile_kernels(self):
         """Compile all CUDA kernels for quantum operations."""
         if not CUPY_AVAILABLE:
             return
-            
+
         try:
             # Single qubit gate kernel
-            self.kernels['single_qubit_gate'] = cp.RawKernel(r'''
+            self.kernels["single_qubit_gate"] = cp.RawKernel(
+                r"""
             extern "C" __global__
             void single_qubit_gate(
                 const float2* state,
@@ -75,10 +78,13 @@ class CUDAKernels:
                     gate[2].x * s0.y + gate[2].y * s0.x + gate[3].x * s1.y + gate[3].y * s1.x
                 );
             }
-            ''', 'single_qubit_gate')
-            
+            """,
+                "single_qubit_gate",
+            )
+
             # Two qubit gate kernel
-            self.kernels['two_qubit_gate'] = cp.RawKernel(r'''
+            self.kernels["two_qubit_gate"] = cp.RawKernel(
+                r"""
             extern "C" __global__
             void two_qubit_gate(
                 const float2* state,
@@ -157,10 +163,13 @@ class CUDAKernels:
                     result[states[i]] = new_amp;
                 }
             }
-            ''', 'two_qubit_gate')
-            
+            """,
+                "two_qubit_gate",
+            )
+
             # Measurement kernel
-            self.kernels['measure_probabilities'] = cp.RawKernel(r'''
+            self.kernels["measure_probabilities"] = cp.RawKernel(
+                r"""
             extern "C" __global__
             void measure_probabilities(
                 const float2* state,
@@ -173,10 +182,13 @@ class CUDAKernels:
                 float2 amp = state[idx];
                 probabilities[idx] = amp.x * amp.x + amp.y * amp.y;
             }
-            ''', 'measure_probabilities')
-            
+            """,
+                "measure_probabilities",
+            )
+
             # State vector normalization kernel
-            self.kernels['normalize_state'] = cp.RawKernel(r'''
+            self.kernels["normalize_state"] = cp.RawKernel(
+                r"""
             extern "C" __global__
             void normalize_state(
                 float2* state,
@@ -189,10 +201,13 @@ class CUDAKernels:
                 state[idx].x /= norm;
                 state[idx].y /= norm;
             }
-            ''', 'normalize_state')
-            
+            """,
+                "normalize_state",
+            )
+
             # Expectation value kernel
-            self.kernels['expectation_value'] = cp.RawKernel(r'''
+            self.kernels["expectation_value"] = cp.RawKernel(
+                r"""
             extern "C" __global__
             void expectation_value(
                 const float2* state,
@@ -214,175 +229,156 @@ class CUDAKernels:
                     (amp.x * op_elem.x + amp.y * op_elem.y) * amp.y
                 );
             }
-            ''', 'expectation_value')
-            
+            """,
+                "expectation_value",
+            )
+
             self._compiled = True
             logger.info(f"Compiled {len(self.kernels)} CUDA kernels successfully")
-            
+
         except Exception as e:
             logger.error(f"Failed to compile CUDA kernels: {e}")
             self.kernels = {}
-    
+
     def apply_single_qubit_gate(
-        self, 
-        state: cp.ndarray, 
-        gate: cp.ndarray, 
-        target_qubit: int
+        self, state: cp.ndarray, gate: cp.ndarray, target_qubit: int
     ) -> cp.ndarray:
         """Apply single qubit gate using custom CUDA kernel."""
-        if not self._compiled or 'single_qubit_gate' not in self.kernels:
+        if not self._compiled or "single_qubit_gate" not in self.kernels:
             return self._fallback_single_qubit_gate(state, gate, target_qubit)
-        
+
         n_qubits = int(np.log2(len(state)))
         n_states = len(state)
         result = cp.zeros_like(state)
-        
+
         # Convert gate to complex64 if necessary
         gate_gpu = cp.asarray(gate, dtype=cp.complex64)
-        
+
         # Launch kernel
         block_size = 256
         grid_size = (n_states + block_size - 1) // block_size
-        
-        self.kernels['single_qubit_gate'](
-            (grid_size,), (block_size,),
-            (state, result, gate_gpu, target_qubit, n_qubits, n_states)
+
+        self.kernels["single_qubit_gate"](
+            (grid_size,), (block_size,), (state, result, gate_gpu, target_qubit, n_qubits, n_states)
         )
-        
+
         return result
-    
+
     def apply_two_qubit_gate(
-        self,
-        state: cp.ndarray,
-        gate: cp.ndarray,
-        control_qubit: int,
-        target_qubit: int
+        self, state: cp.ndarray, gate: cp.ndarray, control_qubit: int, target_qubit: int
     ) -> cp.ndarray:
         """Apply two qubit gate using custom CUDA kernel."""
-        if not self._compiled or 'two_qubit_gate' not in self.kernels:
+        if not self._compiled or "two_qubit_gate" not in self.kernels:
             return self._fallback_two_qubit_gate(state, gate, control_qubit, target_qubit)
-        
+
         n_qubits = int(np.log2(len(state)))
         n_states = len(state)
         result = cp.zeros_like(state)
-        
+
         # Convert gate to complex64 if necessary
         gate_gpu = cp.asarray(gate.flatten(), dtype=cp.complex64)
-        
+
         # Launch kernel
         block_size = 256
         grid_size = (n_states // 4 + block_size - 1) // block_size
-        
-        self.kernels['two_qubit_gate'](
-            (grid_size,), (block_size,),
-            (state, result, gate_gpu, control_qubit, target_qubit, n_qubits, n_states)
+
+        self.kernels["two_qubit_gate"](
+            (grid_size,),
+            (block_size,),
+            (state, result, gate_gpu, control_qubit, target_qubit, n_qubits, n_states),
         )
-        
+
         return result
-    
+
     def measure_probabilities(self, state: cp.ndarray) -> cp.ndarray:
         """Calculate measurement probabilities using custom CUDA kernel."""
-        if not self._compiled or 'measure_probabilities' not in self.kernels:
+        if not self._compiled or "measure_probabilities" not in self.kernels:
             return cp.abs(state) ** 2
-        
+
         n_states = len(state)
         probabilities = cp.zeros(n_states, dtype=cp.float32)
-        
+
         # Launch kernel
         block_size = 256
         grid_size = (n_states + block_size - 1) // block_size
-        
-        self.kernels['measure_probabilities'](
-            (grid_size,), (block_size,),
-            (state, probabilities, n_states)
+
+        self.kernels["measure_probabilities"](
+            (grid_size,), (block_size,), (state, probabilities, n_states)
         )
-        
+
         return probabilities
-    
+
     def normalize_state(self, state: cp.ndarray) -> cp.ndarray:
         """Normalize state vector using custom CUDA kernel."""
-        if not self._compiled or 'normalize_state' not in self.kernels:
+        if not self._compiled or "normalize_state" not in self.kernels:
             norm = cp.linalg.norm(state)
             return state / norm
-        
+
         n_states = len(state)
         norm = float(cp.linalg.norm(state))
-        
+
         # Launch kernel
         block_size = 256
         grid_size = (n_states + block_size - 1) // block_size
-        
-        self.kernels['normalize_state'](
-            (grid_size,), (block_size,),
-            (state, norm, n_states)
-        )
-        
+
+        self.kernels["normalize_state"]((grid_size,), (block_size,), (state, norm, n_states))
+
         return state
-    
+
     def calculate_expectation_value(
-        self, 
-        state: cp.ndarray, 
-        operator_diagonal: cp.ndarray
+        self, state: cp.ndarray, operator_diagonal: cp.ndarray
     ) -> complex:
         """Calculate expectation value using custom CUDA kernel."""
-        if not self._compiled or 'expectation_value' not in self.kernels:
+        if not self._compiled or "expectation_value" not in self.kernels:
             return float(cp.real(cp.vdot(state, operator_diagonal * state)))
-        
+
         n_states = len(state)
         partial_results = cp.zeros(n_states, dtype=cp.complex64)
-        
+
         # Launch kernel
         block_size = 256
         grid_size = (n_states + block_size - 1) // block_size
-        
-        self.kernels['expectation_value'](
-            (grid_size,), (block_size,),
-            (state, operator_diagonal, partial_results, n_states)
+
+        self.kernels["expectation_value"](
+            (grid_size,), (block_size,), (state, operator_diagonal, partial_results, n_states)
         )
-        
+
         return complex(cp.sum(partial_results))
-    
+
     def _fallback_single_qubit_gate(
-        self, 
-        state: cp.ndarray, 
-        gate: cp.ndarray, 
-        target_qubit: int
+        self, state: cp.ndarray, gate: cp.ndarray, target_qubit: int
     ) -> cp.ndarray:
         """Fallback implementation for single qubit gates."""
         int(np.log2(len(state)))
         n_states = len(state)
         result = cp.copy(state)
-        
+
         target_mask = 1 << target_qubit
-        
+
         for i in range(0, n_states, target_mask << 1):
             for j in range(target_mask):
                 idx0 = i + j
                 idx1 = idx0 + target_mask
-                
+
                 amp0 = state[idx0]
                 amp1 = state[idx1]
-                
+
                 result[idx0] = gate[0, 0] * amp0 + gate[0, 1] * amp1
                 result[idx1] = gate[1, 0] * amp0 + gate[1, 1] * amp1
-        
+
         return result
-    
+
     def _fallback_two_qubit_gate(
-        self,
-        state: cp.ndarray,
-        gate: cp.ndarray,
-        control_qubit: int,
-        target_qubit: int
+        self, state: cp.ndarray, gate: cp.ndarray, control_qubit: int, target_qubit: int
     ) -> cp.ndarray:
         """Fallback implementation for two qubit gates."""
         int(np.log2(len(state)))
         n_states = len(state)
         result = cp.copy(state)
-        
+
         control_mask = 1 << control_qubit
         target_mask = 1 << target_qubit
-        
+
         for i in range(n_states):
             if not (i & control_mask) and not (i & target_mask):
                 # Base state |00⟩ relative to control and target
@@ -390,37 +386,38 @@ class CUDAKernels:
                 idx01 = i | target_mask
                 idx10 = i | control_mask
                 idx11 = i | control_mask | target_mask
-                
+
                 amps = cp.array([state[idx00], state[idx01], state[idx10], state[idx11]])
                 new_amps = gate @ amps
-                
+
                 result[idx00] = new_amps[0]
                 result[idx01] = new_amps[1]
                 result[idx10] = new_amps[2]
                 result[idx11] = new_amps[3]
-        
+
         return result
-    
+
     @property
     def is_available(self) -> bool:
         """Check if CUDA kernels are available and compiled."""
         return CUPY_AVAILABLE and self._compiled
-    
+
     def get_kernel_info(self) -> dict[str, Any]:
         """Get information about compiled kernels."""
         if not self.is_available:
             return {"available": False, "reason": "CuPy not available or compilation failed"}
-        
+
         return {
             "available": True,
             "kernels": list(self.kernels.keys()),
             "cuda_version": cp.cuda.runtime.runtimeGetVersion() if CUPY_AVAILABLE else None,
-            "device_count": cp.cuda.runtime.getDeviceCount() if CUPY_AVAILABLE else 0
+            "device_count": cp.cuda.runtime.getDeviceCount() if CUPY_AVAILABLE else 0,
         }
 
 
 # Global kernel manager instance
 _kernel_manager = None
+
 
 def get_cuda_kernels() -> CUDAKernels:
     """Get the global CUDA kernels manager instance."""
@@ -457,12 +454,7 @@ def hadamard_kernel(state: cp.ndarray, qubit: int) -> cp.ndarray:
 
 def cnot_kernel(state: cp.ndarray, control: int, target: int) -> cp.ndarray:
     """Apply CNOT gate using CUDA kernel."""
-    gate = cp.array([
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 0, 1],
-        [0, 0, 1, 0]
-    ], dtype=cp.complex64)
+    gate = cp.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=cp.complex64)
     return get_cuda_kernels().apply_two_qubit_gate(state, gate, control, target)
 
 
@@ -470,10 +462,7 @@ def rotation_x_kernel(state: cp.ndarray, qubit: int, theta: float) -> cp.ndarray
     """Apply rotation around X-axis using CUDA kernel."""
     cos_half = cp.cos(theta / 2)
     sin_half = cp.sin(theta / 2)
-    gate = cp.array([
-        [cos_half, -1j * sin_half],
-        [-1j * sin_half, cos_half]
-    ], dtype=cp.complex64)
+    gate = cp.array([[cos_half, -1j * sin_half], [-1j * sin_half, cos_half]], dtype=cp.complex64)
     return get_cuda_kernels().apply_single_qubit_gate(state, gate, qubit)
 
 
@@ -481,10 +470,7 @@ def rotation_y_kernel(state: cp.ndarray, qubit: int, theta: float) -> cp.ndarray
     """Apply rotation around Y-axis using CUDA kernel."""
     cos_half = cp.cos(theta / 2)
     sin_half = cp.sin(theta / 2)
-    gate = cp.array([
-        [cos_half, -sin_half],
-        [sin_half, cos_half]
-    ], dtype=cp.complex64)
+    gate = cp.array([[cos_half, -sin_half], [sin_half, cos_half]], dtype=cp.complex64)
     return get_cuda_kernels().apply_single_qubit_gate(state, gate, qubit)
 
 
@@ -492,8 +478,5 @@ def rotation_z_kernel(state: cp.ndarray, qubit: int, theta: float) -> cp.ndarray
     """Apply rotation around Z-axis using CUDA kernel."""
     exp_neg = cp.exp(-1j * theta / 2)
     exp_pos = cp.exp(1j * theta / 2)
-    gate = cp.array([
-        [exp_neg, 0],
-        [0, exp_pos]
-    ], dtype=cp.complex64)
+    gate = cp.array([[exp_neg, 0], [0, exp_pos]], dtype=cp.complex64)
     return get_cuda_kernels().apply_single_qubit_gate(state, gate, qubit)

@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from ariadne.router import QuantumRouter
+from ariadne.route.enhanced_router import EnhancedQuantumRouter
 from ariadne.backends.tensor_network_backend import TensorNetworkBackend
 from ariadne.route.analyze import analyze_circuit
 
@@ -209,17 +209,22 @@ def benchmark_case(
     num_qubits = circuit.num_qubits
     num_gates = len([item for item in circuit.data if item[0].name not in {"measure", "barrier", "delay"}])
 
-    router = QuantumRouter()
-
     timings: list[TimingResult] = []
     router_backend: str | None = None
+    
+    try:
+        router = EnhancedQuantumRouter()
 
-    def router_run() -> None:
-        nonlocal router_backend
-        result = router.simulate(circuit, shots=shots)
-        router_backend = result.backend_used.value
+        def router_run() -> None:
+            nonlocal router_backend
+            result = router.simulate(circuit, shots=shots)
+            router_backend = result.backend_used.value
 
-    router_timings, router_success, router_error = time_function(router_run, repetitions)
+        router_timings, router_success, router_error = time_function(router_run, repetitions)
+    except Exception as e:
+        router_timings = []
+        router_success = False
+        router_error = f"Failed to initialize EnhancedQuantumRouter: {str(e)}"
     timings.append(
         TimingResult(
             backend="ariadne_router",
@@ -254,7 +259,8 @@ def benchmark_case(
 
     if case.category == "clifford":
         try:
-            stim_router = QuantumRouter()
+            import stim  # Check if Stim is available
+            stim_router = EnhancedQuantumRouter()
 
             def stim_run() -> None:
                 stim_router._simulate_stim(circuit, shots)
@@ -270,7 +276,7 @@ def benchmark_case(
                     error=stim_error,
                 )
             )
-        except Exception as exc:  # pragma: no cover - stim optional
+        except ImportError as exc:  # pragma: no cover - stim optional
             timings.append(
                 TimingResult(
                     backend="stim",
@@ -278,27 +284,50 @@ def benchmark_case(
                     stdev=0.0,
                     repetitions=0,
                     succeeded=False,
-                    error=str(exc),
+                    error=f"Stim backend not available: {str(exc)}",
+                )
+            )
+        except Exception as exc:  # pragma: no cover - other errors
+            timings.append(
+                TimingResult(
+                    backend="stim",
+                    mean_time=float("inf"),
+                    stdev=0.0,
+                    repetitions=0,
+                    succeeded=False,
+                    error=f"Stim backend error: {str(exc)}",
                 )
             )
 
     if enable_tensor_network and num_qubits <= 14:
-        tn_backend = TensorNetworkBackend()
+        try:
+            tn_backend = TensorNetworkBackend()
 
-        def tensor_run() -> None:
-            tn_backend.simulate(circuit, shots)
+            def tensor_run() -> None:
+                tn_backend.simulate(circuit, shots)
 
-        tensor_timings, tensor_success, tensor_error = time_function(tensor_run, repetitions)
-        timings.append(
-            TimingResult(
-                backend="tensor_network",
-                mean_time=statistics.mean(tensor_timings) if tensor_timings else float("inf"),
-                stdev=statistics.pstdev(tensor_timings) if len(tensor_timings) > 1 else 0.0,
-                repetitions=len(tensor_timings),
-                succeeded=tensor_success,
-                error=tensor_error,
+            tensor_timings, tensor_success, tensor_error = time_function(tensor_run, repetitions)
+            timings.append(
+                TimingResult(
+                    backend="tensor_network",
+                    mean_time=statistics.mean(tensor_timings) if tensor_timings else float("inf"),
+                    stdev=statistics.pstdev(tensor_timings) if len(tensor_timings) > 1 else 0.0,
+                    repetitions=len(tensor_timings),
+                    succeeded=tensor_success,
+                    error=tensor_error,
+                )
             )
-        )
+        except Exception as exc:
+            timings.append(
+                TimingResult(
+                    backend="tensor_network",
+                    mean_time=float("inf"),
+                    stdev=0.0,
+                    repetitions=0,
+                    succeeded=False,
+                    error=f"Tensor network backend error: {str(exc)}",
+                )
+            )
 
     return CaseResult(
         name=case.name,

@@ -7,6 +7,7 @@ without relying on the full router system.
 
 import time
 import json
+from pathlib import Path
 from typing import Dict, List
 from dataclasses import dataclass
 
@@ -76,6 +77,9 @@ def create_test_circuits() -> Dict[str, QuantumCircuit]:
 def test_cuda_backend(circuit: QuantumCircuit, shots: int) -> tuple[float, bool, str]:
     """Test CUDA backend performance."""
     try:
+        if not is_cuda_available():
+            return 0.0, False, "CUDA not available"
+        
         backend = CUDABackend(prefer_gpu=True, allow_cpu_fallback=True)
         start_time = time.perf_counter()
         counts = backend.simulate(circuit, shots=shots)
@@ -115,14 +119,20 @@ def run_benchmarks() -> List[TestResult]:
     print("=" * 50)
     
     # Check CUDA availability
-    cuda_info = get_cuda_info()
-    print(f"CUDA Available: {cuda_info['available']}")
-    if cuda_info['available']:
-        print(f"Device Count: {cuda_info['device_count']}")
-        for device in cuda_info.get('devices', []):
-            print(f"  Device {device['device_id']}: {device['name']}")
-            print(f"    Memory: {device['total_memory'] / 1024**3:.1f} GB")
-            print(f"    Compute Capability: {device['compute_capability']}")
+    try:
+        cuda_info = get_cuda_info()
+        print(f"CUDA Available: {cuda_info['available']}")
+        if cuda_info['available']:
+            print(f"Device Count: {cuda_info['device_count']}")
+            for device in cuda_info.get('devices', []):
+                print(f"  Device {device['device_id']}: {device['name']}")
+                print(f"    Memory: {device['total_memory'] / 1024**3:.1f} GB")
+                print(f"    Compute Capability: {device['compute_capability']}")
+        else:
+            print("⚠️  CUDA not available - will use CPU fallback for testing")
+    except Exception as e:
+        print(f"⚠️  Error checking CUDA availability: {str(e)}")
+        print("Will attempt to continue with CPU fallback")
     print()
     
     circuits = create_test_circuits()
@@ -249,10 +259,13 @@ def main():
             print(f"  {qubits} qubits: {data['average_speedup']:.2f}x average ({data['test_count']} tests)")
     
     # Save results
-    with open("benchmarks/simple_cuda_results.json", "w") as f:
+    results_dir = Path("results")
+    results_dir.mkdir(exist_ok=True)
+    
+    with open(results_dir / "simple_cuda_results.json", "w") as f:
         json.dump(analysis, f, indent=2)
     
-    print(f"\nResults saved to: benchmarks/simple_cuda_results.json")
+    print(f"\nResults saved to: {results_dir / 'simple_cuda_results.json'}")
 
 
 if __name__ == "__main__":

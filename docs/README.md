@@ -6,7 +6,9 @@ Comprehensive documentation for the Ariadne Intelligent Quantum Router.
 
 ### Getting Started
 - [Quick Start Guide](quickstart.md) - Get up and running in 5 minutes
-- [Installation](installation.md) - Detailed installation instructions
+- [Installation Summary](installation_summary.md) - Quick installation commands
+- [Comprehensive Installation Guide](comprehensive_installation.md) - Detailed installation instructions for all platforms
+- [Installation](installation.md) - Original installation documentation
 - [Basic Usage](basic-usage.md) - Core concepts and simple examples
 - [Configuration](configuration.md) - Environment setup and configuration options
 

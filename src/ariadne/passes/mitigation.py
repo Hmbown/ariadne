@@ -1,4 +1,4 @@
-﻿"""Simple error mitigation utilities."""
+"""Simple error mitigation utilities."""
 
 from __future__ import annotations
 
@@ -7,7 +7,9 @@ from collections.abc import Callable, Iterable
 import numpy as np
 
 
-def simple_zne(observable: Callable[[float], float], *, scales: Iterable[float], order: int = 1) -> float:
+def simple_zne(
+    observable: Callable[[float], float], *, scales: Iterable[float], order: int = 1
+) -> float:
     """Zero-noise extrapolation using a polynomial fit."""
 
     scale_list = list(scales)

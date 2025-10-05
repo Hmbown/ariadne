@@ -1,7 +1,7 @@
 """
 Metal Performance Shaders Integration for Quantum Circuit Simulation
 
-This module provides Metal Performance Shaders (MPS) integration for 
+This module provides Metal Performance Shaders (MPS) integration for
 Apple Silicon quantum circuit simulation, enabling GPU-accelerated
 quantum operations using Apple's optimized compute shaders.
 """
@@ -28,22 +28,22 @@ except ImportError:
 class MetalShaderLibrary:
     """
     Metal shader library for quantum circuit operations.
-    
+
     Contains optimized compute shaders for common quantum operations
     including single/two-qubit gates and measurement operations.
     """
-    
+
     def __init__(self):
         self.device = None
         self.command_queue = None
         self.shader_library = None
         self.compute_pipelines = {}
-        
+
         if METAL_AVAILABLE:
             self._initialize_metal()
         else:
             self._initialize_fallback()
-    
+
     def _initialize_metal(self):
         """Initialize Metal device and shader library."""
         # Placeholder for actual Metal initialization
@@ -52,23 +52,23 @@ class MetalShaderLibrary:
         # self.command_queue = self.device.newCommandQueue()
         # self._compile_shaders()
         pass
-    
+
     def _initialize_fallback(self):
         """Initialize fallback CPU implementation."""
         self.device = "cpu_fallback"
         self.command_queue = None
-    
+
     def _compile_shaders(self):
         """Compile Metal compute shaders for quantum operations."""
         # Define Metal shading language source for quantum operations
         self._get_quantum_shader_source()
-        
+
         # Compile shaders (placeholder)
         # In real implementation:
         # library = self.device.newLibraryWithSource_options_error_(shader_source, None, None)
         # self._create_compute_pipelines(library)
         pass
-    
+
     def _get_quantum_shader_source(self) -> str:
         """Get Metal shading language source for quantum operations."""
         return """
@@ -193,120 +193,114 @@ class MetalShaderLibrary:
 class MetalQuantumAccelerator:
     """
     Metal Performance Shaders accelerated quantum circuit simulator.
-    
+
     Provides GPU-accelerated quantum operations using Apple's Metal
     Performance Shaders framework for maximum performance on Apple Silicon.
     """
-    
+
     def __init__(self, enable_metal: bool = True):
         self.enable_metal = enable_metal and METAL_AVAILABLE
         self.shader_library = MetalShaderLibrary() if self.enable_metal else None
-        
-    
-    def apply_single_qubit_gate_metal(self, 
-                                    state: np.ndarray,
-                                    gate_matrix: np.ndarray,
-                                    qubit: int) -> np.ndarray:
+
+    def apply_single_qubit_gate_metal(
+        self, state: np.ndarray, gate_matrix: np.ndarray, qubit: int
+    ) -> np.ndarray:
         """Apply single qubit gate using Metal compute shader."""
-        
+
         if not self.enable_metal:
             return self._apply_single_qubit_gate_cpu(state, gate_matrix, qubit)
-        
+
         try:
             # This would be the actual Metal implementation
             # For now, fall back to CPU
             result = self._apply_single_qubit_gate_cpu(state, gate_matrix, qubit)
-            
+
             return result
-            
+
         except Exception:
             # Fall back to CPU implementation
             return self._apply_single_qubit_gate_cpu(state, gate_matrix, qubit)
-    
-    def apply_two_qubit_gate_metal(self,
-                                 state: np.ndarray,
-                                 gate_matrix: np.ndarray,
-                                 qubits: tuple[int, int]) -> np.ndarray:
+
+    def apply_two_qubit_gate_metal(
+        self, state: np.ndarray, gate_matrix: np.ndarray, qubits: tuple[int, int]
+    ) -> np.ndarray:
         """Apply two qubit gate using Metal compute shader."""
-        
+
         if not self.enable_metal:
             return self._apply_two_qubit_gate_cpu(state, gate_matrix, qubits)
-        
+
         try:
             # This would be the actual Metal implementation
             result = self._apply_two_qubit_gate_cpu(state, gate_matrix, qubits)
-            
+
             return result
-            
+
         except Exception:
             return self._apply_two_qubit_gate_cpu(state, gate_matrix, qubits)
-    
+
     def calculate_probabilities_metal(self, state: np.ndarray) -> np.ndarray:
         """Calculate measurement probabilities using Metal parallel reduction."""
-        
+
         if not self.enable_metal:
             return np.abs(state) ** 2
-        
+
         try:
             # Metal implementation would use parallel GPU computation
             probabilities = np.abs(state) ** 2
-            
+
             return probabilities
-            
+
         except Exception:
             return np.abs(state) ** 2
-    
-    def _apply_single_qubit_gate_cpu(self,
-                                   state: np.ndarray,
-                                   gate_matrix: np.ndarray,
-                                   qubit: int) -> np.ndarray:
+
+    def _apply_single_qubit_gate_cpu(
+        self, state: np.ndarray, gate_matrix: np.ndarray, qubit: int
+    ) -> np.ndarray:
         """CPU fallback for single qubit gate."""
         int(math.log2(len(state)))
         new_state = np.zeros_like(state)
-        
+
         mask = 1 << qubit
         for i in range(len(state)):
             if not (i & mask):  # qubit is 0
-                j = i | mask    # corresponding state with qubit = 1
-                
+                j = i | mask  # corresponding state with qubit = 1
+
                 # Apply 2x2 gate matrix
                 new_state[i] = gate_matrix[0, 0] * state[i] + gate_matrix[0, 1] * state[j]
                 new_state[j] = gate_matrix[1, 0] * state[i] + gate_matrix[1, 1] * state[j]
-        
+
         return new_state
-    
-    def _apply_two_qubit_gate_cpu(self,
-                                state: np.ndarray,
-                                gate_matrix: np.ndarray,
-                                qubits: tuple[int, int]) -> np.ndarray:
+
+    def _apply_two_qubit_gate_cpu(
+        self, state: np.ndarray, gate_matrix: np.ndarray, qubits: tuple[int, int]
+    ) -> np.ndarray:
         """CPU fallback for two qubit gate."""
         qubit1, qubit2 = qubits
         new_state = np.zeros_like(state)
-        
+
         mask1, mask2 = 1 << qubit1, 1 << qubit2
         matrix = gate_matrix.reshape(4, 4)
-        
+
         for i in range(len(state)):
             if not (i & mask1) and not (i & mask2):  # both qubits are 0
                 idx00 = i
                 idx01 = i | mask2
                 idx10 = i | mask1
                 idx11 = i | mask1 | mask2
-                
+
                 # Get current amplitudes
                 amplitudes = [state[idx00], state[idx01], state[idx10], state[idx11]]
-                
+
                 # Apply 4x4 gate matrix
                 new_amplitudes = matrix @ amplitudes
-                
+
                 # Store results
                 new_state[idx00] = new_amplitudes[0]
                 new_state[idx01] = new_amplitudes[1]
                 new_state[idx10] = new_amplitudes[2]
                 new_state[idx11] = new_amplitudes[3]
-        
+
         return new_state
-    
 
 
 # Convenience functions for Metal-accelerated operations
@@ -323,16 +317,13 @@ def is_metal_acceleration_available() -> bool:
 def get_metal_device_info() -> dict[str, Any]:
     """Get Metal device information."""
     if not METAL_AVAILABLE:
-        return {
-            'available': False,
-            'reason': 'Metal framework not available'
-        }
-    
+        return {"available": False, "reason": "Metal framework not available"}
+
     # In actual implementation, would query Metal device properties
     return {
-        'available': True,
-        'device_name': 'Apple Silicon GPU',
-        'max_threads_per_threadgroup': 1024,
-        'max_buffer_size': '2GB',
-        'supports_compute_shaders': True
+        "available": True,
+        "device_name": "Apple Silicon GPU",
+        "max_threads_per_threadgroup": 1024,
+        "max_buffer_size": "2GB",
+        "supports_compute_shaders": True,
     }

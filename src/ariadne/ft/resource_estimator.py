@@ -7,7 +7,6 @@ This module provides resource estimation capabilities for fault-tolerant quantum
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 from qiskit import QuantumCircuit
 

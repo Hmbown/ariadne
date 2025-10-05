@@ -51,4 +51,4 @@ class SimulationResult:
     routing_decision: RoutingDecision
     metadata: dict[str, Any]
     fallback_reason: str | None = None  # Reason for backend fallback
-    warnings: list[str] | None = None   # Any warnings during execution
+    warnings: list[str] | None = None  # Any warnings during execution

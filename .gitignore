@@ -21,8 +21,11 @@ wheels/
 .installed.cfg
 *.egg
 
-# Benchmark results
-benchmarks/results/*.json
+# Benchmark results - temporary files
+benchmark_results_*.json
+benchmarks/*_benchmark_results.json
+# Keep curated results in results/
+!benchmarks/results/
 
 # IDE and editor files
 .vscode/
@@ -30,6 +33,7 @@ benchmarks/results/*.json
 *.swp
 *.swo
 *~
+.DS_Store
 
 # Environment
 .env
@@ -41,6 +45,4 @@ ENV/
 .pytest_cache/
 .coverage
 htmlcov/
-
-# CI/CD
-.github/
+.ruff_cache/

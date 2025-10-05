@@ -35,6 +35,7 @@ dependencies = [
   "networkx>=3.0",
   "matplotlib>=3.5.0",
   "pytest>=7.0.0",
+  "PyYAML>=6.0",
 ]
 
 [project.optional-dependencies]
@@ -54,10 +55,9 @@ viz = [
 dev = [
   "pytest>=7.0",
   "pytest-cov>=3.0",
-  "black>=22.0",
-  "isort>=5.10",
-  "pre-commit>=2.17",
-  "mypy>=0.950",
+  "ruff>=0.6.0",
+  "pre-commit>=3.5",
+  "mypy>=1.11.0",
   "pytest-timeout>=2.1",
   "pytest-xdist>=2.5",
   "pytest-mock>=3.6",
@@ -86,6 +86,11 @@ ignore = ["E501", "B008"]
 "tests/*" = ["B011"]
 "examples/*" = ["B006"]
 
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
 [tool.mypy]
 python_version = "3.11"
 warn_return_any = true
@@ -109,6 +114,7 @@ markers = [
   "integration: marks tests as integration tests",
   "unit: marks tests as unit tests",
   "benchmark: marks tests as benchmark tests",
+  "asyncio: marks tests that use asyncio",
 ]
 
 [tool.coverage.run]
@@ -139,7 +145,7 @@ include-package-data = true
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["ariadne*"]
-exclude = ["tests*", "docs*", "*__pycache__*"]
+exclude = ["tests*", "docs*", "__pycache__*"]
 
 [tool.setuptools.package-data]
 ariadne = ["*.txt", "*.md", "*.yml", "*.yaml"]

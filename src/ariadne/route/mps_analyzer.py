@@ -47,8 +47,8 @@ def should_use_mps(circuit: QuantumCircuit) -> bool:
 
     # Count two-qubit gates (entangling gates)
     two_qubit_gates = 0
-    for _instruction, qargs, _cargs in circuit.data:
-        if len(qargs) == 2:
+    for instruction in circuit.data:
+        if len(instruction.qubits) == 2:
             # We assume any two-qubit gate is an entangling gate for this heuristic
             # (e.g., CNOT, CZ, RXX, etc.)
             two_qubit_gates += 1

@@ -102,6 +102,7 @@ def run_metal_backend(circuit: QuantumCircuit, shots: int) -> None:
 def benchmark_backend(
     backend_func: Callable[[QuantumCircuit, int], None],
     circuit: QuantumCircuit,
+    circuit_name: str,
     shots: int,
     backend_name: str,
     warmup_runs: int = 3,
@@ -138,7 +139,7 @@ def benchmark_backend(
         execution_time = float('inf')
     
     return BenchmarkResult(
-        circuit=circuit.name or "unnamed",
+        circuit=circuit_name,
         backend=backend_name,
         shots=shots,
         execution_time=execution_time,
@@ -169,6 +170,7 @@ def run_benchmarks(
         result = benchmark_backend(
             run_qiskit_backend,
             case.circuit,
+            case.name,
             shots,
             "qiskit_cpu",
         )
@@ -180,6 +182,7 @@ def run_benchmarks(
         result = benchmark_backend(
             run_metal_backend,
             case.circuit,
+            case.name,
             shots,
             "metal",
         )

@@ -51,12 +51,14 @@ class Trace:
     metrics: dict[str, float | int | bool]
 
 
-def execute(circuit: QuantumCircuit, shots: int = 1024) -> dict[str, object]:  # pragma: no cover - integration helper
+def execute(
+    circuit: QuantumCircuit, shots: int = 1024
+) -> dict[str, object]:  # pragma: no cover - integration helper
     backend = decide_backend(circuit)
     metrics = analyze_circuit(circuit)
 
     start = perf_counter()
-    
+
     # Use router for actual simulation
     if backend == "stim" and metrics.get("is_clifford", False):
         result = _simulate_with_router(circuit, shots)
@@ -65,6 +67,7 @@ def execute(circuit: QuantumCircuit, shots: int = 1024) -> dict[str, object]:  #
         # Fallback to qiskit or other backends
         try:
             from qiskit.quantum_info import Statevector
+
             statevector = Statevector.from_instruction(circuit)
             payload = {"statevector": statevector.data}
         except Exception as exc:

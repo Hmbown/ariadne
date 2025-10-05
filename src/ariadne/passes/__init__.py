@@ -1,4 +1,4 @@
-﻿"""Basic transformation and mitigation passes."""
+"""Basic transformation and mitigation passes."""
 
 from .mitigation import simple_zne
 from .zx_opt import trivial_cancel
