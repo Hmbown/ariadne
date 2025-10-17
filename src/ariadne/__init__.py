@@ -35,6 +35,16 @@ from .core import (
 # Enhanced router
 from .route.enhanced_router import EnhancedQuantumRouter
 
+# NEW: Comprehensive routing tree
+from .route.routing_tree import (
+    ComprehensiveRoutingTree,
+    RoutingStrategy,
+    explain_routing,
+    get_routing_tree,
+    route_with_tree,
+    show_routing_tree,
+)
+
 # Main simulation interface
 from .router import simulate
 from .types import BackendCapacity, BackendType, RoutingDecision, SimulationResult
@@ -72,6 +82,13 @@ __all__ = [
     "BackendCapacity",
     "EnhancedQuantumRouter",
     "QuantumRouter",  # Alias for backward compatibility
+    # NEW: Comprehensive routing tree
+    "ComprehensiveRoutingTree",
+    "RoutingStrategy", 
+    "explain_routing",
+    "get_routing_tree",
+    "route_with_tree",
+    "show_routing_tree",
     # Configuration system
     "AriadneConfig",
     "BackendConfig",
