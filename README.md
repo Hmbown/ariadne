@@ -125,6 +125,9 @@ qc.measure_all()
 
 # Get a detailed, human-readable explanation of the routing decision
 explanation = explain_routing(qc)
+# explanation is a human-readable string describing the routing decision,
+# e.g.:
+# "Circuit routed to backend 'qiskit_simulator' because it has 2 qubits and no advanced gates."
 print(explanation)
 
 # You can also visualize the entire routing tree
