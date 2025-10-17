@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2025-10-17
+
+### Added
+
+-   **Comprehensive Routing Tree**: Introduced `ariadne.ComprehensiveRoutingTree`, a new, powerful way to control and inspect routing decisions.
+-   **Advanced Routing Strategies**: Added new routing strategies like `SPEED_FIRST`, `MEMORY_EFFICIENT`, `CLIFFORD_OPTIMIZED`, `APPLE_SILICON_OPTIMIZED`, and `CUDA_OPTIMIZED`.
+-   **Routing Explanations**: Added `ariadne.explain_routing` to provide detailed, human-readable explanations for routing decisions.
+-   **Routing Visualization**: Added `ariadne.show_routing_tree` to visualize the entire routing decision tree.
+
+### Changed
+
+-   **Public API**: `ariadne.ComprehensiveRoutingTree` is now the recommended entry point for advanced routing control. `QuantumRouter` is maintained as an alias for backward compatibility.
+-   **Documentation**: Updated `README.md` and other documentation to reflect the new routing system.
+
 ## [0.1.0] - 2025-10-15
 
 - macOS-first launch; Apple Silicon supported via Metal (falls back to CPU gracefully).
