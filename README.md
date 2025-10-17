@@ -99,26 +99,6 @@ python examples/routing_matrix.py --shots 256 --generate-image docs/source/_stat
 
 Ariadne's core innovation is its ability to mathematically analyze a circuit's structure to determine the optimal execution environment. This eliminates the need for quantum developers to manually select backends based on circuit characteristics.
 
-### Specialized Routing for Maximum Efficiency
-
-```mermaid
-graph TD
-    A[Input Circuit] --> B{Circuit Analysis};
-    B --> C{Pure Clifford?};
-    C -- YES --> D[Stim Backend];
-    C -- NO --> E{Low Entanglement?};
-    E -- YES --> F[MPS Backend];
-    E -- NO --> G{Hardware Available?};
-    G -- Apple Silicon --> H[Metal Backend];
-    G -- NVIDIA GPU --> I[CUDA Backend];
-    G -- None --> J[CPU Backend];
-    D --> K["Optimal Result"];
-    F --> K;
-    H --> K;
-    I --> K;
-    J --> K;
-```
-
 ### Transparent Decision Making
 
 Ariadne provides complete transparency into why a circuit was routed to a specific backend:
@@ -256,7 +236,7 @@ router = ComprehensiveRoutingTree()
 
 # Use specific routing strategies
 decision = router.route_circuit(
-    circuit, 
+    circuit,
     strategy=RoutingStrategy.MEMORY_EFFICIENT
 )
 
