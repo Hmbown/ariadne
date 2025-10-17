@@ -13,6 +13,16 @@
 
 </div>
 
+---
+
+**Quantum computing is still in its early days.** As the ecosystem evolves rapidly with new simulators, hardware platforms, and optimization techniques, developers face an increasingly complex landscape of choices. Each quantum circuit might run best on a different backend, but who has time to manually benchmark across 15+ simulators?
+
+Ariadne attempts to solve this by automatically analyzing your quantum circuits and routing them to optimal backends. Instead of wrestling with import statements and performance tuning, you can focus on your algorithms.
+
+This is an experiment in simplifying quantum development workflows. **Feedback, contributions, and real-world testing are very welcome** - I'm genuinely curious whether this approach helps or just adds another layer of complexity.
+
+---
+
 Ariadne is an intelligent quantum circuit routing system that automatically analyzes circuit properties and selects the optimal simulator backend. Like the mythological thread that guided Theseus through the labyrinth, Ariadne guides developers through the complex landscape of quantum simulators to find optimal performance paths.
 
 The routing system prioritizes transparency and determinism - every routing decision is based on measurable circuit characteristics and can be audited for correctness.
