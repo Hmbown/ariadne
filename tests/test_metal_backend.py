@@ -6,8 +6,12 @@ import numpy as np
 import pytest
 from qiskit import QuantumCircuit
 
-from ariadne.backends.metal_backend import (JAX_AVAILABLE, MetalBackend,
-                                            get_metal_info, is_metal_available)
+from ariadne.backends.metal_backend import (
+    JAX_AVAILABLE,
+    MetalBackend,
+    get_metal_info,
+    is_metal_available,
+)
 
 
 def _bell_state_circuit() -> QuantumCircuit:

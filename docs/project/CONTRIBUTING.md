@@ -19,10 +19,10 @@ Ariadne aims to democratize quantum computing by automatically routing circuits 
    # Create virtual environment
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
-   
+
    # Install in development mode
    pip install -e ".[dev]"
-   
+
    # Install pre-commit hooks
    pre-commit install
    ```
@@ -191,14 +191,14 @@ Example:
 ```python
 def route_circuit(circuit: QuantumCircuit, shots: int = 1024) -> Result:
     """Route a quantum circuit to the optimal backend.
-    
+
     Args:
         circuit: The quantum circuit to route
         shots: Number of measurement shots
-        
+
     Returns:
         Result object containing counts and metadata
-        
+
     Example:
         >>> qc = QuantumCircuit(2)
         >>> qc.h(0)
@@ -217,10 +217,10 @@ def test_feature_specific_behavior():
     """Test that feature X produces expected output Y."""
     # Arrange
     circuit = create_test_circuit()
-    
+
     # Act
     result = route_circuit(circuit)
-    
+
     # Assert
     assert result.backend_used == "expected_backend"
 ```

@@ -16,10 +16,16 @@ from qiskit.circuit.random import random_circuit
 
 # Import the modules we're testing
 try:
-    from ariadne.network_coordination import (NetworkCoordinator, NetworkNode,
-                                              NetworkStatus, NodeType,
-                                              QuantumTask, TaskPriority,
-                                              TaskResult, TimePrecisionManager)
+    from ariadne.network_coordination import (
+        NetworkCoordinator,
+        NetworkNode,
+        NetworkStatus,
+        NodeType,
+        QuantumTask,
+        TaskPriority,
+        TaskResult,
+        TimePrecisionManager,
+    )
 
     NETWORK_COORDINATION_AVAILABLE = True
 except ImportError:

@@ -7,10 +7,10 @@
 
 ## 🧪 Hardware Tested On
 <!-- Specify exact hardware configuration -->
-- **GPU/Processor**: 
-- **Memory**: 
-- **OS Version**: 
-- **Driver Version**: 
+- **GPU/Processor**:
+- **Memory**:
+- **OS Version**:
+- **Driver Version**:
 
 ## 📊 Performance Benchmarks
 
@@ -29,8 +29,8 @@
 | 16 | 100 | | | |
 
 ### Memory Usage
-- Peak GPU/Unified Memory: 
-- Largest circuit tested: 
+- Peak GPU/Unified Memory:
+- Largest circuit tested:
 
 ## ✅ Platform Testing Checklist
 
@@ -42,7 +42,7 @@
 - [ ] Windows compatibility verified
 - [ ] Linux compatibility verified
 
-### Metal Specific  
+### Metal Specific
 - [ ] Metal/JAX tests pass
 - [ ] Performance benchmarks documented
 - [ ] Unified memory tested

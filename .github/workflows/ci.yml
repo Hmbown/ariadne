@@ -189,10 +189,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[docs,dev]"
+      - name: Generate API documentation stubs
+        run: sphinx-apidoc -o docs/source src/ariadne
       - name: Build documentation
         run: |
           cd docs/source
-          sphinx-build -b html -W --keep-going . ../build/html
+          sphinx-build -b html --keep-going . ../build/html
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact

@@ -27,6 +27,10 @@ benchmarks/*_benchmark_results.json
 # Keep curated results in results/
 !benchmarks/results/
 
+# Development artifacts
+bullshit_check_prompt.md
+firebase-debug.log
+
 # IDE and editor files
 .vscode/
 .idea/

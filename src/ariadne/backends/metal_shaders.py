@@ -74,7 +74,7 @@ class MetalShaderLibrary:
         return """
         #include <metal_stdlib>
         using namespace metal;
-        
+
         // Single qubit gate kernel
         kernel void apply_single_qubit_gate(
             device float2* state [[buffer(0)]],
@@ -85,23 +85,23 @@ class MetalShaderLibrary:
         ) {
             uint n = 1 << num_qubits;
             uint mask = 1 << qubit_index;
-            
+
             // Process pairs of amplitudes
             if (global_id < n/2) {
                 uint i = global_id;
                 if (!(i & mask)) {
                     uint j = i | mask;
-                    
+
                     float2 amp_i = state[i];
                     float2 amp_j = state[j];
-                    
+
                     // Complex matrix multiplication
                     state[i] = gate_matrix[0][0] * amp_i + gate_matrix[0][1] * amp_j;
                     state[j] = gate_matrix[1][0] * amp_i + gate_matrix[1][1] * amp_j;
                 }
             }
         }
-        
+
         // Two qubit gate kernel
         kernel void apply_two_qubit_gate(
             device float2* state [[buffer(0)]],
@@ -114,37 +114,37 @@ class MetalShaderLibrary:
             uint n = 1 << num_qubits;
             uint mask1 = 1 << qubit1_index;
             uint mask2 = 1 << qubit2_index;
-            
+
             // Process groups of 4 amplitudes
             if (global_id < n/4) {
                 uint base = global_id * 4;
                 uint i = base;
-                
+
                 // Only process if both control qubits are 0
                 if (!(i & mask1) && !(i & mask2)) {
                     uint idx00 = i;
                     uint idx01 = i | mask2;
                     uint idx10 = i | mask1;
                     uint idx11 = i | mask1 | mask2;
-                    
+
                     float2 amp00 = state[idx00];
                     float2 amp01 = state[idx01];
                     float2 amp10 = state[idx10];
                     float2 amp11 = state[idx11];
-                    
+
                     // Apply 4x4 gate matrix
-                    state[idx00] = gate_matrix[0][0] * amp00 + gate_matrix[0][1] * amp01 + 
+                    state[idx00] = gate_matrix[0][0] * amp00 + gate_matrix[0][1] * amp01 +
                                   gate_matrix[0][2] * amp10 + gate_matrix[0][3] * amp11;
-                    state[idx01] = gate_matrix[1][0] * amp00 + gate_matrix[1][1] * amp01 + 
+                    state[idx01] = gate_matrix[1][0] * amp00 + gate_matrix[1][1] * amp01 +
                                   gate_matrix[1][2] * amp10 + gate_matrix[1][3] * amp11;
-                    state[idx10] = gate_matrix[2][0] * amp00 + gate_matrix[2][1] * amp01 + 
+                    state[idx10] = gate_matrix[2][0] * amp00 + gate_matrix[2][1] * amp01 +
                                   gate_matrix[2][2] * amp10 + gate_matrix[2][3] * amp11;
-                    state[idx11] = gate_matrix[3][0] * amp00 + gate_matrix[3][1] * amp01 + 
+                    state[idx11] = gate_matrix[3][0] * amp00 + gate_matrix[3][1] * amp01 +
                                   gate_matrix[3][2] * amp10 + gate_matrix[3][3] * amp11;
                 }
             }
         }
-        
+
         // Probability calculation kernel
         kernel void calculate_probabilities(
             device const float2* state [[buffer(0)]],
@@ -154,7 +154,7 @@ class MetalShaderLibrary:
             float2 amplitude = state[global_id];
             probabilities[global_id] = amplitude.x * amplitude.x + amplitude.y * amplitude.y;
         }
-        
+
         // Parallel reduction for normalization
         kernel void parallel_sum_reduction(
             device float* data [[buffer(0)]],
@@ -164,16 +164,16 @@ class MetalShaderLibrary:
             uint group_size [[threads_per_threadgroup]]
         ) {
             threadgroup float local_sum[256];
-            
+
             // Load data into local memory
             if (local_id < group_size) {
                 local_sum[local_id] = data[global_id];
             } else {
                 local_sum[local_id] = 0.0;
             }
-            
+
             threadgroup_barrier(mem_flags::mem_threadgroup);
-            
+
             // Parallel reduction
             for (uint stride = group_size / 2; stride > 0; stride /= 2) {
                 if (local_id < stride) {
@@ -181,7 +181,7 @@ class MetalShaderLibrary:
                 }
                 threadgroup_barrier(mem_flags::mem_threadgroup);
             }
-            
+
             // Write result
             if (local_id == 0) {
                 result[global_id / group_size] = local_sum[0];

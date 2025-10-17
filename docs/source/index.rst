@@ -7,6 +7,9 @@ Welcome to Ariadne's documentation!
 
    modules
    advanced_backends_routing
+   examples_gallery
+   routing_rules
+   advanced_routing_options
 
 Indices and tables
 ==================
@@ -14,11 +17,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-API Reference
-=============
-
-.. automodule:: ariadne
-   :members:
-   :undoc-members:
-   :show-inheritance:

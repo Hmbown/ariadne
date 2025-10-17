@@ -6,6 +6,7 @@ from examples._util import write_report
 def main() -> None:
     try:
         import qualtran  # noqa: F401
+
         from ariadne.ft.resource_estimator import estimate_with_azure
 
         # Placeholder: load QIR/Broombridge and call estimate (requires Azure workspace)
@@ -19,4 +20,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

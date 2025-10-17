@@ -12,4 +12,3 @@ When to use JAX‑Metal
 
 Environment
 - Use conda‑forge arm64 builds. See `environment.yml` for a reproducible setup, and the `Dockerfile` (arm64 base) for containerized runs.
-

@@ -49,7 +49,7 @@ class QuantumDetectionAPI:
         # Simulate server startup
         await asyncio.sleep(0.1)
         print(f"Mock API server running on port {port}")
-    
+
     async def stop_server(self):
         # Simulate server shutdown
         await asyncio.sleep(0.1)

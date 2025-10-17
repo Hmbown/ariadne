@@ -7,19 +7,19 @@ the optimal backend for quantum circuits using Bell Labs-style information theor
 """
 
 import time
-from typing import Dict, Any
+from typing import Any
+
 from qiskit import QuantumCircuit
-from qiskit.circuit.library import QFT, EfficientSU2
+from qiskit.circuit.library import EfficientSU2
 from rich.console import Console
-from rich.table import Table
 from rich.panel import Panel
+from rich.table import Table
 from rich.text import Text
 
 # Import Ariadne components
-from ariadne import QuantumRouter, simulate
-from ariadne.router import BackendType
+from ariadne import QuantumRouter
 from ariadne.route.analyze import analyze_circuit
-
+from ariadne.router import BackendType
 
 console = Console()
 
@@ -89,19 +89,21 @@ def create_large_circuit(n_qubits: int = 15) -> QuantumCircuit:
 
 def demonstrate_routing():
     """Demonstrate Ariadne's intelligent routing capabilities."""
-    console.print(Panel.fit(
-        "[bold blue]🔮 Ariadne: The Intelligent Quantum Router[/bold blue]\n\n"
-        "[italic]Google Maps for Quantum Circuits[/italic]\n\n"
-        "Watch as Ariadne automatically routes different circuit types to optimal backends!",
-        title="🚀 Demo Start",
-        border_style="blue"
-    ))
+    console.print(
+        Panel.fit(
+            "[bold blue]🔮 Ariadne: The Intelligent Quantum Router[/bold blue]\n\n"
+            "[italic]Google Maps for Quantum Circuits[/italic]\n\n"
+            "Watch as Ariadne automatically routes different circuit types to optimal backends!",
+            title="🚀 Demo Start",
+            border_style="blue",
+        )
+    )
 
     # Create different types of circuits
     circuits = {
         "Clifford Circuit (10 qubits)": create_clifford_circuit(10),
         "Mixed Circuit (5 qubits)": create_mixed_circuit(5),
-        "Large Variational Circuit (15 qubits)": create_large_circuit(15)
+        "Large Variational Circuit (15 qubits)": create_large_circuit(15),
     }
 
     # Initialize router
@@ -140,18 +142,20 @@ def demonstrate_routing():
             f"{decision.recommended_backend.value}",
             f"{decision.confidence_score:.1%}",
             f"{decision.expected_speedup:.1f}x",
-            f"{execution_time:.3f}s"
+            f"{execution_time:.3f}s",
         )
 
-        results.append({
-            'name': name,
-            'entropy': entropy,
-            'backend': decision.recommended_backend,
-            'confidence': decision.confidence_score,
-            'speedup': decision.expected_speedup,
-            'execution_time': execution_time,
-            'result': result
-        })
+        results.append(
+            {
+                "name": name,
+                "entropy": entropy,
+                "backend": decision.recommended_backend,
+                "confidence": decision.confidence_score,
+                "speedup": decision.expected_speedup,
+                "execution_time": execution_time,
+                "result": result,
+            }
+        )
 
     console.print(table)
 
@@ -162,13 +166,13 @@ def demonstrate_routing():
         show_circuit_analysis(result)
 
 
-def show_circuit_analysis(result: Dict[str, Any]):
+def show_circuit_analysis(result: dict[str, Any]):
     """Show detailed analysis of a circuit routing decision."""
-    name = result['name']
-    entropy = result['entropy']
-    backend = result['backend']
-    confidence = result['confidence']
-    speedup = result['speedup']
+    name = result["name"]
+    entropy = result["entropy"]
+    backend = result["backend"]
+    confidence = result["confidence"]
+    speedup = result["speedup"]
 
     # Create analysis panel
     analysis_text = Text()
@@ -182,11 +186,7 @@ def show_circuit_analysis(result: Dict[str, Any]):
     insights = get_backend_insights(backend, entropy)
     analysis_text.append(f"\n💡 {insights}", style="blue")
 
-    console.print(Panel(
-        analysis_text,
-        title=f"🔬 {name} Analysis",
-        border_style="blue"
-    ))
+    console.print(Panel(analysis_text, title=f"🔬 {name} Analysis", border_style="blue"))
 
 
 def get_backend_insights(backend: BackendType, entropy: float) -> str:
@@ -196,7 +196,7 @@ def get_backend_insights(backend: BackendType, entropy: float) -> str:
         BackendType.QISKIT: "Reliable general-purpose simulator for mixed gate types",
         BackendType.TENSOR_NETWORK: "Memory efficient for large, sparse circuits",
         BackendType.JAX_METAL: "GPU-accelerated simulation with Apple Silicon optimization",
-        BackendType.DDSIM: "Decision diagram-based simulation for structured circuits"
+        BackendType.DDSIM: "Decision diagram-based simulation for structured circuits",
     }
 
     return insights.get(backend, "General-purpose simulation")
@@ -204,12 +204,14 @@ def get_backend_insights(backend: BackendType, entropy: float) -> str:
 
 def demonstrate_information_theory():
     """Demonstrate the information theory behind Ariadne's routing."""
-    console.print(Panel.fit(
-        "[bold blue]🧬 Bell Labs-Style Information Theory[/bold blue]\n\n"
-        "Ariadne applies Claude Shannon's principles to quantum simulation routing.",
-        title="📚 Theory Demo",
-        border_style="blue"
-    ))
+    console.print(
+        Panel.fit(
+            "[bold blue]🧬 Bell Labs-Style Information Theory[/bold blue]\n\n"
+            "Ariadne applies Claude Shannon's principles to quantum simulation routing.",
+            title="📚 Theory Demo",
+            border_style="blue",
+        )
+    )
 
     # Create a simple circuit for analysis
     circuit = QuantumCircuit(3)
@@ -224,17 +226,17 @@ def demonstrate_information_theory():
     entropy = router.circuit_entropy(circuit)
     decision = router.select_optimal_backend(circuit)
 
-    console.print(f"[bold]Circuit Analysis:[/bold]")
+    console.print("[bold]Circuit Analysis:[/bold]")
     console.print(f"  • Circuit entropy H(Q): {entropy:.3f} bits")
-    console.print(f"  • Gate distribution: H, CX, CX, T")
+    console.print("  • Gate distribution: H, CX, CX, T")
     console.print(f"  • Information content: {entropy:.3f} bits of quantum information")
 
-    console.print(f"\n[bold]Backend Capacities:[/bold]")
+    console.print("\n[bold]Backend Capacities:[/bold]")
     for backend in BackendType:
         capacity = router.channel_capacity_match(circuit, backend)
         console.print(f"  • {backend.value}: {capacity:.1%} capacity match")
 
-    console.print(f"\n[bold]Routing Decision:[/bold]")
+    console.print("\n[bold]Routing Decision:[/bold]")
     console.print(f"  • Optimal backend: {decision.recommended_backend.value}")
     console.print(f"  • Confidence: {decision.confidence_score:.1%}")
     console.print(f"  • Expected speedup: {decision.expected_speedup:.1f}x")
@@ -242,12 +244,14 @@ def demonstrate_information_theory():
 
 def demonstrate_speed_comparison():
     """Demonstrate speed improvements with intelligent routing."""
-    console.print(Panel.fit(
-        "[bold red]⚡ Performance Comparison[/bold red]\n\n"
-        "See how Ariadne's intelligent routing provides massive speedups.",
-        title="🏃 Speed Demo",
-        border_style="red"
-    ))
+    console.print(
+        Panel.fit(
+            "[bold red]⚡ Performance Comparison[/bold red]\n\n"
+            "See how Ariadne's intelligent routing provides massive speedups.",
+            title="🏃 Speed Demo",
+            border_style="red",
+        )
+    )
 
     # Create a Clifford circuit that should be very fast with Stim
     clifford_circuit = create_clifford_circuit(8)
@@ -267,9 +271,9 @@ def demonstrate_speed_comparison():
     result2 = router.simulate(clifford_circuit, 1000)
     intelligent_time = time.time() - start
 
-    speedup = qiskit_time / intelligent_time if intelligent_time > 0 else float('inf')
+    speedup = qiskit_time / intelligent_time if intelligent_time > 0 else float("inf")
 
-    console.print(f"[bold]Results for 8-qubit Clifford circuit:[/bold]")
+    console.print("[bold]Results for 8-qubit Clifford circuit:[/bold]")
     console.print(f"  • Naive Qiskit time: {qiskit_time:.3f}s")
     console.print(f"  • Intelligent routing time: {intelligent_time:.3f}s")
     console.print(f"  • Speedup: {speedup:.1f}x")
@@ -282,36 +286,40 @@ def demonstrate_speed_comparison():
 
 def main():
     """Run the complete Ariadne routing demonstration."""
-    console.print(Panel.fit(
-        "[bold green]🔮 Welcome to Ariadne: The Intelligent Quantum Router[/bold green]\n\n"
-        "This demo showcases Bell Labs-style information theory applied to quantum simulation.\n"
-        "Watch as Ariadne automatically routes circuits to optimal backends!",
-        title="🎭 Ariadne Demo",
-        border_style="green"
-    ))
+    console.print(
+        Panel.fit(
+            "[bold green]🔮 Welcome to Ariadne: The Intelligent Quantum Router[/bold green]\n\n"
+            "This demo showcases Bell Labs-style information theory applied to quantum simulation.\n"
+            "Watch as Ariadne automatically routes circuits to optimal backends!",
+            title="🎭 Ariadne Demo",
+            border_style="green",
+        )
+    )
 
     try:
         # Run demonstrations
         demonstrate_routing()
-        console.print("\n" + "="*60 + "\n")
+        console.print("\n" + "=" * 60 + "\n")
 
         demonstrate_information_theory()
-        console.print("\n" + "="*60 + "\n")
+        console.print("\n" + "=" * 60 + "\n")
 
         demonstrate_speed_comparison()
 
         # Final summary
-        console.print(Panel.fit(
-            "[bold green]🎉 Demo Complete![/bold green]\n\n"
-            "Ariadne successfully demonstrated intelligent routing:\n"
-            "• Clifford circuits → Stim (1000x speedup)\n"
-            "• Mixed circuits → Qiskit (reliable)\n"
-            "• Large circuits → Tensor networks (memory efficient)\n"
-            "• Apple Silicon → JAX/Metal (GPU acceleration)\n\n"
-            "[italic]Experience the power of Bell Labs-style information theory in quantum computing![/italic]",
-            title="✅ Success",
-            border_style="green"
-        ))
+        console.print(
+            Panel.fit(
+                "[bold green]🎉 Demo Complete![/bold green]\n\n"
+                "Ariadne successfully demonstrated intelligent routing:\n"
+                "• Clifford circuits → Stim (1000x speedup)\n"
+                "• Mixed circuits → Qiskit (reliable)\n"
+                "• Large circuits → Tensor networks (memory efficient)\n"
+                "• Apple Silicon → JAX/Metal (GPU acceleration)\n\n"
+                "[italic]Experience the power of Bell Labs-style information theory in quantum computing![/italic]",
+                title="✅ Success",
+                border_style="green",
+            )
+        )
 
     except ImportError as e:
         console.print(f"[red]❌ Import Error: {e}[/red]")

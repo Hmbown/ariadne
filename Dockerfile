@@ -1,5 +1,5 @@
 # Ariadne Quantum Circuit Router - Multi-Platform Container
-# 
+#
 # This Dockerfile creates a containerized environment for Ariadne that supports:
 # - CPU-based quantum simulation (all platforms)
 # - Automated testing and benchmarking
@@ -42,15 +42,11 @@ RUN apt-get update && apt-get install -y \
     tree \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
-COPY requirements.txt requirements-dev.txt ./
-RUN pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
-
 # Copy source code
 COPY --chown=ariadne:ariadne . ./ariadne/
 
 # Install Ariadne in development mode
-RUN cd ariadne && pip install -e .
+RUN cd ariadne && pip install -e ".[dev]"
 
 # Switch to non-root user
 USER ariadne
@@ -64,7 +60,7 @@ ENV PYTHONPATH=/home/ariadne/ariadne/src
 CMD ["/bin/bash"]
 
 # =============================================================================
-# Stage 3: Testing Environment  
+# Stage 3: Testing Environment
 # =============================================================================
 FROM development AS testing
 
@@ -97,10 +93,6 @@ CMD ["python", "ariadne/benchmarks/reproducible_benchmark.py"]
 # Stage 5: Production Environment (Lightweight)
 # =============================================================================
 FROM base AS production
-
-# Install only runtime dependencies
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
 COPY --chown=ariadne:ariadne src/ ./ariadne/src/

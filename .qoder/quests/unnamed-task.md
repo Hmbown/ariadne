@@ -27,13 +27,13 @@ graph TB
         CLI[Command Line Interface]
         SDK[Python SDK]
     end
-    
+
     subgraph "Intelligence Layer"
         Router[Quantum Router]
         Analyzer[Circuit Analyzer]
         Optimizer[Quantum Optimizer]
     end
-    
+
     subgraph "Execution Layer"
         Metal[Metal Backend<br/>Apple Silicon]
         CUDA[CUDA Backend<br/>NVIDIA GPU]
@@ -41,38 +41,38 @@ graph TB
         TN[Tensor Network<br/>Backend]
         Qiskit[Qiskit Backend<br/>General Fallback]
     end
-    
+
     subgraph "Network Coordination Layer"
         Timing[22ps Timing<br/>Coordination]
         Entangle[Entanglement<br/>Management]
         Anomaly[Anomaly<br/>Detection]
         Distribute[Distributed<br/>Computing]
     end
-    
+
     subgraph "Infrastructure Layer"
         QKD[QKD Networks]
         Sensors[Quantum Sensors]
         Calibration[Calibration<br/>System]
     end
-    
+
     API --> Router
     CLI --> Router
     SDK --> Router
-    
+
     Router --> Analyzer
     Router --> Optimizer
-    
+
     Router --> Metal
     Router --> CUDA
     Router --> Stim
     Router --> TN
     Router --> Qiskit
-    
+
     Router --> Timing
     Router --> Entangle
     Router --> Anomaly
     Router --> Distribute
-    
+
     Timing --> QKD
     Timing --> Sensors
     Entangle --> Calibration
@@ -143,7 +143,7 @@ flowchart TD
     E -->|Neither| H{Low Treewidth?}
     H -->|Yes| I[Route to Tensor Network]
     H -->|No| J[Route to Qiskit Fallback]
-    
+
     D --> K[Execute Simulation]
     F --> K
     G --> K
@@ -302,7 +302,7 @@ class SimulationResult:
 
 #### CircuitAnalysis
 ```python
-@dataclass  
+@dataclass
 class CircuitAnalysis:
     is_clifford: bool
     entropy_estimate: float
@@ -321,7 +321,7 @@ class CircuitAnalysis:
 The routing system implements sophisticated heuristics:
 
 1. **Clifford Detection**: Uses group theory to identify stabilizer circuits
-2. **Capacity Matching**: Compares circuit requirements with backend capabilities  
+2. **Capacity Matching**: Compares circuit requirements with backend capabilities
 3. **Performance Prediction**: Estimates execution time based on historical data
 4. **Hardware Utilization**: Maximizes use of available acceleration hardware
 5. **Fallback Strategies**: Ensures computation always completes successfully

@@ -24,15 +24,15 @@
 
 ## 🚀 What's New?
 
-<!-- 
-Provide a concise summary of the new features, improvements, or bug fixes. 
+<!--
+Provide a concise summary of the new features, improvements, or bug fixes.
 This will be used to generate release notes.
 -->
 
 ## 💡 Motivation and Context
 
-<!-- 
-Why is this change required? What problem does it solve? 
+<!--
+Why is this change required? What problem does it solve?
 If it fixes an open issue, please link to the issue here.
 -->
 
@@ -40,8 +40,8 @@ Fixes #<!-- issue number -->
 
 ## 🛠️ How Has This Been Tested?
 
-<!-- 
-Please describe the tests that you ran to verify your changes. 
+<!--
+Please describe the tests that you ran to verify your changes.
 Provide instructions so we can reproduce.
 -->
 

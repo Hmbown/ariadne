@@ -6,10 +6,10 @@ import json
 import math
 import subprocess
 import sys
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List, Optional
 
 
 @dataclass(frozen=True)
@@ -25,7 +25,7 @@ class BenchmarkConfig:
 class BenchmarkExecution:
     config: BenchmarkConfig
     success: bool
-    output_path: Optional[Path]
+    output_path: Path | None
     stdout: str
     stderr: str
 
@@ -69,15 +69,17 @@ def run_benchmark(config: BenchmarkConfig, results_dir: Path, shots: int) -> Ben
     )
 
 
-def _group_by_circuit(entries: Iterable[Dict[str, object]], circuit_key: str = "circuit") -> Dict[str, List[Dict[str, object]]]:
-    grouped: Dict[str, List[Dict[str, object]]] = {}
+def _group_by_circuit(
+    entries: Iterable[dict[str, object]], circuit_key: str = "circuit"
+) -> dict[str, list[dict[str, object]]]:
+    grouped: dict[str, list[dict[str, object]]] = {}
     for entry in entries:
         circuit_name = str(entry.get(circuit_key, "unknown"))
         grouped.setdefault(circuit_name, []).append(entry)
     return grouped
 
 
-def _safe_float(value: object) -> Optional[float]:
+def _safe_float(value: object) -> float | None:
     try:
         result = float(value)
     except (TypeError, ValueError):
@@ -120,13 +122,13 @@ def _summarise_metal(path: Path) -> str:
 
         if not metal_entry:
             lines.append(
-                f"| {circuit} | {shots} | {_format_seconds(cpu_time)} | — | Metal backend results missing |")
+                f"| {circuit} | {shots} | {_format_seconds(cpu_time)} | — | Metal backend results missing |"
+            )
             continue
 
         if not metal_entry.get("success", True):
             reason = metal_entry.get("error") or "Benchmark failed"
-            lines.append(
-                f"| {circuit} | {shots} | {_format_seconds(cpu_time)} | — | {reason} |")
+            lines.append(f"| {circuit} | {shots} | {_format_seconds(cpu_time)} | — | {reason} |")
             continue
 
         metal_time = _safe_float(metal_entry.get("execution_time"))
@@ -177,7 +179,8 @@ def _summarise_cuda(path: Path, execution: BenchmarkExecution) -> str:
 
         if not cuda_entry:
             lines.append(
-                f"| {circuit} | {shots} | {_format_seconds(qiskit_time)} | — | CUDA data missing |")
+                f"| {circuit} | {shots} | {_format_seconds(qiskit_time)} | — | CUDA data missing |"
+            )
             continue
 
         cuda_time = _safe_float(cuda_entry.get("mean_time"))
@@ -217,7 +220,7 @@ def _summarise_vs_qiskit(
     ]
 
     backend_available = False
-    backend_errors: List[str] = []
+    backend_errors: list[str] = []
 
     for circuit in sorted(grouped):
         backends = {entry.get("backend"): entry for entry in grouped[circuit]}
@@ -271,7 +274,7 @@ def _summarise_mps(path: Path, execution: BenchmarkExecution) -> str:
     return _summarise_vs_qiskit(path, execution, backend_key="mps", backend_label="MPS")
 
 
-SUMMARY_RENDERERS: Dict[str, Callable[[Path, BenchmarkExecution], str]] = {
+SUMMARY_RENDERERS: dict[str, Callable[[Path, BenchmarkExecution], str]] = {
     "metal": lambda path, exec_info: _summarise_metal(path),
     "cuda": _summarise_cuda,
     "stim": _summarise_stim,
@@ -279,10 +282,10 @@ SUMMARY_RENDERERS: Dict[str, Callable[[Path, BenchmarkExecution], str]] = {
 }
 
 
-def generate_summary_report(results_dir: Path, executions: List[BenchmarkExecution]) -> None:
+def generate_summary_report(results_dir: Path, executions: list[BenchmarkExecution]) -> None:
     report_path = results_dir / "BENCHMARK_SUMMARY.md"
 
-    lines: List[str] = ["# Ariadne Benchmark Summary", ""]
+    lines: list[str] = ["# Ariadne Benchmark Summary", ""]
     lines.append(f"**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     lines.append("")
 
@@ -319,7 +322,9 @@ def generate_summary_report(results_dir: Path, executions: List[BenchmarkExecuti
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run all Ariadne benchmarks")
     parser.add_argument("--shots", type=int, default=1000, help="Number of shots per circuit")
-    parser.add_argument("--output-dir", type=str, default="results", help="Output directory for results")
+    parser.add_argument(
+        "--output-dir", type=str, default="results", help="Output directory for results"
+    )
     parser.add_argument("--skip-metal", action="store_true", help="Skip Metal benchmarks")
     parser.add_argument("--skip-cuda", action="store_true", help="Skip CUDA benchmarks")
     parser.add_argument("--skip-stim", action="store_true", help="Skip Stim benchmarks")
@@ -330,7 +335,7 @@ def main() -> int:
     results_dir = Path(args.output_dir)
     results_dir.mkdir(exist_ok=True)
 
-    configs: List[BenchmarkConfig] = [
+    configs: list[BenchmarkConfig] = [
         BenchmarkConfig(
             key="metal",
             script="metal_vs_cpu.py",
@@ -366,7 +371,7 @@ def main() -> int:
     print(f"🎯 Shots per circuit: {args.shots}")
     print("")
 
-    executions: List[BenchmarkExecution] = []
+    executions: list[BenchmarkExecution] = []
 
     for config in configs:
         if config.key == "metal" and args.skip_metal:

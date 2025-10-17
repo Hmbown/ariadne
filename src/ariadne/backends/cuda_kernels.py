@@ -12,7 +12,6 @@ import numpy as np
 
 try:
     import cupy as cp
-    import cupyx
 
     CUPY_AVAILABLE = True
 except ImportError:
@@ -55,24 +54,24 @@ class CUDAKernels:
             ) {
                 int idx = blockIdx.x * blockDim.x + threadIdx.x;
                 if (idx >= n_states) return;
-                
+
                 int target_mask = 1 << target_qubit;
                 int high_bits = idx & ~((target_mask << 1) - 1);
                 int low_bits = idx & (target_mask - 1);
                 int state_idx = high_bits | low_bits;
                 int pair_idx = state_idx | target_mask;
-                
+
                 if (idx & target_mask) return; // Only process lower states
-                
+
                 float2 s0 = state[state_idx];
                 float2 s1 = state[pair_idx];
-                
+
                 // Matrix multiplication: gate * [s0; s1]
                 result[state_idx] = make_float2(
                     gate[0].x * s0.x - gate[0].y * s0.y + gate[1].x * s1.x - gate[1].y * s1.y,
                     gate[0].x * s0.y + gate[0].y * s0.x + gate[1].x * s1.y + gate[1].y * s1.x
                 );
-                
+
                 result[pair_idx] = make_float2(
                     gate[2].x * s0.x - gate[2].y * s0.y + gate[3].x * s1.x - gate[3].y * s1.y,
                     gate[2].x * s0.y + gate[2].y * s0.x + gate[3].x * s1.y + gate[3].y * s1.x
@@ -97,11 +96,11 @@ class CUDAKernels:
             ) {
                 int idx = blockIdx.x * blockDim.x + threadIdx.x;
                 if (idx >= n_states / 4) return;
-                
+
                 int control_mask = 1 << control_qubit;
                 int target_mask = 1 << target_qubit;
                 int both_mask = control_mask | target_mask;
-                
+
                 // Optimized index calculation for state_base (s00 index)
                 // This replaces the slow loop by using bit manipulation to insert
                 // two zero bits at the control and target qubit positions.
@@ -116,11 +115,11 @@ class CUDAKernels:
                 // The mid bits start at position q_a in idx.
                 int mid_shift_in_idx = q_a;
                 int mid_bit_count = q_b - q_a - 1;
-                
+
                 // mid_mask_in_idx is a mask of mid_bit_count ones
                 int mid_mask_in_idx = (1 << mid_bit_count) - 1;
                 int mid_bits_in_idx = (idx >> mid_shift_in_idx) & mid_mask_in_idx;
-                
+
                 // Shift mid bits to their position in state_base (skip q_a)
                 int mid_bits_shifted = mid_bits_in_idx << (q_a + 1);
 
@@ -128,37 +127,37 @@ class CUDAKernels:
                 // The high bits start at position q_b - 1 in idx.
                 int high_shift_in_idx = q_b - 1;
                 int high_bits_in_idx = idx >> high_shift_in_idx;
-                
+
                 // Shift high bits to their position in state_base (skip q_a and q_b)
                 int high_bits_shifted = high_bits_in_idx << (q_b + 1);
 
                 int state_base = low_bits | mid_bits_shifted | high_bits_shifted;
-                
+
                 // Four computational basis states
                 int s00 = state_base;
                 int s01 = state_base | target_mask;
                 int s10 = state_base | control_mask;
                 int s11 = state_base | both_mask;
-                
+
                 float2 amp00 = state[s00];
                 float2 amp01 = state[s01];
                 float2 amp10 = state[s10];
                 float2 amp11 = state[s11];
-                
+
                 // Apply 4x4 gate matrix
                 for (int i = 0; i < 4; i++) {
                     float2 new_amp = make_float2(0.0f, 0.0f);
-                    
+
                     // Matrix-vector multiplication
                     float2 amplitudes[4] = {amp00, amp01, amp10, amp11};
                     for (int j = 0; j < 4; j++) {
                         float2 gate_elem = gate[i * 4 + j];
                         float2 amp = amplitudes[j];
-                        
+
                         new_amp.x += gate_elem.x * amp.x - gate_elem.y * amp.y;
                         new_amp.y += gate_elem.x * amp.y + gate_elem.y * amp.x;
                     }
-                    
+
                     int states[4] = {s00, s01, s10, s11};
                     result[states[i]] = new_amp;
                 }
@@ -178,7 +177,7 @@ class CUDAKernels:
             ) {
                 int idx = blockIdx.x * blockDim.x + threadIdx.x;
                 if (idx >= n_states) return;
-                
+
                 float2 amp = state[idx];
                 probabilities[idx] = amp.x * amp.x + amp.y * amp.y;
             }
@@ -197,7 +196,7 @@ class CUDAKernels:
             ) {
                 int idx = blockIdx.x * blockDim.x + threadIdx.x;
                 if (idx >= n_states) return;
-                
+
                 state[idx].x /= norm;
                 state[idx].y /= norm;
             }
@@ -217,15 +216,15 @@ class CUDAKernels:
             ) {
                 int idx = blockIdx.x * blockDim.x + threadIdx.x;
                 if (idx >= n_states) return;
-                
+
                 float2 amp = state[idx];
                 float2 op_elem = operator_diag[idx];
-                
+
                 // <psi|O|psi> = sum_i conj(psi_i) * O_ii * psi_i
                 partial_results[idx] = make_float2(
-                    (amp.x * op_elem.x + amp.y * op_elem.y) * amp.x + 
+                    (amp.x * op_elem.x + amp.y * op_elem.y) * amp.x +
                     (amp.x * op_elem.y - amp.y * op_elem.x) * amp.y,
-                    (amp.x * op_elem.y - amp.y * op_elem.x) * amp.x - 
+                    (amp.x * op_elem.y - amp.y * op_elem.x) * amp.x -
                     (amp.x * op_elem.x + amp.y * op_elem.y) * amp.y
                 );
             }

@@ -9,7 +9,7 @@
 
 ### Summary
 - **6.2x speedup** on Clifford circuits (20 qubits) vs Qiskit
-- **2.2x speedup** on general quantum circuits (16 qubits) vs Qiskit  
+- **2.2x speedup** on general quantum circuits (16 qubits) vs Qiskit
 - Optimal for circuits with 16+ qubits where GPU overhead is amortized
 
 ### Detailed Benchmarks
@@ -47,6 +47,6 @@
 ### Key Differentiators
 
 1. **Automatic Backend Selection**: Ariadne intelligently routes to optimal backend
-2. **Graceful Fallback**: Works on any system, GPU accelerates when available  
+2. **Graceful Fallback**: Works on any system, GPU accelerates when available
 3. **Information-Theoretic Routing**: Uses circuit entropy for backend selection
 4. **Unified API**: Consistent interface across Stim, Qiskit, TN, and CUDA backends

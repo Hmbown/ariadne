@@ -7,8 +7,7 @@ import quimb.tensor as tn
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
-from .universal_interface import (BackendCapability, BackendMetrics,
-                                  UniversalBackend)
+from .universal_interface import BackendCapability, BackendMetrics, UniversalBackend
 
 
 class MPSBackend(UniversalBackend):
@@ -88,9 +87,7 @@ class MPSBackend(UniversalBackend):
                 instruction, qargs, _ = item  # type: ignore[misc]
 
             gate_name = instruction.name
-            physical_qubits = [
-                circuit.num_qubits - 1 - circuit.find_bit(q).index for q in qargs
-            ]
+            physical_qubits = [circuit.num_qubits - 1 - circuit.find_bit(q).index for q in qargs]
 
             try:
                 gate_matrix = instruction.to_matrix()
@@ -144,9 +141,7 @@ class MPSBackend(UniversalBackend):
 
     def _simulate_with_statevector(self, circuit: QuantumCircuit, shots: int) -> dict[str, int]:
         circuit_no_measure = (
-            circuit.remove_final_measurements(inplace=False)
-            if circuit.num_clbits
-            else circuit
+            circuit.remove_final_measurements(inplace=False) if circuit.num_clbits else circuit
         )
         state = Statevector.from_instruction(circuit_no_measure)
         counts = state.sample_counts(shots=shots)

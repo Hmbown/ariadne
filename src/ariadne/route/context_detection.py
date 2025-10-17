@@ -17,8 +17,7 @@ from pathlib import Path
 from qiskit import QuantumCircuit
 
 from ..router import BackendType
-from .enhanced_router import (HardwareProfile, PerformancePreferences,
-                              UserContext, WorkflowType)
+from .enhanced_router import HardwareProfile, PerformancePreferences, UserContext, WorkflowType
 
 
 @dataclass

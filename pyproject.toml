@@ -3,7 +3,7 @@ name = "ariadne-quantum"
 description = "Intelligent quantum circuit routing system with automatic backend selection and performance optimization"
 readme = "README.md"
 requires-python = ">=3.11"
-version = "0.1.0"
+dynamic = ["version"]
 license = "Apache-2.0"
 authors = [
   { name = "Shannon Labs" }
@@ -72,7 +72,7 @@ docs = [
 ]
 
 [project.scripts]
-ariadne = "ariadne.__main__:main"
+ariadne = "ariadne.cli.main:main"
 
 [tool.ruff]
 line-length = 100

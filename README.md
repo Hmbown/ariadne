@@ -36,6 +36,65 @@ The routing system is designed for transparency and determinism - every routing 
 
 ---
 
+## 🧰 Use Cases
+
+- **Education and workshops**
+  - Run canonical circuits (Bell/GHZ/Clifford, shallow variational) without choosing simulators. Ariadne routes to `stim`/`MPS`/`Qiskit`/`Metal` as appropriate.
+  - One command demo: `python examples/quickstart.py`.
+
+- **Research prototyping**
+  - Iterate on algorithms with `simulate(qc, shots)` and let Ariadne pick the best backend by structure (Clifford ratio, entanglement heuristics).
+  - Override when needed with `simulate(qc, backend='mps')` and compare.
+
+- **CI/regression testing**
+  - Same tests run across macOS/Linux/Windows. Missing backends fail over cleanly; logs record decisions.
+  - Good for ensuring algorithms don’t silently degrade across environments.
+
+- **Benchmarking and feasibility checks**
+  - Large stabilizer circuits route to `stim` (feasible when statevector fails).
+  - Low-entanglement shallow circuits route to `MPS` for speed/memory wins.
+
+- **Apple Silicon acceleration**
+  - On M-series Macs, try `Metal` for general-purpose circuits; otherwise fall back to CPU.
+
+---
+
+## 🧭 Routing at a glance
+
+| Circuit characteristics | Expected backend | Why |
+|---|---|---|
+| Pure Clifford (e.g., GHZ, stabilizers) | `stim` | Specialized, extremely fast stabilizer simulation |
+| Low entanglement, shallow depth | `MPS` | Efficient tensor-network representation |
+| General circuits on Apple Silicon | `Metal` | Leverage JAX/Metal when available |
+| General circuits (portable) | `Qiskit` | Robust CPU statevector/density matrix |
+
+You can always override:
+
+```python
+simulate(qc, shots=1000, backend='mps')
+```
+
+And CLI:
+
+```bash
+ariadne simulate path/to/circuit.qasm --shots 1000
+ariadne status --detailed
+```
+
+---
+
+### Routing matrix (auto-generated)
+
+![Routing matrix](docs/source/_static/routing_matrix.png)
+
+Regenerate with:
+
+```bash
+python examples/routing_matrix.py --shots 256 --generate-image docs/source/_static/routing_matrix.png
+```
+
+---
+
 ## 🎯 The Ariadne Advantage: Intelligent Automation
 
 Ariadne's core innovation is its ability to mathematically analyze a circuit's structure to determine the optimal execution environment. This eliminates the need for quantum developers to manually select backends based on circuit characteristics.
@@ -136,6 +195,18 @@ This demo showcases:
 - Performance comparisons
 - Routing decision transparency
 - Hardware acceleration when available
+
+---
+
+### Quickstart GIF
+
+![Quickstart Routing Demo](docs/source/_static/quickstart.gif)
+
+Regenerate with:
+
+```bash
+python examples/generate_quickstart_gif.py --output docs/source/_static/quickstart.gif
+```
 
 ---
 
@@ -244,6 +315,12 @@ make test
 ## 📜 License
 
 Ariadne is released under the [Apache 2.0 License](LICENSE).
+
+### Policies
+
+- [CHANGELOG](CHANGELOG.md)
+- [SECURITY](SECURITY.md)
+- [CODE OF CONDUCT](CODE_OF_CONDUCT.md)
 
 ---
 

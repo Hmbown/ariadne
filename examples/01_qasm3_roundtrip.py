@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from qiskit import QuantumCircuit
-from qiskit.qasm3 import dumps as qasm3_dumps, loads as qasm3_loads
+from qiskit.qasm3 import dumps as qasm3_dumps
+from qiskit.qasm3 import loads as qasm3_loads
 
 from ariadne.verify.qcec import statevector_equiv
 from examples._util import write_report
@@ -38,4 +39,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

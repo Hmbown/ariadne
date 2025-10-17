@@ -74,7 +74,7 @@ We just simulated quantum circuits that should be **IMPOSSIBLE** to simulate cla
 # Qiskit users
 result = qiskit_simulator.run(circuit)  # Always slow, crashes at 24 qubits
 
-# Cirq users  
+# Cirq users
 result = cirq_simulator.run(circuit)  # Always slow, crashes at 24 qubits
 
 # PennyLane users
@@ -88,7 +88,7 @@ result = ariadne.simulate(circuit)  # Automatically picks FASTEST backend!
 
 # Ariadne automatically:
 # - Uses Stim for Clifford circuits (1000x+ speedup)
-# - Uses Metal for Apple Silicon (1.5-2x speedup)  
+# - Uses Metal for Apple Silicon (1.5-2x speedup)
 # - Uses CUDA for NVIDIA GPUs (2-6x speedup)
 # - Uses Tensor Networks for large circuits
 # - Uses Qiskit as fallback
@@ -161,7 +161,7 @@ We just simulated 5000-qubit quantum circuits in 0.038 seconds on a laptop. This
 
 ---
 
-**Generated**: 2025-09-20  
-**Version**: Ariadne v1.0.0  
-**Hardware**: Apple M4 Max, 36GB RAM  
+**Generated**: 2025-09-20
+**Version**: Ariadne v1.0.0
+**Hardware**: Apple M4 Max, 36GB RAM
 **Status**: **MIND-BLOWING** 🤯

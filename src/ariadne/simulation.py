@@ -8,6 +8,7 @@ It serves as the main entry point for all quantum simulation operations.
 
 from __future__ import annotations
 
+import os
 import time
 import warnings
 from dataclasses import dataclass, field
@@ -20,6 +21,7 @@ from qiskit import QuantumCircuit
 
 from .ft.resource_estimator import ResourceEstimate, estimate_circuit_resources
 from .quantum_advantage import detect_quantum_advantage
+
 # Import core Ariadne components
 from .router import BackendType, SimulationResult
 
@@ -54,6 +56,11 @@ class SimulationOptions:
     # Execution parameters
     shots: int = 1000
     seed: int | None = None
+
+    # Precision and noise preferences (influence routing heuristics)
+    precision: str = "default"  # one of: default, high
+    noise_model: Any | None = None
+    budget_ms: int | None = None
 
     # Optimization settings
     optimization_level: OptimizationLevel = OptimizationLevel.MEDIUM
@@ -409,8 +416,25 @@ class QuantumSimulator:
             if options.backend_preference and options.backend_preference[0] != "auto"
             else None
         )
-
-        return core_simulate(circuit, shots=options.shots, backend=backend_name)
+        # Map options to routing environment hints (non-invasive)
+        prev_budget = os.environ.get("ARIADNE_ROUTING_BUDGET_MS")
+        prev_ddsim = os.environ.get("ARIADNE_ROUTING_PREFER_DDSIM")
+        try:
+            if options.budget_ms is not None:
+                os.environ["ARIADNE_ROUTING_BUDGET_MS"] = str(options.budget_ms)
+            if (options.precision or "").lower() == "high" or options.noise_model is not None:
+                os.environ["ARIADNE_ROUTING_PREFER_DDSIM"] = "1"
+            return core_simulate(circuit, shots=options.shots, backend=backend_name)
+        finally:
+            # Restore prior env to avoid test leakage
+            if prev_budget is None:
+                os.environ.pop("ARIADNE_ROUTING_BUDGET_MS", None)
+            else:
+                os.environ["ARIADNE_ROUTING_BUDGET_MS"] = prev_budget
+            if prev_ddsim is None:
+                os.environ.pop("ARIADNE_ROUTING_PREFER_DDSIM", None)
+            else:
+                os.environ["ARIADNE_ROUTING_PREFER_DDSIM"] = prev_ddsim
 
     def _execute_fallback_simulation(
         self, circuit: QuantumCircuit, options: SimulationOptions

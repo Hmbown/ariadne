@@ -1,10 +1,5 @@
 from __future__ import annotations
 
-import math
-from typing import Sequence
-
-import numpy as np
-
 from ariadne.passes.mitigation import simple_zne
 from examples._util import write_report
 
@@ -38,4 +33,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

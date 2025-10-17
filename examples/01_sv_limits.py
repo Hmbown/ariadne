@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from examples._util import write_report, estimate_sv_bytes
+from examples._util import estimate_sv_bytes, write_report
 
 
 def fmt_bytes(n: int) -> str:
@@ -29,4 +29,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

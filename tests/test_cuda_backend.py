@@ -5,8 +5,12 @@ from __future__ import annotations
 import pytest
 from qiskit import QuantumCircuit
 
-from ariadne.backends.cuda_backend import (CUDA_AVAILABLE, CUDABackend,
-                                           get_cuda_info, is_cuda_available)
+from ariadne.backends.cuda_backend import (
+    CUDA_AVAILABLE,
+    CUDABackend,
+    get_cuda_info,
+    is_cuda_available,
+)
 
 
 def _bell_state_circuit() -> QuantumCircuit:

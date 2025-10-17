@@ -4,9 +4,9 @@ import argparse
 import json
 import sys
 import time
+from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -30,7 +30,7 @@ class BenchmarkResult:
     backend: str
     shots: int
     repetitions: int
-    timings: List[float]
+    timings: list[float]
     success: bool
     error: str | None = None
 
@@ -46,7 +46,7 @@ class BenchmarkResult:
     def max_time(self) -> float | None:
         return max(self.timings) if self.timings else None
 
-    def to_dict(self) -> Dict[str, object]:
+    def to_dict(self) -> dict[str, object]:
         payload = asdict(self)
         payload.update(
             mean_time=self.mean_time,
@@ -78,7 +78,7 @@ def build_measuring_chain(qubits: int) -> QuantumCircuit:
     return circuit
 
 
-def case_definitions() -> List[BenchmarkCase]:
+def case_definitions() -> list[BenchmarkCase]:
     return [
         BenchmarkCase("clifford_chain_10", build_clifford_ladder(10, depth=6)),
         BenchmarkCase("clifford_chain_16", build_clifford_ladder(16, depth=4)),
@@ -110,11 +110,11 @@ def benchmark_case(
     shots: int,
     repetitions: int,
     include_qiskit: bool,
-) -> List[BenchmarkResult]:
-    results: List[BenchmarkResult] = []
+) -> list[BenchmarkResult]:
+    results: list[BenchmarkResult] = []
 
     if include_qiskit:
-        timings: List[float] = []
+        timings: list[float] = []
         success = True
         error: str | None = None
         for _ in range(repetitions):
@@ -136,7 +136,7 @@ def benchmark_case(
             )
         )
 
-    stim_timings: List[float] = []
+    stim_timings: list[float] = []
     stim_success = True
     stim_error: str | None = None
     for _ in range(repetitions):
@@ -180,9 +180,9 @@ def format_table(results: Iterable[BenchmarkResult]) -> str:
         )
 
     widths = [max(len(row[idx]) for row in rows) for idx in range(len(headers))]
-    lines: List[str] = []
+    lines: list[str] = []
     for idx, row in enumerate(rows):
-        padded = [cell.ljust(width) for cell, width in zip(row, widths)]
+        padded = [cell.ljust(width) for cell, width in zip(row, widths, strict=False)]
         lines.append("  ".join(padded))
         if idx == 0:
             lines.append("  ".join("-" * width for width in widths))
@@ -200,12 +200,14 @@ def main() -> None:
         default=None,
         help="Optional path to write results as JSON",
     )
-    parser.add_argument("--skip-qiskit", action="store_true", help="Skip Qiskit baseline measurements")
+    parser.add_argument(
+        "--skip-qiskit", action="store_true", help="Skip Qiskit baseline measurements"
+    )
 
     args = parser.parse_args()
 
     cases = case_definitions()
-    results: List[BenchmarkResult] = []
+    results: list[BenchmarkResult] = []
     for case in cases:
         results.extend(
             benchmark_case(

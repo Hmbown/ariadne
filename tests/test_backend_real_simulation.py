@@ -5,8 +5,7 @@ import pytest
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
-from ariadne.backends.tensor_network_backend import (TensorNetworkBackend,
-                                                     TensorNetworkOptions)
+from ariadne.backends.tensor_network_backend import TensorNetworkBackend, TensorNetworkOptions
 
 
 def test_tensor_network_backend_matches_statevector_distribution() -> None:

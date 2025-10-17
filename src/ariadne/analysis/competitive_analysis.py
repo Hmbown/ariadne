@@ -208,8 +208,7 @@ class CompetitiveAnalyzer:
     def _test_ariadne(self, circuit: QuantumCircuit, shots: int) -> dict[str, float]:
         """Test Ariadne performance on circuit."""
         try:
-            from ..backends.universal_interface import \
-                simulate_with_best_backend
+            from ..backends.universal_interface import simulate_with_best_backend
 
             start_time = time.time()
             counts, backend_used = simulate_with_best_backend(circuit, shots, criteria="speed")

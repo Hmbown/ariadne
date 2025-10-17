@@ -1,12 +1,12 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import argparse
 import json
 import sys
 import time
-from dataclasses import dataclass, asdict
+from collections.abc import Callable, Iterable
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -30,7 +30,7 @@ class BenchmarkResult:
     backend: str
     shots: int
     repetitions: int
-    timings: List[float]
+    timings: list[float]
 
     @property
     def mean_time(self) -> float:
@@ -44,7 +44,7 @@ class BenchmarkResult:
     def max_time(self) -> float:
         return max(self.timings)
 
-    def to_dict(self) -> Dict[str, object]:
+    def to_dict(self) -> dict[str, object]:
         payload = asdict(self)
         payload.update(
             mean_time=self.mean_time,
@@ -89,7 +89,7 @@ def build_small_bell_ladder(n_qubits: int) -> QuantumCircuit:
     return qc
 
 
-def case_definitions() -> List[BenchmarkCase]:
+def case_definitions() -> list[BenchmarkCase]:
     return [
         BenchmarkCase("bell_ladder_12", build_small_bell_ladder(12)),
         BenchmarkCase("clifford_chain_20", build_clifford_chain(20, depth=10)),
@@ -121,11 +121,11 @@ def benchmark_case(
     repetitions: int,
     include_cpu: bool,
     include_qiskit: bool,
-) -> List[BenchmarkResult]:
-    results: List[BenchmarkResult] = []
+) -> list[BenchmarkResult]:
+    results: list[BenchmarkResult] = []
 
     if is_cuda_available():
-        gpu_timings: List[float] = []
+        gpu_timings: list[float] = []
         for _ in range(repetitions):
             gpu_timings.append(
                 time_call(lambda: run_cuda_backend(case.circuit, shots, prefer_gpu=True))
@@ -141,7 +141,7 @@ def benchmark_case(
         )
 
     if include_cpu:
-        cpu_timings: List[float] = []
+        cpu_timings: list[float] = []
         for _ in range(repetitions):
             cpu_timings.append(
                 time_call(lambda: run_cuda_backend(case.circuit, shots, prefer_gpu=False))
@@ -157,7 +157,7 @@ def benchmark_case(
         )
 
     if include_qiskit:
-        qiskit_timings: List[float] = []
+        qiskit_timings: list[float] = []
         for _ in range(repetitions):
             qiskit_timings.append(time_call(lambda: run_qiskit_backend(case.circuit, shots)))
         results.append(
@@ -192,7 +192,7 @@ def format_table(results: Iterable[BenchmarkResult]) -> str:
     widths = [max(len(row[i]) for row in rows) for i in range(len(headers))]
     lines = []
     for idx, row in enumerate(rows):
-        padded = [cell.ljust(width) for cell, width in zip(row, widths)]
+        padded = [cell.ljust(width) for cell, width in zip(row, widths, strict=False)]
         lines.append("  ".join(padded))
         if idx == 0:
             lines.append("  ".join("-" * width for width in widths))
@@ -203,7 +203,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Benchmark Ariadne backends")
     parser.add_argument("--shots", type=int, default=1024, help="Number of shots per run")
     parser.add_argument("--repetitions", type=int, default=3, help="Number of repetitions per case")
-    parser.add_argument("--cpu", action="store_true", help="Include Ariadne CPU fallback measurements")
+    parser.add_argument(
+        "--cpu", action="store_true", help="Include Ariadne CPU fallback measurements"
+    )
     parser.add_argument(
         "--json",
         type=str,
@@ -219,7 +221,7 @@ def main() -> None:
     args = parser.parse_args()
 
     cases = case_definitions()
-    results: List[BenchmarkResult] = []
+    results: list[BenchmarkResult] = []
     for case in cases:
         results.extend(
             benchmark_case(

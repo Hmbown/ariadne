@@ -15,6 +15,6 @@ Reproducibility
 
 Environment
 - Use `environment.yml` (conda‑forge arm64) or pip wheels; `Dockerfile` targets arm64 base.
- 
+
 Concurrency
 - macOS uses 'spawn' start method for multiprocessing by default. We parallelize TN slices with ProcessPoolExecutor and set `OMP_NUM_THREADS=1` inside workers. Use `--threads` on the CLI to cap overall CPU pressure.

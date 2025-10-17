@@ -7,6 +7,7 @@ Next-generation intelligent routing with multiple optimization strategies.
 from __future__ import annotations
 
 import math
+import os
 import platform
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -17,6 +18,7 @@ from qiskit import QuantumCircuit
 
 from ..route.analyze import analyze_circuit, is_clifford_circuit
 from ..route.mps_analyzer import should_use_mps
+from ..route.topology_analyzer import detect_layout_properties
 from ..types import BackendType, RoutingDecision
 
 
@@ -232,10 +234,19 @@ class EnhancedQuantumRouter:
 
         # Phase 1: Prioritized Filter Chain (Specialized Triage)
         # Order matters: fastest/most specialized first.
+        # Specialized fast-path filters. Order matters.
         self._specialized_filters: list[tuple[BackendType, Any]] = [
             (BackendType.STIM, is_clifford_circuit),
-            (BackendType.MPS, should_use_mps),
-            # Add future specialized analyzers here (e.g., Stabilizer)
+            # If user requested higher precision/noise support, prefer DDSIM when available
+            (
+                BackendType.DDSIM,
+                lambda _circ: os.getenv("ARIADNE_ROUTING_PREFER_DDSIM") == "1",
+            ),
+            # Prefer MPS if either the MPS analyzer or topology suggests it
+            (
+                BackendType.MPS,
+                lambda circ: (should_use_mps(circ) or _topology_prefers_mps(circ)),
+            ),
         ]
 
     def _detect_system_context(self) -> UserContext:
@@ -292,6 +303,18 @@ class EnhancedQuantumRouter:
 
         if not backend_scores:
             backend_scores[BackendType.QISKIT] = 5.0
+
+        # Optional: apply simple time budget bias via env var
+        try:
+            budget_ms = int(os.getenv("ARIADNE_ROUTING_BUDGET_MS", "0"))
+        except ValueError:
+            budget_ms = 0
+        if budget_ms and budget_ms <= 100:
+            # Prefer faster approximate backends slightly when tight budget
+            if BackendType.MPS in backend_scores:
+                backend_scores[BackendType.MPS] *= 1.1
+            if BackendType.QISKIT in backend_scores:
+                backend_scores[BackendType.QISKIT] *= 0.95
 
         optimal_backend = max(backend_scores.keys(), key=lambda b: backend_scores[b])
         optimal_score = backend_scores[optimal_backend]
@@ -352,6 +375,10 @@ class EnhancedQuantumRouter:
                 return self.user_context.hardware_profile.apple_silicon
             elif backend == BackendType.CUDA:
                 return self.user_context.hardware_profile.cuda_capable
+            elif backend == BackendType.DDSIM:
+                import mqt.ddsim  # type: ignore
+
+                return True
             else:
                 return True
         except ImportError:
@@ -371,3 +398,19 @@ class EnhancedQuantumRouter:
         from ..router import simulate as router_simulate
 
         return router_simulate(circuit, shots=shots)
+
+
+def _topology_prefers_mps(circuit: QuantumCircuit) -> bool:
+    """Heuristic: prefer MPS for chain-like shallow circuits.
+
+    Uses interaction graph shape to bias toward MPS when appropriate.
+    Conservative to avoid over-selecting MPS.
+    """
+    try:
+        props = detect_layout_properties(circuit)
+        chain_like = bool(props.get("chain_like", False))
+        depth = int(props.get("depth", 0))
+        # shallow relative to width
+        return chain_like and depth <= max(10, circuit.num_qubits)
+    except Exception:
+        return False

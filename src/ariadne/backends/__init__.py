@@ -6,8 +6,8 @@ pooling, fallback strategies, and performance monitoring.
 """
 
 from .enhanced_interface import (
-    BackendCapability,
     BackendCapabilities,
+    BackendCapability,
     EnhancedBackendInterface,
     EnhancedBackendWrapper,
     OptimizationHint,

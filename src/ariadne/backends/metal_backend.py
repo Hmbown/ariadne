@@ -936,21 +936,17 @@ class MetalBackend:
     def _sample_measurements(
         self, state: Any, measured_qubits: Sequence[int], shots: int
     ) -> dict[str, int]:
-        # Handle both JAX and NumPy arrays
-        if hasattr(state, "shape") and hasattr(state, "__array__"):
-            if hasattr(state, "device"):  # JAX array
-                probabilities = np.array(jnp.abs(state) ** 2)
-            else:  # NumPy array
-                # Try Metal acceleration for probability calculation
-                if self.metal_accelerator:
-                    try:
-                        probabilities = self.metal_accelerator.calculate_probabilities_metal(state)
-                    except Exception:
-                        probabilities = np.abs(state) ** 2
-                else:
-                    probabilities = np.abs(state) ** 2
+        # Handle both JAX and NumPy arrays by converting to NumPy first
+        state_np = np.asarray(state)
+
+        # Try Metal acceleration for probability calculation when available
+        if self.metal_accelerator:
+            try:
+                probabilities = self.metal_accelerator.calculate_probabilities_metal(state_np)
+            except Exception:
+                probabilities = np.abs(state_np) ** 2
         else:
-            probabilities = np.abs(state) ** 2
+            probabilities = np.abs(state_np) ** 2
 
         total = probabilities.sum()
         if not np.isfinite(total) or total == 0:

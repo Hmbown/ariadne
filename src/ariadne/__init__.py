@@ -2,41 +2,42 @@
 
 from ._version import __version__
 
+__all__ = ["__version__"]
+
+# Configuration system data classes
+from .config import (
+    AnalysisConfig,
+    AriadneConfig,
+    BackendConfig,
+    ConfigManager,
+    ErrorMitigationConfig,
+    OptimizationConfig,
+    PerformanceConfig,
+    configure_ariadne,
+    get_config,
+    get_config_manager,
+)
+
 # Core systems - always available
 from .core import (
     AriadneError,
     BackendUnavailableError,
+    CircuitAnalysisCache,
     CircuitTooLargeError,
     ResourceExhaustionError,
-    SimulationError,
-    CircuitAnalysisCache,
     ResourceManager,
+    SimulationError,
+    configure_logging,
     get_logger,
     get_resource_manager,
-    configure_logging,
 )
-
-# Main simulation interface
-from .router import simulate
-from .types import (BackendCapacity, BackendType, RoutingDecision,
-                    SimulationResult)
 
 # Enhanced router
 from .route.enhanced_router import EnhancedQuantumRouter
 
-# Configuration system data classes
-from .config import (
-    AriadneConfig,
-    BackendConfig,
-    OptimizationConfig,
-    ErrorMitigationConfig,
-    AnalysisConfig,
-    PerformanceConfig,
-    ConfigManager,
-    get_config,
-    get_config_manager,
-    configure_ariadne
-)
+# Main simulation interface
+from .router import simulate
+from .types import BackendCapacity, BackendType, RoutingDecision, SimulationResult
 
 # Create alias for backward compatibility
 QuantumRouter = EnhancedQuantumRouter
@@ -44,6 +45,7 @@ QuantumRouter = EnhancedQuantumRouter
 # Optional backends - may not be available
 try:
     from .backends.cuda_backend import CUDABackend, get_cuda_info, simulate_cuda
+
     _CUDA_AVAILABLE = True
 except ImportError:
     _CUDA_AVAILABLE = False
@@ -52,8 +54,8 @@ except ImportError:
     simulate_cuda = None
 
 try:
-    from .backends.metal_backend import (MetalBackend, get_metal_info,
-                                         simulate_metal)
+    from .backends.metal_backend import MetalBackend, get_metal_info, simulate_metal
+
     _METAL_AVAILABLE = True
 except ImportError:
     _METAL_AVAILABLE = False
@@ -97,15 +99,19 @@ __all__ = [
 
 # Add optional backends if available
 if _CUDA_AVAILABLE:
-    __all__.extend([
-        "CUDABackend",
-        "simulate_cuda",
-        "get_cuda_info",
-    ])
+    __all__.extend(
+        [
+            "CUDABackend",
+            "simulate_cuda",
+            "get_cuda_info",
+        ]
+    )
 
 if _METAL_AVAILABLE:
-    __all__.extend([
-        "MetalBackend",
-        "simulate_metal",
-        "get_metal_info",
-    ])
+    __all__.extend(
+        [
+            "MetalBackend",
+            "simulate_metal",
+            "get_metal_info",
+        ]
+    )

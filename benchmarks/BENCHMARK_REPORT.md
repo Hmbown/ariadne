@@ -76,7 +76,7 @@ Ariadne's intelligent router automatically selects the optimal backend based on:
 ### Scaling Characteristics
 
 1. **Small Circuits (< 10 qubits)**: 1.5-2x speedup
-2. **Medium Circuits (10-20 qubits)**: 2-3x speedup  
+2. **Medium Circuits (10-20 qubits)**: 2-3x speedup
 3. **Large Circuits (> 20 qubits)**: 3-10x speedup
 
 ### Memory Efficiency
@@ -168,6 +168,6 @@ The implementation successfully bridges the gap between research and production 
 
 ---
 
-**Generated**: 2025-09-20  
-**Version**: Ariadne v1.0.0  
+**Generated**: 2025-09-20
+**Version**: Ariadne v1.0.0
 **Hardware**: Apple M4 Max, 36GB RAM

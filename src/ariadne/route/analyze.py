@@ -240,7 +240,7 @@ def interaction_graph(circ: QuantumCircuit) -> nx.Graph:
     qubit_index_map = {qubit: idx for idx, qubit in enumerate(circ.qubits)}
     for inst in circ.data:
         if inst.operation.num_qubits == 2:
-            u, v = [qubit_index_map[q] for q in inst.qubits]
+            u, v = (qubit_index_map[q] for q in inst.qubits)
             if u != v:
                 g.add_edge(u, v)
     return g

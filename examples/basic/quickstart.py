@@ -5,8 +5,9 @@ This example demonstrates practical usage of Ariadne for quantum circuit simulat
 showing real-world scenarios and best practices.
 """
 
-from ariadne import simulate
 from qiskit import QuantumCircuit
+
+from ariadne import simulate
 
 
 def create_bell_state():
@@ -47,7 +48,7 @@ def create_variational_circuit(n_qubits=8):
     for i in range(n_qubits):
         qc.ry(0.5, i)  # Parameterized rotation
         if i % 2 == 0:
-            qc.t(i)    # T gates trigger GPU selection
+            qc.t(i)  # T gates trigger GPU selection
 
     qc.measure_all()
     return qc

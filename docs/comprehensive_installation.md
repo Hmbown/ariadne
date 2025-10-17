@@ -21,7 +21,7 @@ This guide provides detailed installation instructions for the Ariadne quantum r
 - **Python**: 3.11 or higher
 - **RAM**: 4GB minimum, 8GB recommended
 - **Storage**: 1GB free space
-- **Operating System**: 
+- **Operating System**:
   - macOS 12.0 (Monterey) or higher
   - Linux (Ubuntu 20.04+, CentOS 8+, or equivalent)
   - Windows 10/11
@@ -136,7 +136,7 @@ For optimal performance on Apple Silicon:
    ```python
    import jax
    print(f"Available devices: {jax.devices()}")
-   
+
    # Check Metal backend
    from ariadne.backends.metal_backend import MetalBackend
    backend = MetalBackend()
@@ -220,10 +220,10 @@ pip install -e .
    # Update system
    sudo apt update
    sudo apt install -y python3-dev python3-pip build-essential
-   
+
    # Install Ariadne
    pip install -e .
-   
+
    # For CUDA support in WSL2
    pip install -e .[cuda]
    ```
@@ -469,9 +469,9 @@ result = router.simulate(your_circuit, backend="qiskit")  # Force fallback
    from ariadne.backends.stim_backend import StimBackend
    backend = StimBackend()
    result = backend.simulate(clifford_circuit, shots=1000)
-   
+
    # For low-entanglement circuits, use MPS
-   from ariadne.backends.mps_backend import MPSBackend  
+   from ariadne.backends.mps_backend import MPSBackend
    backend = MPSBackend()
    result = backend.simulate(low_entanglement_circuit, shots=1000)
    ```
@@ -502,7 +502,7 @@ For contributors to Ariadne:
    ```bash
    # Run all tests
    pytest
-   
+
    # Run specific test categories
    pytest -m unit
    pytest -m integration
@@ -514,7 +514,7 @@ For contributors to Ariadne:
    # Format code
    black src/ tests/
    isort src/ tests/
-   
+
    # Lint code
    ruff check src/ tests/
    mypy src/
@@ -530,7 +530,7 @@ For production environments:
    ```bash
    # Build and run with Docker Compose
    docker-compose up -d
-   
+
    # Access the container
    docker-compose exec ariadne bash
    ```
@@ -539,7 +539,7 @@ For production environments:
    ```bash
    # Build the image
    docker build -t ariadne .
-   
+
    # Run the container
    docker run -it ariadne python -c "from ariadne import simulate; print('Ariadne ready!')"
    ```
@@ -550,10 +550,10 @@ For production environments:
    ```bash
    # Set backend preference
    export ARIADNE_BACKEND_PREFERENCE="stim,tensor_network,qiskit"
-   
+
    # Memory limits
    export ARIADNE_MEMORY_LIMIT_MB=4096
-   
+
    # Logging level
    export ARIADNE_LOG_LEVEL="WARNING"  # For production
    ```
@@ -561,7 +561,7 @@ For production environments:
 2. **Resource management**:
    ```python
    from ariadne import configure_ariadne
-   
+
    # Configure for production
    config = {
        "log_level": "WARNING",
@@ -569,7 +569,7 @@ For production environments:
        "backend_preference": ["stim", "tensor_network", "qiskit"],
        "enable_caching": True
    }
-   
+
    configure_ariadne(config)
    ```
 

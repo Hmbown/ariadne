@@ -28,7 +28,7 @@ Ariadne follows a **meritocratic governance model** that prioritizes technical e
 - Release management and security oversight
 - Community standards enforcement
 
-**Core Maintainers**: 
+**Core Maintainers**:
 - Active contributors with proven track record
 - Review and merge permissions on main branch
 - Participate in architectural decisions

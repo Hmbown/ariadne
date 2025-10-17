@@ -6,8 +6,10 @@ using Ariadne's intelligent backend selection.
 """
 
 import time
-from ariadne import simulate
+
 from qiskit import QuantumCircuit
+
+from ariadne import simulate
 
 
 def create_quantum_fourier_transform(n_qubits: int) -> QuantumCircuit:
@@ -36,7 +38,7 @@ def create_grover_oracle(n_qubits: int, marked_state: str) -> QuantumCircuit:
 
     # Oracle for marked state |11...1>
     for i in range(n_qubits):
-        if marked_state[i] == '1':
+        if marked_state[i] == "1":
             qc.x(i)
 
     # Multi-controlled X gate (Toffoli for n=2, general MCX for n>2)
@@ -46,7 +48,7 @@ def create_grover_oracle(n_qubits: int, marked_state: str) -> QuantumCircuit:
         qc.mcx(list(range(n_qubits - 1)), n_qubits - 1)
 
     for i in range(n_qubits):
-        if marked_state[i] == '1':
+        if marked_state[i] == "1":
             qc.x(i)
 
     qc.measure_all()
@@ -150,32 +152,38 @@ def main():
     results = []
 
     # 1. Quantum Fourier Transform (important for many algorithms)
-    results.append(benchmark_algorithm(
-        create_quantum_fourier_transform,
-        "Quantum Fourier Transform (8 qubits)",
-        n_qubits=8
-    ))
+    results.append(
+        benchmark_algorithm(
+            create_quantum_fourier_transform, "Quantum Fourier Transform (8 qubits)", n_qubits=8
+        )
+    )
 
     # 2. Grover's Algorithm (quantum search)
-    results.append(benchmark_algorithm(
-        create_grover_oracle,
-        "Grover's Algorithm (3 qubits, marked |111>)",
-        n_qubits=3, marked_state="111"
-    ))
+    results.append(
+        benchmark_algorithm(
+            create_grover_oracle,
+            "Grover's Algorithm (3 qubits, marked |111>)",
+            n_qubits=3,
+            marked_state="111",
+        )
+    )
 
     # 3. Variational Quantum Eigensolver (VQE) ansatz
-    results.append(benchmark_algorithm(
-        create_variational_ansatz,
-        "Variational Quantum Ansatz (6 qubits, 2 layers)",
-        n_qubits=6, layers=2
-    ))
+    results.append(
+        benchmark_algorithm(
+            create_variational_ansatz,
+            "Variational Quantum Ansatz (6 qubits, 2 layers)",
+            n_qubits=6,
+            layers=2,
+        )
+    )
 
     # 4. Error Correction (quantum fault tolerance)
-    results.append(benchmark_algorithm(
-        create_error_correction_demo,
-        "Quantum Error Correction Demo (5 qubits)",
-        n_qubits=5
-    ))
+    results.append(
+        benchmark_algorithm(
+            create_error_correction_demo, "Quantum Error Correction Demo (5 qubits)", n_qubits=5
+        )
+    )
 
     print(f"\n{'='*60}")
     print("✅ All advanced examples completed successfully!")

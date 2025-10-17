@@ -415,9 +415,9 @@ class PerformanceRegressionDetector:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO regression_alerts 
-                (metric_type, backend, circuit_hash, severity, baseline_value, 
-                 current_value, degradation_percent, detection_timestamp, 
+                INSERT INTO regression_alerts
+                (metric_type, backend, circuit_hash, severity, baseline_value,
+                 current_value, degradation_percent, detection_timestamp,
                  confidence, description, metadata)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
@@ -524,7 +524,7 @@ class PerformanceRegressionDetector:
             conn.execute(
                 """
                 INSERT OR REPLACE INTO statistical_baselines
-                (baseline_key, mean_value, std_value, median_value, 
+                (baseline_key, mean_value, std_value, median_value,
                  percentile_95, percentile_99, sample_count, last_updated)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,

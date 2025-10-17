@@ -55,4 +55,3 @@ Note: Decoder not included; this measures sampler throughput only.
 
 if __name__ == "__main__":
     main()
-

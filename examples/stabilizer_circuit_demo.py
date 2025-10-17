@@ -11,9 +11,10 @@ automatic backend selection for optimal performance.
 """
 
 import time
-from typing import Dict, Any
+
 from qiskit import QuantumCircuit
-from ariadne import simulate, QuantumRouter
+
+from ariadne import QuantumRouter, simulate
 
 
 def create_stabilizer_circuit(num_qubits: int) -> QuantumCircuit:
@@ -94,7 +95,7 @@ def demonstrate_intelligent_routing():
         print(f"   Confidence: {routing_decision.confidence_score:.2f}")
 
         # Time the simulation
-        print(f"   🚀 Simulating...")
+        print("   🚀 Simulating...")
         start_time = time.perf_counter()
 
         try:
@@ -144,7 +145,7 @@ def demonstrate_backend_comparison():
     print("Testing the same 20-qubit stabilizer circuit on different backends:")
     print()
 
-    backends_to_test = ['stim', 'qiskit']
+    backends_to_test = ["stim", "qiskit"]
     results = {}
 
     for backend in backends_to_test:
@@ -157,33 +158,29 @@ def demonstrate_backend_comparison():
 
             execution_time = end_time - start_time
             results[backend] = {
-                'time': execution_time,
-                'success': True,
-                'backend_used': result.backend_used.value
+                "time": execution_time,
+                "success": True,
+                "backend_used": result.backend_used.value,
             }
 
             print(f"   ✅ {backend}: {execution_time:.4f}s")
 
         except Exception as e:
             print(f"   ❌ {backend}: FAILED - {str(e)[:50]}...")
-            results[backend] = {
-                'time': float('inf'),
-                'success': False,
-                'error': str(e)
-            }
+            results[backend] = {"time": float("inf"), "success": False, "error": str(e)}
 
     print()
     print("📊 PERFORMANCE SUMMARY:")
     print("=" * 30)
 
-    if results['stim']['success'] and results['qiskit']['success']:
-        speedup = results['qiskit']['time'] / results['stim']['time']
+    if results["stim"]["success"] and results["qiskit"]["success"]:
+        speedup = results["qiskit"]["time"] / results["stim"]["time"]
         print(f"Stim:   {results['stim']['time']:.4f}s")
         print(f"Qiskit: {results['qiskit']['time']:.4f}s")
         print(f"Speedup: {speedup:.1f}x")
     else:
         for backend, result in results.items():
-            if result['success']:
+            if result["success"]:
                 print(f"{backend}: {result['time']:.4f}s ✅")
             else:
                 print(f"{backend}: FAILED ❌")
@@ -226,7 +223,7 @@ def demonstrate_scaling_behavior():
             print(f"| {num_qubits:6d} | {execution_time:8.4f} | {backend:7s} | {scaling_str:7s} |")
             previous_time = execution_time
 
-        except Exception as e:
+        except Exception:
             print(f"| {num_qubits:6d} | FAILED   | ERROR   | N/A     |")
 
     print()

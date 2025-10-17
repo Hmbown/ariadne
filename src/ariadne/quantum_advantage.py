@@ -243,7 +243,8 @@ def analyze_error_threshold(circuit: QuantumCircuit, analysis: dict[str, Any]) -
     total_single_qubit_ops = sum(
         1
         for inst in circuit.data
-        if inst.operation.num_qubits == 1 and inst.operation.name not in ["measure", "barrier", "delay"]
+        if inst.operation.num_qubits == 1
+        and inst.operation.name not in ["measure", "barrier", "delay"]
     )
 
     estimated_error_rate = (

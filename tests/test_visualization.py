@@ -13,10 +13,15 @@ import numpy as np
 import pytest
 
 from ariadne.types import BackendType, SimulationResult
-from ariadne.visualization import (ResultAnalyzer, ResultVisualizer,
-                                   VisualizationConfig, analyze_batch_results,
-                                   compare_backend_results, visualize_decision,
-                                   visualize_result)
+from ariadne.visualization import (
+    ResultAnalyzer,
+    ResultVisualizer,
+    VisualizationConfig,
+    analyze_batch_results,
+    compare_backend_results,
+    visualize_decision,
+    visualize_result,
+)
 
 
 class TestVisualizationConfig:

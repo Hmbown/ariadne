@@ -17,26 +17,31 @@ from qiskit.circuit.random import random_circuit
 
 # Import modules to test
 try:
-    from ariadne.benchmarks import (BenchmarkResult, BenchmarkRunner,
-                                    CircuitBenchmark, PerformanceMetrics,
-                                    create_standard_benchmarks)
+    from ariadne.benchmarks import (
+        BenchmarkResult,
+        BenchmarkRunner,
+        CircuitBenchmark,
+        PerformanceMetrics,
+        create_standard_benchmarks,
+    )
 
     BENCHMARKS_AVAILABLE = True
 except ImportError:
     BENCHMARKS_AVAILABLE = False
 
 try:
-    from ariadne.regression_detection import (MetricType,
-                                              PerformanceRegressionDetector,
-                                              record_performance_metric)
+    from ariadne.regression_detection import (
+        MetricType,
+        PerformanceRegressionDetector,
+        record_performance_metric,
+    )
 
     REGRESSION_DETECTION_AVAILABLE = True
 except ImportError:
     REGRESSION_DETECTION_AVAILABLE = False
 
 try:
-    from ariadne.cross_platform_comparison import \
-        BenchmarkRunner as CrossPlatformRunner
+    from ariadne.cross_platform_comparison import BenchmarkRunner as CrossPlatformRunner
     from ariadne.cross_platform_comparison import run_quick_comparison
 
     CROSS_PLATFORM_AVAILABLE = True
@@ -274,9 +279,9 @@ class TestPerformanceStability:
 
         # Execution times should be reasonably consistent (CV < 65%)
         # Further relaxed threshold due to system variability and measurement noise
-        assert coefficient_of_variation < 0.65, (
-            f"Execution times too variable: CV={coefficient_of_variation}"
-        )
+        assert (
+            coefficient_of_variation < 0.65
+        ), f"Execution times too variable: CV={coefficient_of_variation}"
 
     def test_memory_stability(self):
         """Test that memory usage is stable across multiple runs."""

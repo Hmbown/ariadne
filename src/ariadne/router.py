@@ -15,9 +15,9 @@ from .core import (
     CircuitTooLargeError,
     ResourceExhaustionError,
     SimulationError,
+    check_circuit_feasibility,
     get_logger,
     get_resource_manager,
-    check_circuit_feasibility,
 )
 from .route.enhanced_router import EnhancedQuantumRouter, RouterType
 from .types import BackendType, RoutingDecision, SimulationResult
@@ -62,7 +62,7 @@ def _apple_silicon_boost() -> float:
 
 def _simulate_stim(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
     logger = get_logger("router")
-    
+
     try:
         from .converters import convert_qiskit_to_stim, simulate_stim_circuit
     except ImportError as exc:
@@ -79,7 +79,7 @@ def _simulate_stim(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
 def _simulate_qiskit(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
     logger = get_logger("router")
-    
+
     try:
         from qiskit.providers.basic_provider import BasicProvider
     except ImportError as exc:  # pragma: no cover - depends on qiskit extras
@@ -110,7 +110,9 @@ def _simulate_tensor_network(circuit: QuantumCircuit, shots: int) -> dict[str, i
     try:
         return _real_tensor_network_simulation(circuit, shots)
     except ImportError as exc:
-        raise BackendUnavailableError("tensor_network", "Tensor network dependencies are not installed") from exc
+        raise BackendUnavailableError(
+            "tensor_network", "Tensor network dependencies are not installed"
+        ) from exc
     except Exception as exc:  # pragma: no cover - graceful fallback path
         logger.log_backend_unavailable("tensor_network", str(exc))
         warnings.warn(
@@ -151,7 +153,7 @@ def _simulate_jax_metal(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
 def _simulate_ddsim(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
     logger = get_logger("router")
-    
+
     try:
         import mqt.ddsim as ddsim
     except ImportError as exc:  # pragma: no cover - optional dependency
@@ -169,7 +171,7 @@ def _simulate_ddsim(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
 def _simulate_cuda(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
     logger = get_logger("router")
-    
+
     if not is_cuda_available() or CUDABackend is None:
         raise BackendUnavailableError("cuda", "CUDA runtime not available")
 
@@ -184,7 +186,7 @@ def _simulate_cuda(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 def _simulate_mps(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
     """Simulate ``circuit`` using the Matrix Product State backend."""
     logger = get_logger("router")
-    
+
     try:
         from .backends.mps_backend import MPSBackend
     except ImportError as exc:
@@ -200,7 +202,7 @@ def _simulate_mps(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
 def _simulate_metal(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
     logger = get_logger("router")
-    
+
     if not is_metal_available() or MetalBackend is None:
         raise BackendUnavailableError("metal", "JAX with Metal support not available")
 
@@ -249,14 +251,16 @@ def _execute_simulation(
     """Execute simulation based on a routing decision, including fallback logic."""
     logger = get_logger("router")
     resource_manager = get_resource_manager()
-    
+
     backend = routing_decision.recommended_backend
     backend_name = backend.value
 
     # Check resource availability
     can_handle, reason = check_circuit_feasibility(circuit, backend_name)
     if not can_handle:
-        raise ResourceExhaustionError("memory", 0, resource_manager.get_resources().available_memory_mb)
+        raise ResourceExhaustionError(
+            "memory", 0, resource_manager.get_resources().available_memory_mb
+        )
 
     # Initialize result tracking
     fallback_reason = None
@@ -266,8 +270,7 @@ def _execute_simulation(
     # Set up logging for backend selection
     logger.set_circuit_context(circuit)
     logger.log_routing_decision(
-        circuit, backend_name, routing_decision.confidence_score,
-        "Selected by router"
+        circuit, backend_name, routing_decision.confidence_score, "Selected by router"
     )
 
     # Reserve resources
@@ -278,10 +281,10 @@ def _execute_simulation(
         raise exc
 
     start = perf_counter()
-    
+
     try:
         logger.log_simulation_start(circuit, backend_name, shots)
-        
+
         if backend == BackendType.STIM:
             counts = _simulate_stim(circuit, shots)
         elif backend == BackendType.QISKIT:
@@ -305,7 +308,7 @@ def _execute_simulation(
             warnings_list.append(
                 f"Unknown backend {backend.value} selected, falling back to Qiskit."
             )
-            
+
     except Exception as exc:
         # Log the specific failure for debugging
         logger.log_simulation_error(exc, backend=backend_name)
@@ -322,11 +325,11 @@ def _execute_simulation(
             logger.error(f"Qiskit fallback also failed: {qiskit_exc}")
             raise SimulationError(
                 f"All backends failed. Original error: {exc}. Qiskit fallback error: {qiskit_exc}",
-                backend=backend_name
+                backend=backend_name,
             ) from exc
 
     elapsed = perf_counter() - start
-    
+
     # Release resources
     if reserved_resources:
         resource_manager.release_resources(reserved_resources)
@@ -356,7 +359,7 @@ def simulate(
 ) -> SimulationResult:
     """Convenience wrapper that routes and executes ``circuit``."""
     logger = get_logger("router")
-    
+
     # Validate inputs
     if shots < 0:
         raise ValueError("shots must be non-negative")
@@ -365,7 +368,7 @@ def simulate(
     if circuit.num_qubits <= 0:
         return SimulationResult(
             counts={"": shots} if shots > 0 else {},
-            backend_used=BackendType.QISKIT, # Mock backend
+            backend_used=BackendType.QISKIT,  # Mock backend
             execution_time=0.0,
             routing_decision=None,
             metadata={"shots": shots},
@@ -384,9 +387,7 @@ def simulate(
         # Check if forced backend is available
         can_handle, reason = check_circuit_feasibility(circuit, backend)
         if not can_handle:
-            raise CircuitTooLargeError(
-                circuit.num_qubits, circuit.depth(), backend
-            )
+            raise CircuitTooLargeError(circuit.num_qubits, circuit.depth(), backend)
 
         # Create a forced routing decision
         routing_decision = RoutingDecision(
@@ -397,7 +398,7 @@ def simulate(
             channel_capacity_match=1.0,
             alternatives=[],
         )
-        
+
         logger.info(f"Using forced backend: {backend}")
     else:
         # Use Enhanced Router for optimal selection

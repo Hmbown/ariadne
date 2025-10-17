@@ -4,9 +4,9 @@ import argparse
 import json
 import sys
 import time
-from dataclasses import dataclass, asdict
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -34,11 +34,11 @@ class BenchmarkResult:
     error: str | None = None
 
 
-def create_benchmark_cases() -> List[BenchmarkCase]:
+def create_benchmark_cases() -> list[BenchmarkCase]:
     """Create a set of benchmark circuits."""
-    
+
     cases = []
-    
+
     # 1. Small Clifford circuit
     circuit = QuantumCircuit(3, 3)
     circuit.h(0)
@@ -46,7 +46,7 @@ def create_benchmark_cases() -> List[BenchmarkCase]:
     circuit.cx(1, 2)
     circuit.measure_all()
     cases.append(BenchmarkCase("small_clifford", circuit))
-    
+
     # 2. Medium Clifford circuit
     circuit = QuantumCircuit(5, 5)
     for i in range(4):
@@ -54,7 +54,7 @@ def create_benchmark_cases() -> List[BenchmarkCase]:
         circuit.cx(i, i + 1)
     circuit.measure_all()
     cases.append(BenchmarkCase("medium_clifford", circuit))
-    
+
     # 3. Small general circuit
     circuit = QuantumCircuit(3, 3)
     circuit.h(0)
@@ -64,7 +64,7 @@ def create_benchmark_cases() -> List[BenchmarkCase]:
     circuit.cx(1, 2)
     circuit.measure_all()
     cases.append(BenchmarkCase("small_general", circuit))
-    
+
     # 4. Medium general circuit
     circuit = QuantumCircuit(5, 5)
     for i in range(4):
@@ -73,7 +73,7 @@ def create_benchmark_cases() -> List[BenchmarkCase]:
         circuit.cx(i, i + 1)
     circuit.measure_all()
     cases.append(BenchmarkCase("medium_general", circuit))
-    
+
     # 5. Large Clifford circuit
     circuit = QuantumCircuit(8, 8)
     for i in range(7):
@@ -81,7 +81,7 @@ def create_benchmark_cases() -> List[BenchmarkCase]:
         circuit.cx(i, i + 1)
     circuit.measure_all()
     cases.append(BenchmarkCase("large_clifford", circuit))
-    
+
     return cases
 
 
@@ -109,19 +109,19 @@ def benchmark_backend(
     timing_runs: int = 5,
 ) -> BenchmarkResult:
     """Benchmark a single backend with a circuit."""
-    
+
     # Warmup runs
     for _ in range(warmup_runs):
         try:
             backend_func(circuit, shots)
         except Exception:
             pass  # Ignore warmup errors
-    
+
     # Timing runs
     times = []
     success = True
     error = None
-    
+
     for _ in range(timing_runs):
         try:
             start = time.perf_counter()
@@ -132,12 +132,12 @@ def benchmark_backend(
             success = False
             error = str(e)
             break
-    
+
     if success and times:
         execution_time = sum(times) / len(times)
     else:
-        execution_time = float('inf')
-    
+        execution_time = float("inf")
+
     return BenchmarkResult(
         circuit=circuit_name,
         backend=backend_name,
@@ -149,22 +149,22 @@ def benchmark_backend(
 
 
 def run_benchmarks(
-    cases: List[BenchmarkCase],
+    cases: list[BenchmarkCase],
     shots: int = 1024,
     output_file: str | None = None,
-) -> List[BenchmarkResult]:
+) -> list[BenchmarkResult]:
     """Run benchmarks for all cases and backends."""
-    
+
     results = []
-    
+
     print("🚀 Starting Metal vs CPU benchmarks...")
     print(f"Metal available: {is_metal_available()}")
     print(f"Metal info: {get_metal_info()}")
     print()
-    
+
     for case in cases:
         print(f"Testing {case.name}...")
-        
+
         # Qiskit CPU backend
         print("  Running Qiskit CPU...")
         result = benchmark_backend(
@@ -176,7 +176,7 @@ def run_benchmarks(
         )
         results.append(result)
         print(f"    Time: {result.execution_time:.4f}s")
-        
+
         # Metal backend
         print("  Running Metal...")
         result = benchmark_backend(
@@ -191,38 +191,38 @@ def run_benchmarks(
             print(f"    Time: {result.execution_time:.4f}s")
         else:
             print(f"    Error: {result.error}")
-        
+
         print()
-    
+
     # Save results
     if output_file:
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             json.dump([asdict(r) for r in results], f, indent=2)
         print(f"Results saved to {output_file}")
-    
+
     return results
 
 
-def print_summary(results: List[BenchmarkResult]) -> None:
+def print_summary(results: list[BenchmarkResult]) -> None:
     """Print benchmark summary."""
-    
+
     print("📊 Benchmark Summary")
     print("=" * 50)
-    
+
     # Group results by circuit
     by_circuit = {}
     for result in results:
         if result.circuit not in by_circuit:
             by_circuit[result.circuit] = {}
         by_circuit[result.circuit][result.backend] = result
-    
+
     for circuit_name, backends in by_circuit.items():
         print(f"\n{circuit_name}:")
-        
+
         if "qiskit_cpu" in backends and "metal" in backends:
             cpu_result = backends["qiskit_cpu"]
             metal_result = backends["metal"]
-            
+
             if cpu_result.success and metal_result.success:
                 speedup = cpu_result.execution_time / metal_result.execution_time
                 print(f"  CPU:  {cpu_result.execution_time:.4f}s")
@@ -240,14 +240,14 @@ def print_summary(results: List[BenchmarkResult]) -> None:
 
 def main() -> None:
     """Main benchmark function."""
-    
+
     parser = argparse.ArgumentParser(description="Benchmark Metal vs CPU backends")
     parser.add_argument("--shots", type=int, default=1024, help="Number of shots")
     parser.add_argument("--output", type=str, help="Output JSON file")
     parser.add_argument("--cases", nargs="+", help="Specific test cases to run")
-    
+
     args = parser.parse_args()
-    
+
     # Get test cases
     all_cases = create_benchmark_cases()
     if args.cases:
@@ -257,10 +257,10 @@ def main() -> None:
             return
     else:
         cases = all_cases
-    
+
     # Run benchmarks
     results = run_benchmarks(cases, args.shots, args.output)
-    
+
     # Print summary
     print_summary(results)
 

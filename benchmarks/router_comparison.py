@@ -9,10 +9,10 @@ import math
 import statistics
 import sys
 import time
+from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from random import Random
-from typing import Callable, Dict, Iterable, List, Sequence
 
 from qiskit import QuantumCircuit
 
@@ -20,9 +20,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from ariadne.route.enhanced_router import EnhancedQuantumRouter
 from ariadne.backends.tensor_network_backend import TensorNetworkBackend
 from ariadne.route.analyze import analyze_circuit
+from ariadne.route.enhanced_router import EnhancedQuantumRouter
 
 
 @dataclass
@@ -50,11 +50,11 @@ class CaseResult:
     category: str
     num_qubits: int
     num_gates: int
-    analysis: Dict[str, float | int | bool]
-    timings: List[TimingResult]
+    analysis: dict[str, float | int | bool]
+    timings: list[TimingResult]
     router_backend: str | None
 
-    def to_dict(self) -> Dict[str, object]:
+    def to_dict(self) -> dict[str, object]:
         payload = asdict(self)
         payload["timings"] = [asdict(timing) for timing in self.timings]
         return payload
@@ -136,7 +136,7 @@ def build_vqe_ansatz(num_qubits: int, layers: int) -> QuantumCircuit:
     return qc
 
 
-def build_benchmark_cases() -> List[BenchmarkCase]:
+def build_benchmark_cases() -> list[BenchmarkCase]:
     def ghz_10() -> QuantumCircuit:
         return build_ghz_chain(10)
 
@@ -186,7 +186,9 @@ def build_benchmark_cases() -> List[BenchmarkCase]:
     ]
 
 
-def time_function(fn: Callable[[], object], repetitions: int) -> tuple[list[float], bool, str | None]:
+def time_function(
+    fn: Callable[[], object], repetitions: int
+) -> tuple[list[float], bool, str | None]:
     timings: list[float] = []
     for _ in range(repetitions):
         start = time.perf_counter()
@@ -207,11 +209,13 @@ def benchmark_case(
     circuit = case.builder()
     analysis = analyze_circuit(circuit)
     num_qubits = circuit.num_qubits
-    num_gates = len([item for item in circuit.data if item[0].name not in {"measure", "barrier", "delay"}])
+    num_gates = len(
+        [item for item in circuit.data if item[0].name not in {"measure", "barrier", "delay"}]
+    )
 
     timings: list[TimingResult] = []
     router_backend: str | None = None
-    
+
     try:
         router = EnhancedQuantumRouter()
 
@@ -260,6 +264,7 @@ def benchmark_case(
     if case.category == "clifford":
         try:
             import stim  # Check if Stim is available
+
             stim_router = EnhancedQuantumRouter()
 
             def stim_run() -> None:
@@ -388,7 +393,9 @@ def main() -> None:
         default=Path("results/router_benchmark_results.json"),
         help="Path to write JSON results",
     )
-    parser.add_argument("--no-tensor-network", action="store_true", help="Disable direct tensor network baseline")
+    parser.add_argument(
+        "--no-tensor-network", action="store_true", help="Disable direct tensor network baseline"
+    )
     args = parser.parse_args()
 
     cases = build_benchmark_cases()

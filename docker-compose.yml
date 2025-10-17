@@ -88,7 +88,7 @@ services:
     command: >
       sh -c "
         echo 'Documentation server not yet implemented' &&
-        python -m http.server 8080 --directory ariadne/docs 2>/dev/null || 
+        python -m http.server 8080 --directory ariadne/docs 2>/dev/null ||
         python -c 'print(\"Ariadne documentation placeholder\"); import time; time.sleep(3600)'
       "
 

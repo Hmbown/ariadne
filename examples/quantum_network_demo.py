@@ -16,12 +16,12 @@ This demo shows:
 """
 
 import asyncio
-import time
-from pathlib import Path
-
-from dataclasses import dataclass
-from typing import List, Tuple, Dict, Any
 import json
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
 
 # Stubs for non-core network components
 @dataclass
@@ -33,18 +33,21 @@ class QuantumNetworkConfig:
     qkd_key_rate_min: float
     sensor_sync_tolerance_ps: int
 
+
 @dataclass
 class NetworkNode:
     node_id: str
     node_type: str
-    location: Tuple[float, float, int]
+    location: tuple[float, float, int]
     status: str = "inactive"
+
 
 @dataclass
 class AnomalyResult:
     is_anomaly: bool
     anomaly_score: float
     confidence: float
+
 
 @dataclass
 class QuantumStateData:
@@ -58,10 +61,11 @@ class QuantumStateData:
     gate_fidelity: float
     measurement_correlation: float
 
+
 class QuantumNetworkCoordinator:
     def __init__(self, config: QuantumNetworkConfig):
         self.config = config
-        self.nodes: Dict[str, NetworkNode] = {}
+        self.nodes: dict[str, NetworkNode] = {}
         self.uptime = 0.0
         self.start_time = time.time()
 
@@ -78,19 +82,27 @@ class QuantumNetworkCoordinator:
     def display_status_table(self):
         print("Mock Network Status Table Displayed")
 
-    async def run_diagnostics(self) -> Dict[str, Any]:
+    async def run_diagnostics(self) -> dict[str, Any]:
         self.uptime = time.time() - self.start_time
         return {
-            'network_status': {
-                'status': 'OPERATIONAL',
-                'total_nodes': len(self.nodes),
-                'uptime_seconds': self.uptime
+            "network_status": {
+                "status": "OPERATIONAL",
+                "total_nodes": len(self.nodes),
+                "uptime_seconds": self.uptime,
             }
         }
 
     def save_configuration(self, path: Path):
-        with open(path, 'w') as f:
-            json.dump({"config": self.config.__dict__, "nodes": [n.__dict__ for n in self.nodes.values()]}, f, indent=2)
+        with open(path, "w") as f:
+            json.dump(
+                {
+                    "config": self.config.__dict__,
+                    "nodes": [n.__dict__ for n in self.nodes.values()],
+                },
+                f,
+                indent=2,
+            )
+
 
 class DriftlockIntegration:
     def __init__(self, precision_ps: int):
@@ -102,8 +114,9 @@ class DriftlockIntegration:
     async def disconnect(self):
         await asyncio.sleep(0.1)
 
-    async def synchronize_nodes(self, node_ids: List[str]) -> List[Dict[str, Any]]:
+    async def synchronize_nodes(self, node_ids: list[str]) -> list[dict[str, Any]]:
         return [{"node_id": nid, "sync_error_ps": 1.5} for nid in node_ids]
+
 
 class EntruptorIntegration:
     def __init__(self, sensitivity: float):
@@ -119,10 +132,9 @@ class EntruptorIntegration:
         # Simple anomaly logic based on entanglement entropy
         is_anomaly = state.entanglement_entropy > 0.8
         return AnomalyResult(
-            is_anomaly=is_anomaly,
-            anomaly_score=0.9 if is_anomaly else 0.1,
-            confidence=0.99
+            is_anomaly=is_anomaly, anomaly_score=0.9 if is_anomaly else 0.1, confidence=0.99
         )
+
 
 # Placeholder for quantum information theory imports
 # from ariadne.quantum_network.research.quantum_information_theory import *
@@ -146,7 +158,7 @@ async def main():
         entanglement_fidelity_threshold=0.95,
         anomaly_detection_sensitivity=0.85,
         qkd_key_rate_min=1e3,  # 1 kbps minimum
-        sensor_sync_tolerance_ps=50
+        sensor_sync_tolerance_ps=50,
     )
 
     coordinator = QuantumNetworkCoordinator(config)
@@ -161,12 +173,10 @@ async def main():
         NetworkNode("quantum_processor_2", "quantum_processor", (37.7749, -122.4194, 15)),
         NetworkNode("quantum_processor_3", "quantum_processor", (51.5074, -0.1278, 20)),
         NetworkNode("quantum_processor_4", "quantum_processor", (48.8566, 2.3522, 25)),
-
         # Quantum sensor nodes for GW detection
         NetworkNode("sensor_ligo_h", "sensor", (46.4551, -119.4075, 455)),
         NetworkNode("sensor_ligo_l", "sensor", (30.5629, -104.2447, 1363)),
         NetworkNode("sensor_virgo", "sensor", (43.6314, 10.5045, 51)),
-
         # QKD nodes for secure communication
         NetworkNode("qkd_node_1", "qkd_node", (40.7128, -74.0060, 200)),
     ]
@@ -209,7 +219,7 @@ async def main():
         entanglement_entropy=0.3,
         phase_stability=0.92,
         gate_fidelity=0.97,
-        measurement_correlation=0.89
+        measurement_correlation=0.89,
     )
 
     anomaly_result = await entruptor.analyze_quantum_state(quantum_state)

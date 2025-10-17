@@ -139,9 +139,9 @@ result = router.simulate(your_circuit, backend="qiskit")  # Force fallback
    from ariadne.backends.stim_backend import StimBackend
    backend = StimBackend()
    result = backend.simulate(clifford_circuit, shots=1000)
-   
+
    # For low-entanglement circuits, use MPS
-   from ariadne.backends.mps_backend import MPSBackend  
+   from ariadne.backends.mps_backend import MPSBackend
    backend = MPSBackend()
    result = backend.simulate(low_entanglement_circuit, shots=1000)
    ```
@@ -205,7 +205,7 @@ if backend.supports_circuit(your_circuit):
     result = backend.simulate(your_circuit, shots=1000)
 else:
     print("Circuit contains non-Clifford gates")
-    
+
 # Manual Clifford verification
 from ariadne.route.context_detection import is_clifford_circuit
 if is_clifford_circuit(your_circuit):
@@ -247,7 +247,7 @@ if is_clifford_circuit(your_circuit):
    ```python
    # Use fewer qubits or shots
    result = simulate(qc, shots=100)  # Reduce shots
-   
+
    # Or use CPU fallback
    result = simulate(qc, backend="qiskit")
    ```
@@ -324,7 +324,7 @@ from ariadne.backends.mps_backend import MPSBackend
 backend = MPSBackend()
 
 # Use Stim for Clifford circuits
-from ariadne.backends.stim_backend import StimBackend  
+from ariadne.backends.stim_backend import StimBackend
 backend = StimBackend()
 
 # Batch small circuits
@@ -389,12 +389,12 @@ If you can't resolve an issue:
    # Include this in bug reports
    import ariadne
    from qiskit import QuantumCircuit
-   
+
    qc = QuantumCircuit(2)
    qc.h(0)
    qc.cx(0, 1)
    qc.measure_all()
-   
+
    # This fails with error...
    result = ariadne.simulate(qc, shots=100)
    ```
@@ -403,7 +403,7 @@ If you can't resolve an issue:
    ```python
    import platform
    import ariadne
-   
+
    print(f"Python: {platform.python_version()}")
    print(f"OS: {platform.system()} {platform.release()}")
    print(f"Ariadne: {ariadne.__version__}")
