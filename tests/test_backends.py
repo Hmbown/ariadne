@@ -141,6 +141,9 @@ class TestBackendIntegration:
             BackendType.TENSOR_NETWORK,
             BackendType.JAX_METAL,
             BackendType.MPS,
+            BackendType.CIRQ,
+            BackendType.PENNYLANE,
+            BackendType.QULACS,
         ]
 
     def test_forced_backend_override(self):

@@ -16,7 +16,7 @@ from typing import Any
 
 from qiskit import QuantumCircuit
 
-from ..route.analyze import analyze_circuit, is_clifford_circuit
+from ..route.analyze import analyze_circuit, is_clifford_circuit, should_use_tensor_network
 from ..route.mps_analyzer import should_use_mps
 from ..route.topology_analyzer import detect_layout_properties
 from ..types import BackendType, RoutingDecision
@@ -51,6 +51,9 @@ class HardwareProfile:
     apple_silicon: bool
     cuda_capable: bool
     platform_name: str
+    rocm_capable: bool = False
+    oneapi_capable: bool = False
+    opencl_available: bool = False
 
 
 @dataclass
@@ -116,6 +119,10 @@ class SpeedOptimizerStrategy(QuantumRouterStrategy):
             BackendType.TENSOR_NETWORK: 6.0,
             BackendType.DDSIM: 5.0,
             BackendType.QISKIT: 3.0,
+            BackendType.CIRQ: 6.0,
+            BackendType.PENNYLANE: 6.5,
+            BackendType.QULACS: 7.5,
+            BackendType.OPENCL: 6.0,
         }
 
         speed_score = base_speeds.get(backend, 1.0)
@@ -161,6 +168,10 @@ class AccuracyOptimizerStrategy(QuantumRouterStrategy):
             BackendType.QISKIT: 8.0,
             BackendType.CUDA: 7.5,
             BackendType.JAX_METAL: 7.0,
+            BackendType.CIRQ: 8.0,
+            BackendType.PENNYLANE: 8.0,
+            BackendType.QULACS: 8.0,
+            BackendType.OPENCL: 7.0,
         }
 
         accuracy_score = base_accuracy.get(backend, 5.0)
@@ -247,6 +258,21 @@ class EnhancedQuantumRouter:
                 BackendType.MPS,
                 lambda circ: (should_use_mps(circ) or _topology_prefers_mps(circ)),
             ),
+            # Prefer Tensor Network when analysis recommends it
+            (
+                BackendType.TENSOR_NETWORK,
+                lambda circ: should_use_tensor_network(circ),
+            ),
+            # Prefer PennyLane for parametrized/variational circuits
+            (
+                BackendType.PENNYLANE,
+                lambda circ: hasattr(circ, "parameters") and len(circ.parameters) > 0,
+            ),
+            # Prefer PennyLane for ML/optimization families when available
+            (
+                BackendType.PENNYLANE,
+                lambda circ: _belongs_to_families(circ, {"machine_learning", "optimization"}),
+            ),
         ]
 
     def _detect_system_context(self) -> UserContext:
@@ -258,6 +284,9 @@ class EnhancedQuantumRouter:
             apple_silicon=platform.machine() in ["arm64", "aarch64"],
             cuda_capable=self._is_cuda_available(),
             platform_name=platform.system(),
+            rocm_capable=False,
+            oneapi_capable=False,
+            opencl_available=False,
         )
 
         return UserContext(
@@ -368,17 +397,41 @@ class EnhancedQuantumRouter:
         """Check backend availability."""
         try:
             if backend == BackendType.STIM:
-                import stim
+                import importlib.util
 
-                return True
+                return importlib.util.find_spec("stim") is not None
             elif backend == BackendType.JAX_METAL:
                 return self.user_context.hardware_profile.apple_silicon
             elif backend == BackendType.CUDA:
                 return self.user_context.hardware_profile.cuda_capable
             elif backend == BackendType.DDSIM:
-                import mqt.ddsim  # type: ignore
+                import importlib.util
 
-                return True
+                return importlib.util.find_spec("mqt.ddsim") is not None
+            elif backend == BackendType.CIRQ:
+                import importlib.util
+
+                return importlib.util.find_spec("cirq") is not None
+            elif backend == BackendType.PENNYLANE:
+                import importlib.util
+
+                return importlib.util.find_spec("pennylane") is not None
+            elif backend == BackendType.QULACS:
+                import importlib.util
+
+                return importlib.util.find_spec("qulacs") is not None
+            elif backend == BackendType.OPENCL:
+                import importlib.util
+                return importlib.util.find_spec("pyopencl") is not None
+            elif backend == BackendType.BRAKET:
+                import importlib.util
+                return importlib.util.find_spec("braket") is not None
+            elif backend == BackendType.PYQUIL:
+                import importlib.util
+                return importlib.util.find_spec("pyquil") is not None
+            elif backend == BackendType.QSHARP:
+                import importlib.util
+                return importlib.util.find_spec("qsharp") is not None
             else:
                 return True
         except ImportError:
@@ -398,6 +451,18 @@ class EnhancedQuantumRouter:
         from ..router import simulate as router_simulate
 
         return router_simulate(circuit, shots=shots)
+
+
+def _belongs_to_families(circuit: QuantumCircuit, families: set[str]) -> bool:
+    """Return True if circuit likely belongs to any of the given algorithm families."""
+    try:
+        from .context_detection import CircuitFamilyDetector
+
+        detector = CircuitFamilyDetector()
+        detected = set(detector.detect_circuit_family(circuit))
+        return bool(detected & families)
+    except Exception:
+        return False
 
 
 def _topology_prefers_mps(circuit: QuantumCircuit) -> bool:

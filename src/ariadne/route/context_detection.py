@@ -298,6 +298,9 @@ class HardwareProfiler:
             apple_silicon=self._detect_apple_silicon(),
             cuda_capable=self._detect_cuda_capable(),
             platform_name=platform.system(),
+            rocm_capable=self._detect_rocm_capable(),
+            oneapi_capable=self._detect_oneapi_capable(),
+            opencl_available=self._detect_opencl_available(),
         )
 
     def _detect_cpu_cores(self) -> int:
@@ -332,6 +335,42 @@ class HardwareProfiler:
             import cupy
 
             return cupy.cuda.runtime.getDeviceCount() > 0
+        except Exception:
+            return False
+
+    def _detect_rocm_capable(self) -> bool:
+        """Detect AMD ROCm capability (best-effort)."""
+        try:
+            import os
+
+            # Minimal heuristic; robust ROCm detection requires system tools
+            return bool(os.environ.get("ROCM_PATH"))
+        except Exception:
+            return False
+
+    def _detect_oneapi_capable(self) -> bool:
+        """Detect Intel oneAPI GPU capability (best-effort via dpctl)."""
+        try:
+            import dpctl  # type: ignore
+
+            try:
+                devices = dpctl.get_devices()
+                return bool(devices)
+            except Exception:
+                return True  # dpctl present but devices not queryable
+        except Exception:
+            return False
+
+    def _detect_opencl_available(self) -> bool:
+        """Detect OpenCL availability via pyopencl."""
+        try:
+            import pyopencl as cl  # type: ignore
+
+            try:
+                plats = cl.get_platforms()
+                return len(plats) > 0
+            except Exception:
+                return True  # pyopencl available but no platforms
         except Exception:
             return False
 

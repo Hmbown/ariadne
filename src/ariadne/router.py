@@ -169,6 +169,125 @@ def _simulate_ddsim(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
         raise SimulationError(f"DDSIM simulation failed: {exc}", backend="ddsim") from exc
 
 
+def _simulate_cirq(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    """Simulate using the Cirq backend wrapper if available."""
+    logger = get_logger("router")
+
+    try:
+        from .backends.cirq_backend import CirqBackend
+    except ImportError as exc:
+        raise BackendUnavailableError("cirq", "Cirq not installed") from exc
+
+    try:
+        backend = CirqBackend()
+        return backend.simulate(circuit, shots)
+    except Exception as exc:
+        logger.log_simulation_error(exc, backend="cirq")
+        raise SimulationError(f"Cirq simulation failed: {exc}", backend="cirq") from exc
+
+
+def _simulate_pennylane(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    """Simulate using the PennyLane backend wrapper if available."""
+    logger = get_logger("router")
+
+    try:
+        from .backends.pennylane_backend import PennyLaneBackend
+    except ImportError as exc:
+        raise BackendUnavailableError("pennylane", "PennyLane not installed") from exc
+
+    try:
+        backend = PennyLaneBackend()
+        return backend.simulate(circuit, shots)
+    except Exception as exc:
+        logger.log_simulation_error(exc, backend="pennylane")
+        raise SimulationError(f"PennyLane simulation failed: {exc}", backend="pennylane") from exc
+
+
+def _simulate_qulacs(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    """Simulate using the Qulacs backend wrapper if available."""
+    logger = get_logger("router")
+
+    try:
+        from .backends.qulacs_backend import QulacsBackend
+    except ImportError as exc:
+        raise BackendUnavailableError("qulacs", "Qulacs not installed") from exc
+
+    try:
+        backend = QulacsBackend()
+        return backend.simulate(circuit, shots)
+    except Exception as exc:
+        logger.log_simulation_error(exc, backend="qulacs")
+        raise SimulationError(f"Qulacs simulation failed: {exc}", backend="qulacs") from exc
+
+
+def _simulate_pyquil(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    """Simulate using the PyQuil backend (skeleton, falls back to Qiskit)."""
+    logger = get_logger("router")
+
+    try:
+        from .backends.experimental.pyquil_backend import PyQuilBackend
+    except ImportError as exc:
+        raise BackendUnavailableError("pyquil", "PyQuil not installed") from exc
+
+    try:
+        backend = PyQuilBackend()
+        return backend.simulate(circuit, shots)
+    except Exception as exc:
+        logger.log_simulation_error(exc, backend="pyquil")
+        raise SimulationError(f"PyQuil simulation failed: {exc}", backend="pyquil") from exc
+
+
+def _simulate_braket(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    """Simulate using the Braket backend (skeleton, falls back to Qiskit)."""
+    logger = get_logger("router")
+
+    try:
+        from .backends.experimental.braket_backend import BraketBackend
+    except ImportError as exc:
+        raise BackendUnavailableError("braket", "Braket SDK not installed") from exc
+
+    try:
+        backend = BraketBackend()
+        return backend.simulate(circuit, shots)
+    except Exception as exc:
+        logger.log_simulation_error(exc, backend="braket")
+        raise SimulationError(f"Braket simulation failed: {exc}", backend="braket") from exc
+
+
+def _simulate_qsharp(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    """Simulate using the Q# backend (skeleton, falls back to Qiskit)."""
+    logger = get_logger("router")
+
+    try:
+        from .backends.experimental.qsharp_backend import QSharpBackend
+    except ImportError as exc:
+        raise BackendUnavailableError("qsharp", "Q# Python bridge not installed") from exc
+
+    try:
+        backend = QSharpBackend()
+        return backend.simulate(circuit, shots)
+    except Exception as exc:
+        logger.log_simulation_error(exc, backend="qsharp")
+        raise SimulationError(f"Q# simulation failed: {exc}", backend="qsharp") from exc
+
+
+def _simulate_opencl(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    """Simulate using the OpenCL backend (skeleton, falls back to Qiskit)."""
+    logger = get_logger("router")
+
+    try:
+        from .backends.experimental.opencl_backend import OpenCLBackend
+    except ImportError as exc:
+        raise BackendUnavailableError("opencl", "pyopencl not installed") from exc
+
+    try:
+        backend = OpenCLBackend()
+        return backend.simulate(circuit, shots)
+    except Exception as exc:
+        logger.log_simulation_error(exc, backend="opencl")
+        raise SimulationError(f"OpenCL simulation failed: {exc}", backend="opencl") from exc
+
+
 def _simulate_cuda(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
     logger = get_logger("router")
 
@@ -299,6 +418,20 @@ def _execute_simulation(
             counts = _simulate_mps(circuit, shots)
         elif backend == BackendType.CUDA:
             counts = _simulate_cuda(circuit, shots)
+        elif backend == BackendType.CIRQ:
+            counts = _simulate_cirq(circuit, shots)
+        elif backend == BackendType.PENNYLANE:
+            counts = _simulate_pennylane(circuit, shots)
+        elif backend == BackendType.QULACS:
+            counts = _simulate_qulacs(circuit, shots)
+        elif backend == BackendType.PYQUIL:
+            counts = _simulate_pyquil(circuit, shots)
+        elif backend == BackendType.BRAKET:
+            counts = _simulate_braket(circuit, shots)
+        elif backend == BackendType.QSHARP:
+            counts = _simulate_qsharp(circuit, shots)
+        elif backend == BackendType.OPENCL:
+            counts = _simulate_opencl(circuit, shots)
         else:
             # Fallback for unknown or unhandled backend types
             logger.warning(f"Unknown backend {backend_name} selected, falling back to Qiskit")

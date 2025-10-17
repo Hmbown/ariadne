@@ -17,6 +17,15 @@ class BackendType(Enum):
     DDSIM = "ddsim"
     CUDA = "cuda"
     MPS = "mps"
+    CIRQ = "cirq"
+    PENNYLANE = "pennylane"
+    QULACS = "qulacs"
+    BRAKET = "braket"
+    PYQUIL = "pyquil"
+    QSHARP = "qsharp"
+    OPENCL = "opencl"
+    ROCM = "rocm"
+    ONEAPI = "oneapi"
 
 
 @dataclass

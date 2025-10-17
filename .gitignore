@@ -50,3 +50,5 @@ ENV/
 .coverage
 htmlcov/
 .ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
