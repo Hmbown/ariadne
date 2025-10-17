@@ -13,9 +13,9 @@
 
 </div>
 
-Ariadne is an intelligent quantum circuit routing system that automatically analyzes circuit properties and selects the optimal simulator backend. By leveraging mathematical analysis of circuit structure (entropy, treewidth, Clifford ratio), Ariadne delivers significant productivity improvements over manual backend selection.
+Ariadne is an intelligent quantum circuit routing system that automatically analyzes circuit properties and selects the optimal simulator backend. Like the mythological thread that guided Theseus through the labyrinth, Ariadne guides developers through the complex landscape of quantum simulators to find optimal performance paths.
 
-The routing system is designed for transparency and determinism - every routing decision is based on measurable circuit characteristics and can be audited for correctness.
+The routing system prioritizes transparency and determinism - every routing decision is based on measurable circuit characteristics and can be audited for correctness.
 
 [📚 Documentation Site](https://hmbown.github.io/ariadne) • [📖 Local Docs](docs/README.md) • [💡 Examples](examples/README.md) • [🚀 Getting Started](#-getting-started) • [📊 Performance](#-performance) • [🤝 Contributing](#-contributing)
 
