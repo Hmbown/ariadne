@@ -279,9 +279,9 @@ class TestPerformanceStability:
 
         # Execution times should be reasonably consistent (CV < 65%)
         # Further relaxed threshold due to system variability and measurement noise
-        assert (
-            coefficient_of_variation < 0.65
-        ), f"Execution times too variable: CV={coefficient_of_variation}"
+        assert coefficient_of_variation < 0.65, (
+            f"Execution times too variable: CV={coefficient_of_variation}"
+        )
 
     def test_memory_stability(self):
         """Test that memory usage is stable across multiple runs."""

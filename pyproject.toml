@@ -4,7 +4,7 @@ description = "Intelligent quantum circuit routing system with automatic backend
 readme = "README.md"
 requires-python = ">=3.11"
 dynamic = ["version"]
-license = "Apache-2.0"
+license = {text = "Apache-2.0"}
 authors = [
   { name = "Hunter Brown", email = "hunter@hmbown.dev" }
 ]
@@ -55,6 +55,7 @@ viz = [
 dev = [
   "pytest>=7.0",
   "pytest-cov>=3.0",
+  "pytest-asyncio>=0.21.0",
   "ruff>=0.6.0",
   "pre-commit>=3.5",
   "mypy>=1.11.0",
@@ -109,6 +110,8 @@ strict_equality = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --tb=short --strict-markers"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 markers = [
   "slow: marks tests as slow (deselect with '-m \"not slow\"')",
   "integration: marks tests as integration tests",

@@ -524,9 +524,9 @@ Examples:
                         times.append(end_time - start_time)
                         success_count += 1
 
-                        print(f"  Iteration {i+1}: {end_time - start_time:.4f}s")
+                        print(f"  Iteration {i + 1}: {end_time - start_time:.4f}s")
                     except Exception as e:
-                        print(f"  Iteration {i+1}: Failed - {e}")
+                        print(f"  Iteration {i + 1}: Failed - {e}")
 
                 # Calculate statistics
                 if times:
@@ -544,12 +544,12 @@ Examples:
                     }
 
                     print(
-                        f"  Success rate: {success_count}/{args.iterations} ({success_count/args.iterations:.2%})"
+                        f"  Success rate: {success_count}/{args.iterations} ({success_count / args.iterations:.2%})"
                     )
                     print(f"  Average time: {avg_time:.4f}s")
                     print(f"  Min time: {min_time:.4f}s")
                     print(f"  Max time: {max_time:.4f}s")
-                    print(f"  Throughput: {args.shots/avg_time:.0f} shots/s")
+                    print(f"  Throughput: {args.shots / avg_time:.0f} shots/s")
                 else:
                     print("  All iterations failed")
 
