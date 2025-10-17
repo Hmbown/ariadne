@@ -111,16 +111,27 @@ Ariadne's core innovation is its ability to mathematically analyze a circuit's s
 
 ### Transparent Decision Making
 
-Ariadne provides complete transparency into why a circuit was routed to a specific backend:
+Ariadne provides complete transparency into why a circuit was routed to a specific backend. You can inspect the entire decision path through the routing tree.
 
 ```python
-from ariadne import QuantumRouter
+from ariadne.route.routing_tree import explain_routing, show_routing_tree
+from qiskit import QuantumCircuit
 
-router = QuantumRouter()
-decision = router.select_optimal_backend(your_circuit)
-print(f"Recommended backend: {decision.recommended_backend}")
-print(f"Circuit entropy: {decision.circuit_entropy:.3f}")
-print(f"Reasoning: {decision.reasoning}")
+# Create a circuit
+qc = QuantumCircuit(2, 2)
+qc.h(0)
+qc.cx(0, 1)
+qc.measure_all()
+
+# Get a detailed, human-readable explanation of the routing decision
+explanation = explain_routing(qc)
+# explanation is a human-readable string describing the routing decision,
+# e.g.:
+# "Circuit routed to backend 'qiskit_simulator' because it has 2 qubits and no advanced gates."
+print(explanation)
+
+# You can also visualize the entire routing tree
+print(show_routing_tree())
 ```
 
 ---
@@ -263,14 +274,7 @@ Available routing strategies:
 - `CUDA_OPTIMIZED` - GPU acceleration focused
 - `AUTO_DETECT` - Intelligent analysis (default)
 
-router = QuantumRouter()
-decision = router.select_optimal_backend(your_circuit)
 
-print(f"Analysis Results:")
-print(f"  Recommended: {decision.recommended_backend}")
-print(f"  Confidence: {decision.confidence_score:.2f}")
-print(f"  Entropy: {decision.circuit_entropy:.3f}")
-print(f"  Reasoning: {decision.reasoning}")
 ```
 
 ---
