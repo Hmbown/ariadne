@@ -152,7 +152,7 @@ class AriadneLogger:
             "Simulation completed",
             execution_time=f"{execution_time:.4f}s",
             shots=shots,
-            throughput=f"{shots/execution_time:.1f} shots/s",
+            throughput=f"{shots / execution_time:.1f} shots/s",
             **kwargs,
         )
 
@@ -173,7 +173,7 @@ class AriadneLogger:
             resource_type=resource_type,
             usage=f"{usage:.1f}",
             limit=f"{limit:.1f}",
-            usage_percent=f"{(usage/limit)*100:.1f}%",
+            usage_percent=f"{(usage / limit) * 100:.1f}%",
         )
 
 
