@@ -244,10 +244,34 @@ result = simulate(qc, shots=1000)
 print(f"Backend used: {result.backend_used}")  # -> stim
 ```
 
-### Inspecting Routing Decisions
+### Advanced Routing Control
+
+For users who need fine-grained control over the routing process:
 
 ```python
-from ariadne import QuantumRouter
+from ariadne import ComprehensiveRoutingTree, RoutingStrategy
+
+# Initialize routing system
+router = ComprehensiveRoutingTree()
+
+# Use specific routing strategies
+decision = router.route_circuit(
+    circuit, 
+    strategy=RoutingStrategy.MEMORY_EFFICIENT
+)
+
+print(f"Selected: {decision.recommended_backend.value}")
+print(f"Confidence: {decision.confidence_score:.2f}")
+print(f"Expected speedup: {decision.expected_speedup:.1f}x")
+```
+
+Available routing strategies:
+- `SPEED_FIRST` - Prioritize execution speed
+- `MEMORY_EFFICIENT` - Optimize for memory usage
+- `CLIFFORD_OPTIMIZED` - Specialized for Clifford circuits
+- `APPLE_SILICON_OPTIMIZED` - Hardware-aware for M-series chips
+- `CUDA_OPTIMIZED` - GPU acceleration focused
+- `AUTO_DETECT` - Intelligent analysis (default)
 
 router = QuantumRouter()
 decision = router.select_optimal_backend(your_circuit)
