@@ -114,7 +114,7 @@ Ariadne's core innovation is its ability to mathematically analyze a circuit's s
 Ariadne provides complete transparency into why a circuit was routed to a specific backend. You can inspect the entire decision path through the routing tree.
 
 ```python
-from ariadne import explain_routing, show_routing_tree
+from ariadne.route.routing_tree import explain_routing, show_routing_tree
 from qiskit import QuantumCircuit
 
 # Create a circuit
