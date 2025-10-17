@@ -2,12 +2,12 @@
 
 # Ariadne
 
-**Intelligent Quantum Circuit Routing - No ML, Just Math**
+**Intelligent Quantum Circuit Routing**
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CI/CD Pipeline](https://img.shields.io/github/actions/workflow/status/Shannon-Labs/ariadne/ci.yml?branch=main&label=CI%2FCD&style=for-the-badge)](https://github.com/Shannon-Labs/ariadne/actions/workflows/ci.yml)
-[![codecov](https://img.shields.io/codecov/c/github/Shannon-Labs/ariadne/main?style=for-the-badge)](https://codecov.io/gh/Shannon-Labs/ariadne)
+[![CI/CD Pipeline](https://img.shields.io/github/actions/workflow/status/Hmbown/ariadne/ci.yml?branch=main&label=CI%2FCD&style=for-the-badge)](https://github.com/Hmbown/ariadne/actions/workflows/ci.yml)
+[![codecov](https://img.shields.io/codecov/c/github/Hmbown/ariadne/main?style=for-the-badge)](https://codecov.io/gh/Hmbown/ariadne)
 [![Code Style](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![PyPI version](https://badge.fury.io/py/ariadne-quantum.svg)](https://badge.fury.io/py/ariadne-quantum)
 
@@ -17,7 +17,7 @@ Ariadne is an intelligent quantum circuit routing system that automatically anal
 
 The routing system is designed for transparency and determinism - every routing decision is based on measurable circuit characteristics and can be audited for correctness.
 
-[📚 Documentation Site](https://shannon-labs.github.io/ariadne) • [📖 Local Docs](docs/README.md) • [💡 Examples](examples/README.md) • [🚀 Getting Started](#-getting-started) • [📊 Performance](#-performance) • [🤝 Contributing](#-contributing)
+[📚 Documentation Site](https://hmbown.github.io/ariadne) • [📖 Local Docs](docs/README.md) • [💡 Examples](examples/README.md) • [🚀 Getting Started](#-getting-started) • [📊 Performance](#-performance) • [🤝 Contributing](#-contributing)
 
 ---
 

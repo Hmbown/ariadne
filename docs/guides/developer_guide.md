@@ -4,7 +4,7 @@ This guide provides comprehensive information for developers who want to contrib
 
 ## Project Overview
 
-Ariadne is an intelligent quantum circuit routing system that automatically analyzes circuit properties and selects the optimal simulator backend. The core philosophy is "No ML, Just Math" - using deterministic algorithms and mathematical analysis rather than machine learning for routing decisions.
+Ariadne is an intelligent quantum circuit routing system that automatically analyzes circuit properties and selects the optimal simulator backend. The core philosophy emphasizes transparent, deterministic algorithms and mathematical analysis for routing decisions.
 
 ### Architecture Overview
 
@@ -327,4 +327,4 @@ Ariadne is released under the Apache 2.0 License. See the LICENSE file for detai
 
 ---
 
-*Happy coding! Remember: No ML, Just Math.*
+*Happy coding! Remember: Transparency through mathematical analysis.*

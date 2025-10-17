@@ -7,7 +7,7 @@ Ariadne follows a **meritocratic governance model** that prioritizes technical e
 ## Core Principles
 
 ### Technical Philosophy
-- **No ML, Just Math**: All routing decisions must be based on explainable mathematical analysis
+- **Transparent Analysis**: All routing decisions must be based on explainable mathematical analysis
 - **Performance Transparency**: Honest benchmarks and clear limitations documentation
 - **Algorithmic Accountability**: Every routing decision must be traceable and explainable
 - **Community-Driven Development**: Feature priorities driven by real user needs, not marketing

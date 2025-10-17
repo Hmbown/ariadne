@@ -84,4 +84,4 @@ We welcome contributions to improve our documentation! Please see our [Contribut
 
 ---
 
-*Ariadne: Intelligent Quantum Routing - No ML, Just Math*
+*Ariadne: Intelligent Quantum Routing*
