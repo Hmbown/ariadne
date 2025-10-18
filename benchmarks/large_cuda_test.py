@@ -73,7 +73,7 @@ def create_large_circuits() -> dict[str, QuantumCircuit]:
 
     # Deep circuit (12 qubits, many layers)
     qc = QuantumCircuit(12, 12)
-    for layer in range(10):  # 10 layers
+    for _ in range(10):  # 10 layers
         for i in range(12):
             qc.h(i)
         for i in range(11):

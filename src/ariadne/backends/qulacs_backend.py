@@ -15,8 +15,9 @@ Qulacs Features:
 
 from __future__ import annotations
 
+import importlib.util
 import warnings
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -54,12 +55,7 @@ class QulacsBackend:
 
     def _check_qulacs_availability(self) -> bool:
         """Check if Qulacs is installed and available."""
-        try:
-            import qulacs
-
-            return True
-        except ImportError:
-            return False
+        return importlib.util.find_spec("qulacs") is not None
 
     def _check_gpu_availability(self) -> bool:
         """Check if GPU acceleration is available."""
@@ -69,8 +65,11 @@ class QulacsBackend:
         try:
             import qulacs
 
-            # Try to create a GPU state vector
-            test_state = qulacs.QuantumStateGpu(2)
+            quantum_state_gpu = getattr(qulacs, "QuantumStateGpu", None)
+            if quantum_state_gpu is None:
+                return False
+
+            test_state = cast(Any, quantum_state_gpu)(2)
             del test_state
             return True
         except Exception:
@@ -99,9 +98,15 @@ class QulacsBackend:
 
             # Create quantum state
             if self.gpu_available:
-                state = qulacs.QuantumStateGpu(circuit.num_qubits)
+                quantum_state_gpu = getattr(qulacs, "QuantumStateGpu", None)
+                if quantum_state_gpu is None:
+                    raise RuntimeError("Qulacs GPU state class not available")
+                state = cast(Any, quantum_state_gpu)(circuit.num_qubits)
             else:
-                state = qulacs.QuantumStateCpu(circuit.num_qubits)
+                quantum_state_cpu = getattr(qulacs, "QuantumStateCpu", None)
+                if quantum_state_cpu is None:
+                    raise RuntimeError("Qulacs CPU state class not available")
+                state = cast(Any, quantum_state_cpu)(circuit.num_qubits)
 
             # Initialize state to |0...0>
             state.set_zero_state()
@@ -128,7 +133,7 @@ class QulacsBackend:
             else:
                 raise
 
-    def _convert_qiskit_to_qulacs(self, circuit: QuantumCircuit):
+    def _convert_qiskit_to_qulacs(self, circuit: QuantumCircuit) -> Any:
         """Convert Qiskit circuit to Qulacs circuit."""
         import qulacs
 
@@ -136,7 +141,7 @@ class QulacsBackend:
 
         # Mapping of Qiskit gates to Qulacs gates
         gate_mapping = {
-            "id": lambda qubit: qulacs.gate.I(qubit),
+            "id": lambda qubit: qulacs.gate.Identity(qubit),
             "x": lambda qubit: qulacs.gate.X(qubit),
             "y": lambda qubit: qulacs.gate.Y(qubit),
             "z": lambda qubit: qulacs.gate.Z(qubit),
@@ -162,7 +167,6 @@ class QulacsBackend:
         # Two-qubit gates
         two_qubit_mapping = {
             "cx": lambda control, target: qulacs.gate.CNOT(control, target),
-            "cy": lambda control, target: qulacs.gate.CY(control, target),
             "cz": lambda control, target: qulacs.gate.CZ(control, target),
             "swap": lambda qubit1, qubit2: qulacs.gate.SWAP(qubit1, qubit2),
         }
@@ -225,16 +229,18 @@ class QulacsBackend:
 
         return qulacs_circuit
 
-    def _simulate_measurements(self, state, circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    def _simulate_measurements(
+        self, state: Any, circuit: QuantumCircuit, shots: int
+    ) -> dict[str, int]:
         """Simulate measurements for circuits with explicit measurement operations."""
         # For now, measure all qubits at the end
         # TODO: Implement proper mid-circuit measurements
         return self._measure_all_qubits(state, circuit.num_qubits, shots)
 
-    def _measure_all_qubits(self, state, num_qubits: int, shots: int) -> dict[str, int]:
+    def _measure_all_qubits(self, state: Any, num_qubits: int, shots: int) -> dict[str, int]:
         """Measure all qubits and return counts."""
 
-        counts = {}
+        counts: dict[str, int] = {}
 
         for _ in range(shots):
             # Sample from the probability distribution
@@ -262,8 +268,8 @@ class QulacsBackend:
 
             return {str(k): v for k, v in counts.items()}
 
-        except ImportError:
-            raise RuntimeError("Neither Qulacs nor Qiskit BasicProvider available")
+        except ImportError as err:
+            raise RuntimeError("Neither Qulacs nor Qiskit BasicProvider available") from err
 
     def get_backend_info(self) -> dict[str, Any]:
         """Get information about the backend configuration."""
@@ -279,7 +285,7 @@ class QulacsBackend:
             try:
                 import qulacs
 
-                info["qulacs_version"] = qulacs.__version__
+                info["qulacs_version"] = getattr(qulacs, "__version__", "unknown")
 
                 # GPU memory info if available
                 if self.gpu_available:
@@ -300,7 +306,7 @@ class QulacsBackend:
     def estimate_memory_usage(self, num_qubits: int) -> float:
         """Estimate memory usage in MB for given number of qubits."""
         # State vector requires 2^n complex numbers (16 bytes each for complex128)
-        state_vector_bytes = (2**num_qubits) * 16
+        state_vector_bytes = int(2**num_qubits) * 16
 
         # Add overhead for circuit operations and temporary storage
         overhead_factor = 1.5
@@ -381,12 +387,7 @@ class QulacsBackend:
 
 def is_qulacs_available() -> bool:
     """Check if Qulacs is available for use."""
-    try:
-        import qulacs
-
-        return True
-    except ImportError:
-        return False
+    return importlib.util.find_spec("qulacs") is not None
 
 
 def is_qulacs_gpu_available() -> bool:
@@ -398,10 +399,12 @@ def is_qulacs_gpu_available() -> bool:
         import qulacs
 
         # Try to create a GPU state vector
-        test_state = qulacs.QuantumStateGpu(2)
+        test_state = qulacs.QuantumState(
+            2
+        )  # Use generic QuantumState, it will use GPU if available
         del test_state
         return True
-    except:
+    except Exception:
         return False
 
 
@@ -461,7 +464,7 @@ def benchmark_qulacs_performance(
 
     from qiskit.circuit.random import random_circuit
 
-    results = {"qulacs_cpu": {}, "qulacs_gpu": {}, "qiskit": {}}
+    results: dict[str, dict] = {"qulacs_cpu": {}, "qulacs_gpu": {}, "qiskit": {}}
 
     for num_qubits in num_qubits_list:
         print(f"Benchmarking {num_qubits} qubits...")

@@ -13,7 +13,7 @@ import sys
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 try:
     import yaml
@@ -26,21 +26,17 @@ try:
     from ariadne.core import ConfigurationError
 except ImportError:
     # Fallback for when running as a script
-    import os
-    import sys
-
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from ariadne.core import ConfigurationError
 
-try:
-    from .validation import ConfigurationValidator, ValidationResult
-except ImportError:
-    # Fallback for when running as a script
-    import os
-    import sys
-
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    from validation import ConfigurationValidator
+if TYPE_CHECKING:
+    from .validation import ConfigurationValidator
+else:
+    try:
+        from .validation import ConfigurationValidator
+    except ImportError:  # pragma: no cover
+        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+        from validation import ConfigurationValidator
 
 
 class ConfigFormat(Enum):
@@ -65,7 +61,7 @@ class ConfigSource:
     environment: str | None = None  # Environment-specific source
     required: bool = False  # Whether this source is required
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Post-initialization processing."""
         # Auto-detect format from path if not specified
         if self.path and not self.format:
@@ -96,7 +92,7 @@ class ProgressiveConfigLoader:
     configurations and progressive overrides.
     """
 
-    def __init__(self, validator: ConfigurationValidator | None = None):
+    def __init__(self, validator: ConfigurationValidator | None = None) -> None:
         """
         Initialize the progressive config loader.
 
@@ -231,7 +227,9 @@ class ProgressiveConfigLoader:
             except Exception as e:
                 if source.required:
                     raise ConfigLoadError(
-                        f"Required source {source.name} failed to load: {e}"
+                        "source",
+                        source.name,
+                        f"Required source {source.name} failed to load: {e}",
                     ) from e
                 else:
                     # Log warning but continue
@@ -243,7 +241,9 @@ class ProgressiveConfigLoader:
             if not result.is_valid:
                 error_messages = [issue.message for issue in result.error_issues]
                 raise ConfigLoadError(
-                    f"Configuration validation failed: {'; '.join(error_messages)}"
+                    schema_name or "config",
+                    self.loaded_config,
+                    f"Configuration validation failed: {'; '.join(error_messages)}",
                 )
 
         return self.loaded_config
@@ -257,17 +257,17 @@ class ProgressiveConfigLoader:
             # File-based source
             return self._load_file(source.path, source.format)
         else:
-            raise ConfigLoadError(f"Source {source.name} has no path or data")
+            raise ConfigLoadError("source", source.name, "Source has no path or data")
 
     def _load_file(self, path: str, format: ConfigFormat | None = None) -> dict[str, Any]:
         """Load configuration from a file."""
         file_path = Path(path)
 
         if not file_path.exists():
-            raise ConfigLoadError(f"Configuration file not found: {path}")
+            raise ConfigLoadError("file", path, "Configuration file not found")
 
         if not file_path.is_file():
-            raise ConfigLoadError(f"Configuration path is not a file: {path}")
+            raise ConfigLoadError("file", path, "Configuration path is not a file")
 
         # Auto-detect format if not specified
         if not format:
@@ -282,32 +282,66 @@ class ProgressiveConfigLoader:
             elif path.endswith(".env"):
                 format = ConfigFormat.ENV
             else:
-                raise ConfigLoadError(f"Cannot determine format for file: {path}")
+                raise ConfigLoadError("file_format", path, "Cannot determine format for file")
 
         # Load based on format
         try:
             with open(file_path, encoding="utf-8") as f:
                 if format == ConfigFormat.JSON:
-                    return json.load(f)
+                    data = json.load(f)
+                    if not isinstance(data, dict):
+                        raise ConfigLoadError(
+                            "file",
+                            path,
+                            "JSON configuration must be a JSON object",
+                        )
+                    return cast(dict[str, Any], data)
                 elif format == ConfigFormat.YAML:
                     if not YAML_AVAILABLE:
-                        raise ConfigLoadError("YAML support not available. Install PyYAML.")
-                    return yaml.safe_load(f) or {}
+                        raise ConfigLoadError(
+                            "file_format",
+                            "yaml",
+                            "YAML support not available. Install PyYAML.",
+                        )
+                    data = yaml.safe_load(f) or {}
+                    if not isinstance(data, dict):
+                        raise ConfigLoadError(
+                            "file",
+                            path,
+                            "YAML configuration must be a mapping",
+                        )
+                    return cast(dict[str, Any], data)
                 elif format == ConfigFormat.TOML:
                     try:
                         import tomllib
 
                         with open(file_path, "rb") as fb:
-                            return tomllib.load(fb)
+                            data = tomllib.load(fb)
+                            if not isinstance(data, dict):
+                                raise ConfigLoadError(
+                                    "file",
+                                    path,
+                                    "TOML configuration must be a mapping",
+                                )
+                            return cast(dict[str, Any], data)
                     except ImportError:
                         try:
                             import toml
 
-                            return toml.load(f)
-                        except ImportError:
+                            data = toml.load(f)
+                            if not isinstance(data, dict):
+                                raise ConfigLoadError(
+                                    "file",
+                                    path,
+                                    "TOML configuration must be a mapping",
+                                )
+                            return cast(dict[str, Any], data)
+                        except ImportError as exc:
                             raise ConfigLoadError(
-                                "TOML support not available. Install tomli or toml."
-                            )
+                                "file_format",
+                                "toml",
+                                "TOML support not available. Install tomli or toml.",
+                            ) from exc
                 elif format == ConfigFormat.INI:
                     import configparser
 
@@ -317,7 +351,7 @@ class ProgressiveConfigLoader:
                     return {section: dict(parser[section]) for section in parser.sections()}
                 elif format == ConfigFormat.ENV:
                     # Parse .env file format
-                    env_data = {}
+                    env_data: dict[str, Any] = {}
                     for line in f:
                         line = line.strip()
                         if line and not line.startswith("#"):
@@ -333,9 +367,13 @@ class ProgressiveConfigLoader:
                                 env_data[key] = value
                     return env_data
                 else:
-                    raise ConfigLoadError(f"Unsupported format: {format}")
+                    raise ConfigLoadError(
+                        "file_format",
+                        format.value if isinstance(format, ConfigFormat) else str(format),
+                        "Unsupported configuration format",
+                    )
         except Exception as e:
-            raise ConfigLoadError(f"Failed to load file {path}: {e}") from e
+            raise ConfigLoadError("file", path, f"Failed to load file {path}: {e}") from e
 
     def _merge_config(self, base: dict[str, Any], override: dict[str, Any]) -> None:
         """Merge override configuration into base configuration."""
@@ -359,7 +397,7 @@ class ProgressiveConfigLoader:
 class ConfigTemplate:
     """Template for generating configuration files."""
 
-    def __init__(self, name: str, description: str = ""):
+    def __init__(self, name: str, description: str = "") -> None:
         """
         Initialize configuration template.
 
@@ -393,7 +431,7 @@ class ConfigTemplate:
             Configuration file content
         """
         # Combine all sections
-        config_data = {}
+        config_data: dict[str, Any] = {}
         for section_name, section_info in self.sections.items():
             config_data[section_name] = section_info["data"]
 
@@ -402,22 +440,34 @@ class ConfigTemplate:
             return json.dumps(config_data, indent=2)
         elif format == ConfigFormat.YAML:
             if not YAML_AVAILABLE:
-                raise ConfigLoadError("YAML support not available. Install PyYAML.")
+                raise ConfigLoadError(
+                    "format",
+                    "yaml",
+                    "YAML support not available. Install PyYAML.",
+                )
             return yaml.dump(config_data, default_flow_style=False, sort_keys=False)
         elif format == ConfigFormat.TOML:
             try:
                 import tomli_w
 
-                return tomli_w.dumps(config_data)
+                return cast(str, tomli_w.dumps(config_data))
             except ImportError:
                 try:
                     import toml
 
                     return toml.dumps(config_data)
-                except ImportError:
-                    raise ConfigLoadError("TOML support not available. Install tomli-w or toml.")
+                except ImportError as exc:
+                    raise ConfigLoadError(
+                        "format",
+                        "toml",
+                        "TOML support not available. Install tomli-w or toml.",
+                    ) from exc
         else:
-            raise ConfigLoadError(f"Unsupported format for template generation: {format}")
+            raise ConfigLoadError(
+                "format",
+                format.value if isinstance(format, ConfigFormat) else str(format),
+                "Unsupported format for template generation",
+            )
 
     def save(self, path: str, format: ConfigFormat | None = None) -> None:
         """

@@ -12,12 +12,15 @@ import json
 import pickle
 import time
 from abc import ABC, abstractmethod
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from functools import wraps
+from typing import Any, ParamSpec, TypeVar, cast
 
 from qiskit import QuantumCircuit
+from qiskit.circuit.instruction import Instruction
+from qiskit.circuit.quantumcircuit import CircuitInstruction
 
 try:
     from ariadne.core import get_logger
@@ -30,6 +33,11 @@ except ImportError:
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from ariadne.core import get_logger
     from ariadne.types import SimulationResult
+
+
+P = ParamSpec("P")
+R = TypeVar("R")
+SimulationCallable = Callable[..., SimulationResult]
 
 
 class CachePolicy(Enum):
@@ -53,7 +61,7 @@ class CacheEntry:
     ttl: float | None = None  # Time to live in seconds
     size: int = 0  # Size in bytes
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Post-initialization processing."""
         if self.last_accessed == 0:
             self.last_accessed = self.created_at
@@ -107,7 +115,7 @@ class CacheBackend(ABC):
 class MemoryCacheBackend(CacheBackend):
     """In-memory cache backend."""
 
-    def __init__(self, max_size: int = 1000, max_memory_mb: int = 100):
+    def __init__(self, max_size: int = 1000, max_memory_mb: int = 100) -> None:
         """
         Initialize the memory cache backend.
 
@@ -152,7 +160,7 @@ class MemoryCacheBackend(CacheBackend):
         # Calculate size
         try:
             size = len(pickle.dumps(value))
-        except:
+        except Exception:
             size = 1024  # Default size estimate
 
         # Check if we need to evict entries
@@ -390,17 +398,18 @@ class CircuitHasher:
         }
 
         for item in circuit.data:
-            if hasattr(item, "operation"):
+            if isinstance(item, CircuitInstruction):
                 instruction = item.operation
                 qargs = list(item.qubits)
                 cargs = list(item.clbits)
             else:  # Legacy tuple form
-                instruction, qargs, cargs = item  # type: ignore[misc]
+                instruction_tuple = cast(tuple[Instruction, list[Any], list[Any]], item)
+                instruction, qargs, cargs = instruction_tuple
 
             instruction_data = {
                 "name": instruction.name,
                 "params": [
-                    float(p) if isinstance(p, (int, float)) else str(p) for p in instruction.params
+                    float(p) if isinstance(p, int | float) else str(p) for p in instruction.params
                 ],
                 "qubits": [circuit.find_bit(q).index for q in qargs],
                 "clbits": [circuit.find_bit(c).index for c in cargs],
@@ -437,7 +446,7 @@ class CircuitHasher:
 class SimulationCache:
     """Specialized cache for quantum circuit simulation results."""
 
-    def __init__(self, cache: IntelligentCache | None = None):
+    def __init__(self, cache: IntelligentCache | None = None) -> None:
         """
         Initialize the simulation cache.
 
@@ -506,7 +515,7 @@ class SimulationCache:
                 # Parse the key to extract backend information
                 # This is a simplified implementation
                 return backend in key
-            except:
+            except Exception:
                 return False
 
         # Add temporary rule and invalidate
@@ -529,7 +538,7 @@ class SimulationCache:
                 if "backend_health" in value.metadata:
                     health = value.metadata["backend_health"]
                     return health.lower() not in ["healthy", "good"]
-        except:
+        except Exception:
             pass
 
         return False
@@ -538,7 +547,7 @@ class SimulationCache:
 class Memoizer:
     """Memoization utility for expensive functions."""
 
-    def __init__(self, cache: IntelligentCache | None = None):
+    def __init__(self, cache: IntelligentCache | None = None) -> None:
         """
         Initialize the memoizer.
 
@@ -548,7 +557,7 @@ class Memoizer:
         self.cache = cache or IntelligentCache()
         self.logger = get_logger("memoizer")
 
-    def memoize(self, ttl: float | None = None):
+    def memoize(self, ttl: float | None = None) -> Callable[[Callable[P, R]], Callable[P, R]]:
         """
         Decorator for memoizing functions.
 
@@ -559,15 +568,16 @@ class Memoizer:
             Decorated function
         """
 
-        def decorator(func: Callable) -> Callable:
-            def wrapper(*args, **kwargs):
+        def decorator(func: Callable[P, R]) -> Callable[P, R]:
+            @wraps(func)
+            def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
                 # Generate cache key
                 cache_key = self._generate_cache_key(func, args, kwargs)
 
                 # Try to get from cache
                 cached_result = self.cache.get(cache_key)
                 if cached_result is not None:
-                    return cached_result
+                    return cast(R, cached_result)
 
                 # Call function
                 result = func(*args, **kwargs)
@@ -577,11 +587,13 @@ class Memoizer:
 
                 return result
 
-            return wrapper
+            return cast(Callable[P, R], wrapper)
 
         return decorator
 
-    def _generate_cache_key(self, func: Callable, args: tuple, kwargs: dict) -> str:
+    def _generate_cache_key(
+        self, func: Callable[..., Any], args: tuple[Any, ...], kwargs: Mapping[str, Any]
+    ) -> str:
         """Generate a cache key for a function call."""
         # Create a deterministic representation of the function call
         key_data = {
@@ -596,11 +608,11 @@ class Memoizer:
 
     def _serialize_args(self, args: Any) -> Any:
         """Serialize arguments for cache key generation."""
-        if isinstance(args, (str, int, float, bool, type(None))):
+        if isinstance(args, str | int | float | bool | type(None)):
             return args
-        elif isinstance(args, (list, tuple)):
+        elif isinstance(args, list | tuple):
             return [self._serialize_args(arg) for arg in args]
-        elif isinstance(args, dict):
+        elif isinstance(args, Mapping):
             return {k: self._serialize_args(v) for k, v in args.items()}
         elif isinstance(args, QuantumCircuit):
             return CircuitHasher.hash_circuit(args)
@@ -631,7 +643,7 @@ def get_memoizer() -> Memoizer:
     return _global_memoizer
 
 
-def cached_simulate(ttl: float | None = None):
+def cached_simulate(ttl: float | None = None) -> Callable[[SimulationCallable], SimulationCallable]:
     """
     Decorator for caching simulation results.
 
@@ -642,10 +654,14 @@ def cached_simulate(ttl: float | None = None):
         Decorated simulation function
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: SimulationCallable) -> SimulationCallable:
+        @wraps(func)
         def wrapper(
-            circuit: QuantumCircuit, shots: int = 1024, backend: str | None = None, **kwargs
-        ):
+            circuit: QuantumCircuit,
+            shots: int = 1024,
+            backend: str | None = None,
+            **kwargs: Any,
+        ) -> SimulationResult:
             # Get simulation cache
             cache = get_simulation_cache()
 
@@ -662,12 +678,12 @@ def cached_simulate(ttl: float | None = None):
 
             return result
 
-        return wrapper
+        return cast(SimulationCallable, wrapper)
 
     return decorator
 
 
-def memoize(ttl: float | None = None):
+def memoize(ttl: float | None = None) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """
     Decorator for memoizing function results.
 

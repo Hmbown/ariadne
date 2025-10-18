@@ -7,6 +7,7 @@ This module provides a CPU-based quantum circuit simulator using NumPy and Qiski
 from __future__ import annotations
 
 import logging
+from typing import Any, cast
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 class CPUBackend:
     """CPU-based quantum circuit simulator using statevector simulation."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         """Initialize the CPU backend."""
         self.name = "cpu_backend"
         self.supports_statevector = True
@@ -44,7 +45,7 @@ class CPUBackend:
             simulator = Aer.get_backend("statevector_simulator")
             job = execute(circuit, simulator, shots=shots)
             result = job.result()
-            counts = result.get_counts()
+            counts = cast(dict[str, int], result.get_counts())
 
             # Convert to string keys for consistency
             return {str(k): v for k, v in counts.items()}
@@ -65,7 +66,7 @@ class CPUBackend:
             rng = np.random.default_rng()
             outcomes = rng.choice(len(probabilities), size=shots, p=probabilities)
 
-            counts = {}
+            counts: dict[str, int] = {}
             num_qubits = circuit.num_qubits
 
             for outcome in outcomes:

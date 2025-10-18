@@ -63,6 +63,7 @@ def benchmark_circuit(circuit: QuantumCircuit, shots: int = 1000) -> dict:
             "time": cuda_time,
             "backend": "cuda",
             "mode": cuda_backend.backend_mode,
+            "sample_counts": dict(list(cuda_result.items())[:3]),
         }
     except Exception as e:
         results["cuda_direct"] = {"error": str(e)}

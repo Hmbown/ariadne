@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -23,7 +24,7 @@ class TensorNetworkBackend:
 
     def __init__(self, options: TensorNetworkOptions | None = None) -> None:
         self._options = options or TensorNetworkOptions()
-        self._optimizer = None
+        self._optimizer: Any | None = None
 
     def simulate(self, circuit: QuantumCircuit, shots: int) -> dict[str, int]:
         """Return measurement counts for ``circuit`` using tensor networks."""
@@ -45,7 +46,7 @@ class TensorNetworkBackend:
     # ------------------------------------------------------------------
     # Internal helpers
 
-    def _compile_to_tensor_network(self, circuit: QuantumCircuit):
+    def _compile_to_tensor_network(self, circuit: QuantumCircuit) -> Any:
         try:
             import qiskit.qasm2 as qasm2
             import quimb.tensor as qtn
@@ -62,7 +63,7 @@ class TensorNetworkBackend:
         except Exception as exc:  # pragma: no cover - conversion can fail for unsupported ops
             raise RuntimeError("Failed to convert circuit to tensor network") from exc
 
-    def _contract_statevector(self, quimb_circuit):
+    def _contract_statevector(self, quimb_circuit: Any) -> np.ndarray:
         try:
             import cotengra as ctg
         except ImportError as exc:  # pragma: no cover - optional dependency

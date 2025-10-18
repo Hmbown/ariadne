@@ -16,6 +16,7 @@ Intel-QS Features:
 
 from __future__ import annotations
 
+import importlib.util
 import warnings
 from typing import Any
 
@@ -68,13 +69,7 @@ class IntelQuantumSimulatorBackend:
             return result.returncode == 0
         except Exception:
             # Alternative: check for Python bindings
-            try:
-                # Placeholder import - actual module name may differ
-                import intelqs  # This would be the hypothetical Python binding
-
-                return True
-            except ImportError:
-                return False
+            return importlib.util.find_spec("intelqs") is not None
 
     def _configure_simulator(self):
         """Configure Intel-QS simulator parameters."""

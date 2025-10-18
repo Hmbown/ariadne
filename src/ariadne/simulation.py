@@ -193,7 +193,7 @@ class QuantumSimulator:
         # Performance tracking
         self.simulation_count = 0
         self.total_execution_time = 0.0
-        self.backend_usage = {}
+        self.backend_usage: dict[str, int] = {}
 
     def simulate(
         self, circuit: QuantumCircuit, options: SimulationOptions | None = None
@@ -237,7 +237,10 @@ class QuantumSimulator:
 
             if options.estimate_resources:
                 resource_estimate = estimate_circuit_resources(
-                    optimized_circuit, shots=options.shots
+                    optimized_circuit,
+                    shots=options.shots,
+                    include_magic_states=options.include_fault_tolerant,
+                    include_measurement=options.include_fault_tolerant,
                 )
 
         # Configure backend preferences
@@ -343,7 +346,11 @@ class QuantumSimulator:
     ) -> ResourceEstimate:
         """Estimate resources required for circuit execution."""
 
-        return estimate_circuit_resources(circuit, include_fault_tolerant=include_fault_tolerant)
+        return estimate_circuit_resources(
+            circuit,
+            include_magic_states=include_fault_tolerant,
+            include_measurement=include_fault_tolerant,
+        )
 
     def get_performance_stats(self) -> dict[str, Any]:
         """Get comprehensive performance statistics."""
@@ -572,7 +579,7 @@ def simulate_with_analysis(circuit: QuantumCircuit, shots: int = 1000) -> Enhanc
 
 
 def compare_backends(
-    circuit: QuantumCircuit, backends: list[str] = None, shots: int = 1000
+    circuit: QuantumCircuit, backends: list[str] | None = None, shots: int = 1000
 ) -> dict[str, EnhancedSimulationResult]:
     """Compare circuit performance across backends."""
 

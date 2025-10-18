@@ -24,9 +24,6 @@ class TestErrorHandling:
         qc.cx(0, 1)
         qc.measure_all()
 
-        router = EnhancedQuantumRouter()
-
-        # Skip this test for now - fallback mechanism needs refinement
         pytest.skip("Backend fallback mechanism needs refinement - skipping for now")
 
     def test_metal_backend_cpu_fallback(self):
@@ -126,9 +123,6 @@ class TestErrorHandling:
         qc.cx(0, 1)
         qc.measure_all()
 
-        router = EnhancedQuantumRouter()
-
-        # Skip this test for now - fallback chain needs refinement
         pytest.skip("Comprehensive fallback chain needs refinement - skipping for now")
 
     def test_warning_collection(self):

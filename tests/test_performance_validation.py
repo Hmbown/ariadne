@@ -21,8 +21,6 @@ try:
         BenchmarkResult,
         BenchmarkRunner,
         CircuitBenchmark,
-        PerformanceMetrics,
-        create_standard_benchmarks,
     )
 
     BENCHMARKS_AVAILABLE = True
@@ -30,18 +28,13 @@ except ImportError:
     BENCHMARKS_AVAILABLE = False
 
 try:
-    from ariadne.regression_detection import (
-        MetricType,
-        PerformanceRegressionDetector,
-        record_performance_metric,
-    )
+    from ariadne.regression_detection import PerformanceRegressionDetector
 
     REGRESSION_DETECTION_AVAILABLE = True
 except ImportError:
     REGRESSION_DETECTION_AVAILABLE = False
 
 try:
-    from ariadne.cross_platform_comparison import BenchmarkRunner as CrossPlatformRunner
     from ariadne.cross_platform_comparison import run_quick_comparison
 
     CROSS_PLATFORM_AVAILABLE = True
@@ -52,7 +45,7 @@ except ImportError:
 class PerformanceValidator:
     """Validates that backends meet minimum performance requirements."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.requirements = {
             "cpu_backend": {
                 "max_execution_time_per_shot": 0.001,  # 1ms per shot for small circuits
@@ -279,9 +272,9 @@ class TestPerformanceStability:
 
         # Execution times should be reasonably consistent (CV < 65%)
         # Further relaxed threshold due to system variability and measurement noise
-        assert (
-            coefficient_of_variation < 0.65
-        ), f"Execution times too variable: CV={coefficient_of_variation}"
+        assert coefficient_of_variation < 0.65, (
+            f"Execution times too variable: CV={coefficient_of_variation}"
+        )
 
     def test_memory_stability(self):
         """Test that memory usage is stable across multiple runs."""
@@ -308,9 +301,9 @@ class TestPerformanceStability:
         min_memory = min(memory_usages)
 
         # Allow for some variation but not excessive growth
-        # Skip this test due to unreliable memory measurement in test environment
         pytest.skip(
-            "Memory stability test skipped due to unreliable memory measurement in test environment"
+            "Memory stability test skipped due to unreliable measurements in CI "
+            f"(observed range {min_memory}–{max_memory} bytes)."
         )
 
 
@@ -349,11 +342,13 @@ class TestScalabilityBenchmarks:
 
             # Time should generally increase with more qubits
             # (Allow some variance due to circuit structure differences)
-            time_ratio = curr_time / prev_time
-            curr_qubits / prev_qubits
+            time_ratio = curr_time / prev_time if prev_time > 0 else float("inf")
+            qubit_ratio = curr_qubits / prev_qubits if prev_qubits > 0 else float("inf")
 
-            # Skip scalability test due to unreliable timing in test environment
-            pytest.skip("Qubit scaling test skipped due to unreliable timing in test environment")
+            pytest.skip(
+                "Qubit scaling test skipped due to unreliable timing in test environment "
+                f"(Δqubits={qubit_ratio:.2f}×, Δtime={time_ratio:.2f}×)."
+            )
 
 
 if __name__ == "__main__":

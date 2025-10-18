@@ -308,9 +308,9 @@ class BackendFallbackManager:
         )
 
         # Execute with fallback
-        attempts = []
-        final_result = None
-        fallback_reason = None
+        attempts: list[FallbackAttempt] = []
+        final_result: dict[str, int] | None = None
+        fallback_reason: FallbackReason | None = None
 
         for backend in fallback_chain:
             attempt_start = time.time()
@@ -440,7 +440,7 @@ class BackendFallbackManager:
 
         # Create result
         total_time = time.time() - start_time
-        result = FallbackResult(
+        fallback_result = FallbackResult(
             success=final_result is not None,
             backend_used=attempts[-1].backend if attempts else BackendType.QISKIT,
             attempts=attempts,
@@ -450,22 +450,22 @@ class BackendFallbackManager:
         )
 
         # Record in history
-        self._fallback_history.append(result)
+        self._fallback_history.append(fallback_result)
         if len(self._fallback_history) > self._max_history:
             self._fallback_history = self._fallback_history[-self._max_history :]
 
         # Log summary
-        if result.success:
+        if fallback_result.success:
             self.logger.info(
-                f"Fallback successful: {result.backend_used.value} after {result.num_attempts} attempts "
+                f"Fallback successful: {fallback_result.backend_used.value} after {fallback_result.num_attempts} attempts "
                 f"in {total_time:.3f}s"
             )
         else:
             self.logger.error(
-                f"Fallback failed after {result.num_attempts} attempts in {total_time:.3f}s"
+                f"Fallback failed after {fallback_result.num_attempts} attempts in {total_time:.3f}s"
             )
 
-        return result
+        return fallback_result
 
     def _simulate_with_backend(
         self, backend: BackendType, circuit: QuantumCircuit, shots: int
@@ -503,7 +503,7 @@ class BackendFallbackManager:
         average_time = total_time / total_fallbacks
 
         # Most common backend
-        backend_counts = {}
+        backend_counts: dict[BackendType, int] = {}
         for result in self._fallback_history:
             backend = result.successful_backend or result.first_backend
             backend_counts[backend] = backend_counts.get(backend, 0) + 1
@@ -513,7 +513,7 @@ class BackendFallbackManager:
         )
 
         # Most common fallback reason
-        reason_counts = {}
+        reason_counts: dict[FallbackReason, int] = {}
         for result in self._fallback_history:
             if result.fallback_reason:
                 reason_counts[result.fallback_reason] = (

@@ -36,7 +36,7 @@ from .core import (
 from .route.enhanced_router import EnhancedQuantumRouter
 
 # Comprehensive routing tree (internal use)
-from .route.routing_tree import ComprehensiveRoutingTree
+from .route.routing_tree import ComprehensiveRoutingTree, explain_routing, show_routing_tree
 
 # Main simulation interface
 from .router import simulate
@@ -52,9 +52,11 @@ try:
     _CUDA_AVAILABLE = True
 except ImportError:
     _CUDA_AVAILABLE = False
-    CUDABackend = None
-    get_cuda_info = None
-    simulate_cuda = None
+    from typing import Any
+
+    CUDABackend: Any = None
+    get_cuda_info: Any = None
+    simulate_cuda: Any = None
 
 try:
     from .backends.metal_backend import MetalBackend, get_metal_info, simulate_metal
@@ -62,9 +64,11 @@ try:
     _METAL_AVAILABLE = True
 except ImportError:
     _METAL_AVAILABLE = False
-    MetalBackend = None
-    get_metal_info = None
-    simulate_metal = None
+    from typing import Any
+
+    MetalBackend: Any = None
+    get_metal_info: Any = None
+    simulate_metal: Any = None
 
 __all__ = [
     # Core functionality
@@ -77,6 +81,8 @@ __all__ = [
     "QuantumRouter",  # Alias for backward compatibility
     # Advanced routing (for power users)
     "ComprehensiveRoutingTree",
+    "explain_routing",
+    "show_routing_tree",
     # Configuration system
     "AriadneConfig",
     "BackendConfig",

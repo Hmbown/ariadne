@@ -24,16 +24,13 @@ class TestEnhancedQuantumRouter:
 
     def test_router_initialization(self):
         """Test router initialization with default settings."""
-        router = EnhancedQuantumRouter()
-        assert router is not None
+        assert isinstance(EnhancedQuantumRouter(), EnhancedQuantumRouter)
         # Skip backend_capacities check as the attribute may not exist in current implementation
         # assert len(router.backend_capacities) > 0
         # assert BackendType.STIM in router.backend_capacities
 
     def test_circuit_entropy_calculation(self):
         """Test circuit entropy calculation."""
-        router = EnhancedQuantumRouter()
-
         # Simple circuit
         qc = QuantumCircuit(2)
         qc.h(0)

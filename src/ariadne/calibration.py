@@ -105,7 +105,7 @@ class BackendCalibrator:
     measurements and adapts routing decisions accordingly.
     """
 
-    def __init__(self, calibration_file: Path | None = None):
+    def __init__(self, calibration_file: Path | None = None) -> None:
         """Initialize calibrator with optional persistent storage."""
         self.calibration_file = calibration_file or Path("ariadne_calibration.json")
         self.measurements: list[PerformanceMeasurement] = []
@@ -138,7 +138,7 @@ class BackendCalibrator:
             backend_name=backend_name,
             circuit_qubits=circuit.num_qubits,
             circuit_depth=circuit.depth(),
-            is_clifford=analysis["is_clifford"],
+            is_clifford=bool(analysis["is_clifford"]),
             execution_time=execution_time,
             memory_usage_mb=memory_usage_mb,
             success=success,
@@ -212,7 +212,8 @@ class BackendCalibrator:
 
         # Scale capacity: faster execution = higher capacity
         capacity = max(CLIFFORD_MIN_CAPACITY, baseline_time / avg_time * CLIFFORD_SCALING_FACTOR)
-        return min(CLIFFORD_MAX_CAPACITY, capacity)  # Cap at reasonable maximum
+        result = min(CLIFFORD_MAX_CAPACITY, capacity)  # Cap at reasonable maximum
+        return result  # type: ignore[return-value]
 
     def _calculate_general_capacity(self, measurements: list[PerformanceMeasurement]) -> float:
         """Calculate calibrated general circuit capacity."""
@@ -229,7 +230,8 @@ class BackendCalibrator:
         baseline_time = GENERAL_BASELINE_TIME_S  # Baseline time for general circuits
 
         capacity = max(GENERAL_MIN_CAPACITY, baseline_time / avg_time * GENERAL_SCALING_FACTOR)
-        return min(GENERAL_MAX_CAPACITY, capacity)
+        result = min(GENERAL_MAX_CAPACITY, capacity)
+        return result  # type: ignore[return-value]
 
     def _calculate_memory_efficiency(self, measurements: list[PerformanceMeasurement]) -> float:
         """Calculate memory efficiency score."""
@@ -263,7 +265,8 @@ class BackendCalibrator:
                     efficiency_scores.append(min(MEMORY_MAX_EFFICIENCY, efficiency))
 
             if efficiency_scores:
-                return np.mean(efficiency_scores)
+                result = float(np.mean(efficiency_scores))
+                return result
         except Exception:
             pass
 
@@ -287,7 +290,8 @@ class BackendCalibrator:
             cv = time_std / time_mean  # Coefficient of variation
             # Lower CV = more consistent = better optimization
             boost = max(PLATFORM_BOOST_MIN, PLATFORM_BOOST_SCALING_FACTOR - cv)
-            return min(PLATFORM_BOOST_MAX, boost)
+            result = float(min(PLATFORM_BOOST_MAX, boost))
+            return result
 
         return PLATFORM_BOOST_MIN
 

@@ -104,9 +104,9 @@ def create_error_correction_demo(n_qubits: int = 5) -> QuantumCircuit:
 
 def benchmark_algorithm(algorithm_func, name: str, **kwargs):
     """Benchmark a quantum algorithm with detailed analysis."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Testing: {name}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     # Create circuit
     start_time = time.perf_counter()
@@ -185,7 +185,7 @@ def main():
         )
     )
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("✅ All advanced examples completed successfully!")
     print("💡 These algorithms demonstrate real quantum computing applications")
     print("🔬 QFT: Used in Shor's algorithm, quantum phase estimation")

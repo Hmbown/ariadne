@@ -14,14 +14,29 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
-try:
-    import websockets
+from qiskit import QuantumCircuit
 
-    WEBSOCKETS_AVAILABLE = True
-except ImportError:
-    WEBSOCKETS_AVAILABLE = False
+WEBSOCKETS_AVAILABLE = False
+websockets: Any | None = None
+
+if TYPE_CHECKING:
+    from websockets.server import ServerProtocol
+else:
+    try:
+        import websockets
+        from websockets.server import ServerProtocol
+
+        WEBSOCKETS_AVAILABLE = True
+    except ImportError:
+        websockets = cast(Any, None)
+
+        class ServerProtocol:
+            """Fallback protocol placeholder when websockets is unavailable."""
+
+            pass
+
 
 try:
     import zmq
@@ -29,8 +44,6 @@ try:
     ZMQ_AVAILABLE = True
 except ImportError:
     ZMQ_AVAILABLE = False
-
-from qiskit import QuantumCircuit
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +90,7 @@ class NetworkNode:
     latency: float = 0.0
     load: float = 0.0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.node_id:
             self.node_id = str(uuid.uuid4())
 
@@ -95,7 +108,7 @@ class QuantumTask:
     timeout: float = 300.0  # 5 minutes default
     metadata: dict[str, Any] = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.task_id:
             self.task_id = str(uuid.uuid4())
 
@@ -131,7 +144,7 @@ class TimePrecisionManager:
         # Convert to seconds with picosecond precision
         return corrected_time / 1e9
 
-    def calibrate_with_reference(self, reference_timestamps: list[tuple[float, float]]):
+    def calibrate_with_reference(self, reference_timestamps: list[tuple[float, float]]) -> None:
         """Calibrate timing with reference clock measurements."""
         if len(reference_timestamps) < 2:
             return
@@ -182,7 +195,7 @@ class NetworkCoordinator:
 
     def __init__(
         self,
-        coordinator_id: str = None,
+        coordinator_id: str | None = None,
         listen_port: int = 8765,
         enable_websockets: bool = True,
         enable_zmq: bool = True,
@@ -210,9 +223,9 @@ class NetworkCoordinator:
         self._heartbeat_thread: threading.Thread | None = None
 
         # Network protocols
-        self._websocket_server = None
-        self._zmq_context = None
-        self._zmq_socket = None
+        self._websocket_server: Any = None
+        self._zmq_context: Any = None
+        self._zmq_socket: Any = None
 
         # Statistics and monitoring
         self.stats = {
@@ -225,7 +238,7 @@ class NetworkCoordinator:
 
         logger.info(f"NetworkCoordinator initialized with ID: {self.coordinator_id}")
 
-    async def start(self):
+    async def start(self) -> None:
         """Start the network coordinator."""
         if self._running:
             logger.warning("Coordinator already running")
@@ -247,7 +260,7 @@ class NetworkCoordinator:
 
         await self._main_coordination_loop()
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Stop the network coordinator."""
         logger.info("Stopping NetworkCoordinator")
         self._running = False
@@ -263,24 +276,29 @@ class NetworkCoordinator:
         if self._zmq_context:
             self._zmq_context.term()
 
-    async def _start_websocket_server(self):
+    async def _start_websocket_server(self) -> None:
         """Start WebSocket server for network communication."""
         if not WEBSOCKETS_AVAILABLE:
             logger.warning("WebSockets not available, skipping WebSocket server")
             return
 
-        async def handle_websocket(websocket, path):
+        # Define handler function outside closure
+        async def handle_websocket(websocket: ServerProtocol, path: str) -> None:
             try:
                 await self._handle_websocket_connection(websocket, path)
             except Exception as e:
                 logger.error(f"WebSocket error: {e}")
+
+        if websockets is None:
+            logger.error("WebSockets library unavailable despite flag; cannot start server")
+            return
 
         self._websocket_server = await websockets.serve(
             handle_websocket, "localhost", self.listen_port
         )
         logger.info(f"WebSocket server started on port {self.listen_port}")
 
-    async def _start_zmq_server(self):
+    async def _start_zmq_server(self) -> None:
         """Start ZMQ server for high-performance communication."""
         if not ZMQ_AVAILABLE:
             logger.warning("ZMQ not available, skipping ZMQ server")
@@ -291,9 +309,13 @@ class NetworkCoordinator:
         self._zmq_socket.bind(f"tcp://*:{self.listen_port + 1}")
         logger.info(f"ZMQ server started on port {self.listen_port + 1}")
 
-    async def _handle_websocket_connection(self, websocket, path):
+    async def _handle_websocket_connection(self, websocket: Any, path: Any) -> None:
         """Handle individual WebSocket connections."""
-        node_id = None
+        if websockets is None:
+            logger.warning("WebSockets library unavailable; cannot handle connection")
+            return
+
+        node_id: str | None = None
         try:
             async for message in websocket:
                 data = json.loads(message)
@@ -310,7 +332,9 @@ class NetworkCoordinator:
             if node_id and node_id in self.nodes:
                 self.nodes[node_id].status = NetworkStatus.OFFLINE
 
-    async def _process_message(self, data: dict, connection) -> dict | None:
+    async def _process_message(
+        self, data: dict[str, Any], connection: Any
+    ) -> dict[str, Any] | None:
         """Process incoming network messages."""
         message_type = data.get("type")
 
@@ -328,7 +352,9 @@ class NetworkCoordinator:
             logger.warning(f"Unknown message type: {message_type}")
             return {"type": "error", "message": "Unknown message type"}
 
-    async def _handle_node_registration(self, data: dict, connection) -> dict:
+    async def _handle_node_registration(
+        self, data: dict[str, Any], connection: Any
+    ) -> dict[str, Any]:
         """Handle node registration requests."""
         try:
             node = NetworkNode(
@@ -356,7 +382,7 @@ class NetworkCoordinator:
             logger.error(f"Node registration error: {e}")
             return {"type": "error", "message": str(e)}
 
-    async def _handle_heartbeat(self, data: dict) -> dict:
+    async def _handle_heartbeat(self, data: dict[str, Any]) -> dict[str, Any]:
         """Handle heartbeat messages from nodes."""
         node_id = data.get("node_id")
 
@@ -379,7 +405,7 @@ class NetworkCoordinator:
 
         return {"type": "error", "message": "Node not registered"}
 
-    async def _handle_task_result(self, data: dict) -> dict:
+    async def _handle_task_result(self, data: dict[str, Any]) -> dict[str, Any]:
         """Handle task completion results."""
         task_id = data.get("task_id")
         node_id = data.get("node_id")
@@ -387,7 +413,7 @@ class NetworkCoordinator:
         if task_id in self.active_tasks:
             result = TaskResult(
                 task_id=task_id,
-                node_id=node_id,
+                node_id=node_id or "",
                 result=data.get("result", {}),
                 execution_time=data.get("execution_time", 0.0),
                 error=data.get("error"),
@@ -410,7 +436,7 @@ class NetworkCoordinator:
 
         return {"type": "error", "message": "Task not found"}
 
-    async def _handle_node_status(self, data: dict) -> dict:
+    async def _handle_node_status(self, data: dict[str, Any]) -> dict[str, Any]:
         """Handle node status updates."""
         node_id = data.get("node_id")
 
@@ -424,7 +450,7 @@ class NetworkCoordinator:
 
         return {"type": "error", "message": "Node not registered"}
 
-    async def _handle_time_sync(self, data: dict) -> dict:
+    async def _handle_time_sync(self, data: dict[str, Any]) -> dict[str, Any]:
         """Handle time synchronization requests."""
         client_timestamp = data.get("timestamp", 0.0)
         coordinator_timestamp = self.timing_manager.get_precise_timestamp()
@@ -439,7 +465,7 @@ class NetworkCoordinator:
             "round_trip_estimate": coordinator_timestamp - client_timestamp,
         }
 
-    def _heartbeat_loop(self):
+    def _heartbeat_loop(self) -> None:
         """Background thread for sending heartbeats and monitoring nodes."""
         while self._running:
             try:
@@ -477,7 +503,7 @@ class NetworkCoordinator:
                 logger.error(f"Heartbeat loop error: {e}")
                 time.sleep(1.0)
 
-    async def _main_coordination_loop(self):
+    async def _main_coordination_loop(self) -> None:
         """Main coordination loop for task scheduling and management."""
         while self._running:
             try:
@@ -496,7 +522,7 @@ class NetworkCoordinator:
                 logger.error(f"Coordination loop error: {e}")
                 await asyncio.sleep(1.0)
 
-    async def _schedule_pending_tasks(self):
+    async def _schedule_pending_tasks(self) -> None:
         """Schedule pending tasks to available nodes."""
         if not self.task_queue:
             return
@@ -544,13 +570,12 @@ class NetworkCoordinator:
     def _select_best_node(
         self, task: QuantumTask, available_nodes: list[NetworkNode]
     ) -> NetworkNode | None:
-        """Select the best node for a given task."""
         if not available_nodes:
             return None
 
         # Score nodes based on capabilities, load, and latency
         best_node = None
-        best_score = -1
+        best_score = -1.0
 
         for node in available_nodes:
             score = self._calculate_node_score(task, node)
@@ -616,7 +641,7 @@ class NetworkCoordinator:
 
         return False
 
-    def _serialize_circuit(self, circuit: QuantumCircuit) -> dict:
+    def _serialize_circuit(self, circuit: QuantumCircuit) -> dict[str, Any]:
         """Serialize quantum circuit for network transmission."""
         # Simple serialization - in production, use more robust methods
         return {
@@ -633,7 +658,7 @@ class NetworkCoordinator:
             ],
         }
 
-    async def _check_task_timeouts(self):
+    async def _check_task_timeouts(self) -> None:
         """Check for and handle task timeouts."""
         current_time = self.timing_manager.get_precise_timestamp()
         timed_out_tasks = []
@@ -659,7 +684,7 @@ class NetworkCoordinator:
             self.completed_tasks[task_id] = timeout_result
             self.stats["tasks_failed"] += 1
 
-    async def _rebalance_load(self):
+    async def _rebalance_load(self) -> None:
         """Rebalance load across nodes if necessary."""
         # Simple load balancing - can be enhanced
         overloaded_nodes = [
@@ -682,11 +707,11 @@ class NetworkCoordinator:
                 f"{len(underloaded_nodes)} underloaded nodes"
             )
 
-    def _reassign_tasks_from_node(self, node_id: str):
+    def _reassign_tasks_from_node(self, node_id: str) -> None:
         """Reassign active tasks from a failed node."""
         tasks_to_reassign = []
 
-        for task_id, task in self.active_tasks.items():
+        for task_id in self.active_tasks:
             # Find tasks assigned to the failed node (simplified check)
             # In production, we'd maintain explicit task-to-node mappings
             tasks_to_reassign.append(task_id)
@@ -740,7 +765,7 @@ class NetworkCoordinator:
             "timestamp": self.timing_manager.get_precise_timestamp(),
         }
 
-    def clear_completed_tasks(self, older_than_seconds: float = 3600):
+    def clear_completed_tasks(self, older_than_seconds: float = 3600) -> None:
         """Clear completed tasks older than specified time."""
         current_time = self.timing_manager.get_precise_timestamp()
         tasks_to_remove = [

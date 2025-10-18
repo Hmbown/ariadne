@@ -23,6 +23,6 @@ def test_variational_circuit_prefers_pennylane():
     router = EnhancedQuantumRouter()
     decision = router.select_optimal_backend(qc)
 
-    assert (
-        decision.recommended_backend == BackendType.PENNYLANE
-    ), f"Expected PENNYLANE, got {decision.recommended_backend}"
+    assert decision.recommended_backend == BackendType.PENNYLANE, (
+        f"Expected PENNYLANE, got {decision.recommended_backend}"
+    )

@@ -17,7 +17,7 @@ class QSharpBackend:
 
     def simulate(self, circuit: QuantumCircuit, shots: int = 1000) -> dict[str, int]:
         try:
-            import qsharp  # type: ignore  # noqa: F401
+            import qsharp  # noqa: F401
 
             # Real Qiskit -> Q# conversion not implemented yet.
             raise NotImplementedError("Qiskit->Q# conversion not implemented")

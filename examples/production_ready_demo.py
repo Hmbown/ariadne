@@ -229,6 +229,7 @@ def demo_plugin_system():
     print("\n=== Plugin System Demo ===")
 
     logger = get_logger("plugin_demo")
+    logger.info("Demonstrating plugin discovery and lifecycle")
 
     # Get plugin manager
     plugin_manager = get_plugin_manager()
@@ -270,6 +271,7 @@ def demo_usability_improvements():
     print("\n=== Usability Improvements Demo ===")
 
     logger = get_logger("usability_demo")
+    logger.info("Showcasing logging and progress helpers")
 
     # Configure logging with different levels
     print("Configuring logging with different levels...")
@@ -296,6 +298,8 @@ def demo_usability_improvements():
     except Exception as e:
         print(f"Error with context: {e}")
         print("  Suggestion: Check available backends with 'ariadne status'")
+    else:
+        print("Simulation unexpectedly succeeded; result counts:", result.counts)
 
     # Demonstrate progress indicators
     print("\nDemonstrating progress indicators...")
@@ -308,7 +312,7 @@ def demo_usability_improvements():
     # Simulate some work
     for i in range(5):
         time.sleep(0.2)
-        progress.update(f" (step {i+1}/5)")
+        progress.update(f" (step {i + 1}/5)")
 
     progress.finish("complete")
 

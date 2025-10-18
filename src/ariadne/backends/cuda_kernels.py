@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 class CUDAKernels:
     """Manager for custom CUDA kernels for quantum operations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.kernels: dict[str, Any] = {}
         self._compiled = False
 
@@ -34,7 +34,7 @@ class CUDAKernels:
 
         self._compile_kernels()
 
-    def _compile_kernels(self):
+    def _compile_kernels(self) -> None:
         """Compile all CUDA kernels for quantum operations."""
         if not CUPY_AVAILABLE:
             return

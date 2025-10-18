@@ -13,6 +13,7 @@ from ariadne.backends import (
     BackendHealthChecker,
     BackendPerformanceMonitor,
     BackendPool,
+    BackendPoolExhaustedError,
     BackendPoolManager,
     EnhancedBackendWrapper,
     FallbackResult,
@@ -219,7 +220,7 @@ class TestBackendPool:
                 break
 
         # Try to get one more (should fail)
-        with pytest.raises(Exception):
+        with pytest.raises(BackendPoolExhaustedError):
             self.pool.get_backend(timeout=0.1)
 
         # Return backends

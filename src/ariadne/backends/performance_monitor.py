@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import statistics
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -528,7 +529,7 @@ class BackendPerformanceMonitor:
         if not profile:
             return {}
 
-        summary = {
+        summary: dict[str, Any] = {
             "backend": backend.value,
             "time_window": time_window,
             "last_updated": profile.last_updated,
@@ -569,7 +570,11 @@ class BackendPerformanceMonitor:
         Returns:
             Comparison results
         """
-        comparison = {"metric_type": metric_type.value, "time_window": time_window, "backends": {}}
+        comparison: dict[str, Any] = {
+            "metric_type": metric_type.value,
+            "time_window": time_window,
+            "backends": {},
+        }
 
         for backend in backends:
             profile = self.get_backend_profile(backend)
@@ -590,7 +595,7 @@ class BackendPerformanceMonitor:
         Returns:
             List of recommendations
         """
-        recommendations = []
+        recommendations: list[str] = []
         profile = self.get_backend_profile(backend)
 
         if not profile:

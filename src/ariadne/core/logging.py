@@ -52,7 +52,7 @@ class AriadneLogger:
         if not self.logger.handlers:
             self._setup_handlers()
 
-    def _setup_handlers(self):
+    def _setup_handlers(self) -> None:
         """Set up console and file handlers."""
         # Console handler
         console_handler = logging.StreamHandler(sys.stdout)
@@ -66,13 +66,13 @@ class AriadneLogger:
 
         self.logger.addHandler(console_handler)
 
-    def set_context(self, **kwargs):
+    def set_context(self, **kwargs: Any) -> None:
         """Set logging context."""
         for key, value in kwargs.items():
             if hasattr(self._context, key):
                 setattr(self._context, key, value)
 
-    def set_circuit_context(self, circuit: QuantumCircuit, circuit_id: str | None = None):
+    def set_circuit_context(self, circuit: QuantumCircuit, circuit_id: str | None = None) -> None:
         """Set circuit-specific context."""
         self._context.circuit_id = circuit_id or f"q{circuit.num_qubits}_d{circuit.depth()}"
         self._context.num_qubits = circuit.num_qubits
@@ -102,34 +102,34 @@ class AriadneLogger:
 
         return " | ".join(parts)
 
-    def debug(self, message: str, **kwargs):
+    def debug(self, message: str, **kwargs: Any) -> None:
         """Log debug message."""
         formatted = self._format_message(message, kwargs)
         self.logger.debug(formatted)
 
-    def info(self, message: str, **kwargs):
+    def info(self, message: str, **kwargs: Any) -> None:
         """Log info message."""
         formatted = self._format_message(message, kwargs)
         self.logger.info(formatted)
 
-    def warning(self, message: str, **kwargs):
+    def warning(self, message: str, **kwargs: Any) -> None:
         """Log warning message."""
         formatted = self._format_message(message, kwargs)
         self.logger.warning(formatted)
 
-    def error(self, message: str, **kwargs):
+    def error(self, message: str, **kwargs: Any) -> None:
         """Log error message."""
         formatted = self._format_message(message, kwargs)
         self.logger.error(formatted)
 
-    def critical(self, message: str, **kwargs):
+    def critical(self, message: str, **kwargs: Any) -> None:
         """Log critical message."""
         formatted = self._format_message(message, kwargs)
         self.logger.critical(formatted)
 
     def log_routing_decision(
-        self, circuit: QuantumCircuit, backend: str, confidence: float, reason: str, **kwargs
-    ):
+        self, circuit: QuantumCircuit, backend: str, confidence: float, reason: str, **kwargs: Any
+    ) -> None:
         """Log routing decision."""
         self.set_circuit_context(circuit)
         self.info(
@@ -140,51 +140,51 @@ class AriadneLogger:
             **kwargs,
         )
 
-    def log_simulation_start(self, circuit: QuantumCircuit, backend: str, shots: int):
+    def log_simulation_start(self, circuit: QuantumCircuit, backend: str, shots: int) -> None:
         """Log simulation start."""
         self.set_circuit_context(circuit)
         self._context.backend = backend
         self.info("Simulation started", backend=backend, shots=shots)
 
-    def log_simulation_complete(self, execution_time: float, shots: int, **kwargs):
+    def log_simulation_complete(self, execution_time: float, shots: int, **kwargs: Any) -> None:
         """Log simulation completion."""
         self.info(
             "Simulation completed",
             execution_time=f"{execution_time:.4f}s",
             shots=shots,
-            throughput=f"{shots/execution_time:.1f} shots/s",
+            throughput=f"{shots / execution_time:.1f} shots/s",
             **kwargs,
         )
 
-    def log_simulation_error(self, error: Exception, **kwargs):
+    def log_simulation_error(self, error: Exception, **kwargs: Any) -> None:
         """Log simulation error."""
         self.error(
             "Simulation failed", error_type=type(error).__name__, error_message=str(error), **kwargs
         )
 
-    def log_backend_unavailable(self, backend: str, reason: str):
+    def log_backend_unavailable(self, backend: str, reason: str) -> None:
         """Log backend unavailability."""
         self.warning("Backend unavailable", backend=backend, reason=reason)
 
-    def log_resource_warning(self, resource_type: str, usage: float, limit: float):
+    def log_resource_warning(self, resource_type: str, usage: float, limit: float) -> None:
         """Log resource usage warning."""
         self.warning(
             "Resource usage high",
             resource_type=resource_type,
             usage=f"{usage:.1f}",
             limit=f"{limit:.1f}",
-            usage_percent=f"{(usage/limit)*100:.1f}%",
+            usage_percent=f"{(usage / limit) * 100:.1f}%",
         )
 
 
 class PerformanceLogger:
     """Logger for performance metrics and timing."""
 
-    def __init__(self, logger: AriadneLogger):
+    def __init__(self, logger: AriadneLogger) -> None:
         self.logger = logger
         self._timers: dict[str, float] = {}
 
-    def start_timer(self, name: str):
+    def start_timer(self, name: str) -> None:
         """Start a named timer."""
         self._timers[name] = time.time()
         self.logger.debug(f"Timer started: {name}")
@@ -202,11 +202,11 @@ class PerformanceLogger:
 
         return elapsed
 
-    def log_timing(self, operation: str, elapsed: float, **kwargs):
+    def log_timing(self, operation: str, elapsed: float, **kwargs: Any) -> None:
         """Log timing information."""
         self.logger.info(f"Operation timing: {operation}", elapsed=f"{elapsed:.4f}s", **kwargs)
 
-    def log_memory_usage(self, memory_mb: float, **kwargs):
+    def log_memory_usage(self, memory_mb: float, **kwargs: Any) -> None:
         """Log memory usage."""
         self.logger.debug("Memory usage", memory_mb=f"{memory_mb:.1f}", **kwargs)
 
@@ -230,7 +230,7 @@ def get_logger(name: str) -> AriadneLogger:
     return _loggers[name]
 
 
-def set_log_level(level: int):
+def set_log_level(level: int) -> None:
     """Set logging level for all Ariadne loggers."""
     for logger in _loggers.values():
         logger.logger.setLevel(level)
@@ -238,7 +238,7 @@ def set_log_level(level: int):
 
 def configure_logging(
     level: int = logging.INFO, format_string: str | None = None, log_file: str | None = None
-):
+) -> None:
     """
     Configure global logging settings.
 
@@ -275,21 +275,21 @@ def configure_logging(
 
 
 # Convenience functions
-def log_info(message: str, **kwargs):
+def log_info(message: str, **kwargs: Any) -> None:
     """Log info message using default logger."""
     get_logger("ariadne").info(message, **kwargs)
 
 
-def log_warning(message: str, **kwargs):
+def log_warning(message: str, **kwargs: Any) -> None:
     """Log warning message using default logger."""
     get_logger("ariadne").warning(message, **kwargs)
 
 
-def log_error(message: str, **kwargs):
+def log_error(message: str, **kwargs: Any) -> None:
     """Log error message using default logger."""
     get_logger("ariadne").error(message, **kwargs)
 
 
-def log_debug(message: str, **kwargs):
+def log_debug(message: str, **kwargs: Any) -> None:
     """Log debug message using default logger."""
     get_logger("ariadne").debug(message, **kwargs)

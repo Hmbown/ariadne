@@ -422,15 +422,19 @@ class EnhancedQuantumRouter:
                 return importlib.util.find_spec("qulacs") is not None
             elif backend == BackendType.OPENCL:
                 import importlib.util
+
                 return importlib.util.find_spec("pyopencl") is not None
             elif backend == BackendType.BRAKET:
                 import importlib.util
+
                 return importlib.util.find_spec("braket") is not None
             elif backend == BackendType.PYQUIL:
                 import importlib.util
+
                 return importlib.util.find_spec("pyquil") is not None
             elif backend == BackendType.QSHARP:
                 import importlib.util
+
                 return importlib.util.find_spec("qsharp") is not None
             else:
                 return True

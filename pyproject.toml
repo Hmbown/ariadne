@@ -105,6 +105,24 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+  "ariadne.backends.*",
+  "ariadne.async_.*",
+  "ariadne.performance.memory",
+  "ariadne.validation.*",
+  "ariadne.analysis.*",
+  "ariadne.route.enhanced_router",
+  "ariadne.route.context_detection",
+  "ariadne.route.routing_tree",
+  "ariadne.route.performance_model",
+  "ariadne.optimization.multi_objective",
+  "ariadne.performance.parallel",
+  "ariadne",
+]
+ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

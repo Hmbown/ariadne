@@ -7,6 +7,7 @@ network protocols, and fault tolerance mechanisms.
 """
 
 import asyncio
+import importlib.util
 import time
 from unittest.mock import Mock
 
@@ -31,19 +32,8 @@ try:
 except ImportError:
     NETWORK_COORDINATION_AVAILABLE = False
 
-try:
-    import websockets
-
-    WEBSOCKETS_AVAILABLE = True
-except ImportError:
-    WEBSOCKETS_AVAILABLE = False
-
-try:
-    import zmq
-
-    ZMQ_AVAILABLE = True
-except ImportError:
-    ZMQ_AVAILABLE = False
+WEBSOCKETS_AVAILABLE = importlib.util.find_spec("websockets") is not None
+ZMQ_AVAILABLE = importlib.util.find_spec("zmq") is not None
 
 
 @pytest.mark.skipif(not NETWORK_COORDINATION_AVAILABLE, reason="Network coordination not available")

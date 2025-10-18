@@ -156,12 +156,12 @@ class AriadneConfig:
     cache_dir: str | None = None
     data_dir: str | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize default backend configurations."""
         if not self.backends:
             self._initialize_default_backends()
 
-    def _initialize_default_backends(self):
+    def _initialize_default_backends(self) -> None:
         """Initialize default backend configurations."""
         self.backends = {
             "stim": BackendConfig(
@@ -218,7 +218,7 @@ class AriadneConfig:
             enabled_backends.keys(), key=lambda name: enabled_backends[name].priority, reverse=True
         )
 
-    def update_backend_config(self, backend_name: str, **kwargs):
+    def update_backend_config(self, backend_name: str, **kwargs: Any) -> None:
         """Update configuration for a specific backend."""
         if backend_name not in self.backends:
             self.backends[backend_name] = BackendConfig()
@@ -276,7 +276,7 @@ class AriadneConfig:
 class ConfigManager:
     """Configuration manager for Ariadne."""
 
-    def __init__(self, config_file: Path | None = None):
+    def __init__(self, config_file: Path | None = None) -> None:
         """Initialize configuration manager."""
         self.config_file = config_file or self._get_default_config_path()
         self.config = AriadneConfig()

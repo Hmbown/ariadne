@@ -12,6 +12,7 @@ import os
 import sys
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -286,7 +287,7 @@ class MemoryMonitor:
                     total_memory_mb = total_kb / 1024
                     used_memory_mb = total_memory_mb - (available_kb / 1024)
                     available_memory_mb = available_kb / 1024
-                except:
+                except Exception:
                     # Fallback to psutil
                     import psutil
 
@@ -315,11 +316,11 @@ class MemoryMonitor:
                                 break
                         else:
                             process_peak_memory_mb = process_memory_mb
-                    except:
+                    except Exception:
                         process_peak_memory_mb = process_memory_mb
                 else:
                     process_peak_memory_mb = process_memory_mb
-            except:
+            except Exception:
                 process_memory_mb = 0.0
                 process_peak_memory_mb = 0.0
 
@@ -352,9 +353,9 @@ class MemoryMonitor:
         level = stats.memory_level
 
         # Trigger callbacks for this level and all higher levels
-        for l in MemoryLevel:
-            if l.value >= level.value:
-                for callback in self._callbacks[l]:
+        for mem_level in MemoryLevel:
+            if mem_level.value >= level.value:
+                for callback in self._callbacks[mem_level]:
                     try:
                         callback(stats)
                     except Exception as e:

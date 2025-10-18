@@ -1,6 +1,6 @@
 import argparse
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 from qiskit import QuantumCircuit
@@ -12,7 +12,7 @@ from ariadne import simulate
 class Case:
     name: str
     description: str
-    builder: callable
+    builder: Callable[[], QuantumCircuit]
     expected: str
 
 
@@ -47,7 +47,7 @@ def build_non_clifford() -> QuantumCircuit:
     return qc
 
 
-def run_cases(shots: int = 256) -> List[Tuple[str, str, str]]:
+def run_cases(shots: int = 256) -> list[tuple[str, str, str]]:
     cases = [
         Case(
             name="Clifford (Bell)",
@@ -69,7 +69,7 @@ def run_cases(shots: int = 256) -> List[Tuple[str, str, str]]:
         ),
     ]
 
-    results: List[Tuple[str, str, str]] = []
+    results: list[tuple[str, str, str]] = []
     for c in cases:
         qc = c.builder()
         res = simulate(qc, shots=shots)
@@ -81,7 +81,7 @@ def run_cases(shots: int = 256) -> List[Tuple[str, str, str]]:
     return results
 
 
-def draw_table(data: List[Tuple[str, str, str]], output_path: str) -> None:
+def draw_table(data: list[tuple[str, str, str]], output_path: str) -> None:
     fig, ax = plt.subplots(figsize=(8, 2 + 0.5 * len(data)))
     ax.axis("off")
     table_data = [("Circuit", "Expected", "Actual")] + data

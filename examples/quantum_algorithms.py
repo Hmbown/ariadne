@@ -82,6 +82,7 @@ def quantum_phase_estimation(n_counting_qubits: int = 3) -> QuantumCircuit:
 def quantum_teleportation() -> QuantumCircuit:
     """Create quantum teleportation circuit."""
     qc = QuantumCircuit(3, 3)
+    c_reg = qc.cregs[0]
 
     # Create entangled pair (Bell state)
     qc.h(1)

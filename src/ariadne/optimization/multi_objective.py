@@ -93,6 +93,18 @@ class BackendObjectiveScores:
     accuracy_score: float
     success_rate_score: float
 
+    @property
+    def objective_scores(self) -> dict[str, float]:
+        """Get all objective scores as a dictionary."""
+        return {
+            "time": self.time_score,
+            "memory": self.memory_score,
+            "energy": self.energy_score,
+            "cost": self.cost_score,
+            "accuracy": self.accuracy_score,
+            "success_rate": self.success_rate_score,
+        }
+
     def get_score(self, objective: OptimizationObjective) -> float:
         """Get score for specific objective."""
         if objective == OptimizationObjective.MINIMIZE_TIME:

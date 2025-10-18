@@ -257,7 +257,6 @@ class BackendPool:
 
             # Create new instances if needed
             available_count = self._available.qsize()
-            active_count = len(self._active)
             total_count = len(self._all_instances)
 
             if available_count < self.min_instances and total_count < self.max_instances:
@@ -367,20 +366,21 @@ class BackendPool:
 
             # Try to get an available instance
             try:
-                pooled_backend = self._available.get(timeout=timeout)
-            except Empty:
+                pooled_backend: PooledBackend = self._available.get(timeout=timeout)
+            except Empty as err:
                 # Try to create a new instance if we haven't reached max
                 with self._lock:
                     if len(self._all_instances) < self.max_instances:
-                        pooled_backend = self._create_instance()
-                        if not pooled_backend:
+                        new_backend = self._create_instance()
+                        if new_backend is None:
                             raise BackendPoolExhaustedError(
                                 f"Failed to create new {self.backend_name} instance"
-                            )
+                            ) from err
+                        pooled_backend = new_backend
                     else:
                         raise BackendPoolExhaustedError(
                             f"No available {self.backend_name} instances (max: {self.max_instances})"
-                        )
+                        ) from err
 
             # Mark as active
             with self._lock:
@@ -440,7 +440,7 @@ class BackendPool:
             try:
                 self._available.put_nowait(pooled_backend)
                 self.logger.debug(f"Returned {self.backend_name} instance to pool")
-            except:
+            except Exception:
                 # Pool is full, just let the instance be garbage collected
                 self.logger.debug(f"Pool full, discarding {self.backend_name} instance")
                 with self._lock:
@@ -523,7 +523,7 @@ class BackendPool:
 class BackendPoolManager:
     """Manager for multiple backend pools."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the pool manager."""
         self.logger = get_logger("pool_manager")
         self._pools: dict[str, BackendPool] = {}
@@ -535,7 +535,7 @@ class BackendPoolManager:
         backend_class: type,
         min_instances: int = 1,
         max_instances: int = 5,
-        **kwargs,
+        **kwargs: Any,
     ) -> BackendPool:
         """
         Create a new backend pool.
@@ -650,7 +650,11 @@ def get_pool_manager() -> BackendPoolManager:
 
 
 def create_backend_pool(
-    backend_name: str, backend_class: type, min_instances: int = 1, max_instances: int = 5, **kwargs
+    backend_name: str,
+    backend_class: type,
+    min_instances: int = 1,
+    max_instances: int = 5,
+    **kwargs: Any,
 ) -> BackendPool:
     """
     Create a new backend pool using the global pool manager.

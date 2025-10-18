@@ -41,8 +41,8 @@ def should_use_mps(circuit: QuantumCircuit) -> bool:
     Returns:
         True if the circuit is likely suitable for efficient MPS simulation, False otherwise.
     """
-    N = circuit.num_qubits
-    if N >= 15:
+    num_qubits = circuit.num_qubits
+    if num_qubits >= 15:
         return False
 
     # Count two-qubit gates (entangling gates)
@@ -54,6 +54,6 @@ def should_use_mps(circuit: QuantumCircuit) -> bool:
             two_qubit_gates += 1
 
     # The threshold for two-qubit gates: 2 * N^1.5
-    threshold = 2 * math.pow(N, 1.5)
+    threshold = 2 * math.pow(num_qubits, 1.5)
 
     return two_qubit_gates < threshold

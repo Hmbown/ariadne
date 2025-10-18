@@ -58,7 +58,7 @@ class AppleSiliconMemoryManager:
 
         # Memory pool management
         self.allocated_blocks: dict[str, MemoryBlock] = {}
-        self.cached_states: WeakValueDictionary = WeakValueDictionary()
+        self.cached_states: WeakValueDictionary[str, np.ndarray] = WeakValueDictionary()
         self.total_allocated_mb = 0.0
 
         # Memory mapping for large states
@@ -250,7 +250,7 @@ class AppleSiliconMemoryManager:
             "allocation_count": self.allocation_count,
         }
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up resources on destruction."""
         # Clean up all memory mapped files
         for file_path in self.mapped_files.values():
@@ -357,6 +357,7 @@ class MetalBackend:
         self._last_summary: SimulationSummary | None = None
         self._device = None
         self._mode = "cpu"
+        self.metal_accelerator: Any = None
 
         # Unified memory management for Apple Silicon
         self.memory_manager = AppleSiliconMemoryManager(
@@ -458,9 +459,7 @@ class MetalBackend:
 
     def simulate_statevector(self, circuit: QuantumCircuit) -> tuple[np.ndarray, Sequence[int]]:
         state, measured_qubits, _ = self._simulate_statevector(circuit)
-        if self._device is None:
-            return state, measured_qubits
-
+        # Always convert to numpy array
         return np.array(state), measured_qubits
 
     # ------------------------------------------------------------------
@@ -468,10 +467,10 @@ class MetalBackend:
 
     def _simulate_statevector(self, circuit: QuantumCircuit) -> tuple[Any, Sequence[int], float]:
         # Choose between Metal and CPU simulation
-        if self._device is not None and self._mode == "metal":
+        if self._device is not None and self._mode == "metal":  # type: ignore[unreachable]
             # Use hybrid Metal approach: JAX CPU + Metal MPS for heavy ops
             return self._simulate_statevector_metal_hybrid(circuit)
-        else:
+        else:  # type: ignore[unreachable]
             return self._simulate_statevector_cpu(circuit)
 
     def _simulate_statevector_cpu(
@@ -504,7 +503,7 @@ class MetalBackend:
                 qubits = list(item.qubits)
                 clbits = list(item.clbits)
             else:  # Legacy tuple form
-                operation, qubits, clbits = item  # type: ignore[misc]
+                operation, qubits, clbits = item
 
             name = operation.name
             qubit_indices = [circuit.find_bit(qubit).index for qubit in qubits]
@@ -531,7 +530,7 @@ class MetalBackend:
 
     def _instruction_to_matrix(self, instruction: Instruction, arity: int) -> Any:
         if hasattr(instruction, "to_matrix"):
-            matrix = instruction.to_matrix()  # type: ignore[no-untyped-call]
+            matrix = instruction.to_matrix()
         else:
             matrix = np.eye(2**arity, dtype=np.complex128)
 
@@ -540,7 +539,7 @@ class MetalBackend:
     def _instruction_to_matrix_numpy(self, instruction: Instruction, arity: int) -> np.ndarray:
         """NumPy version of instruction to matrix conversion."""
         if hasattr(instruction, "to_matrix"):
-            matrix = instruction.to_matrix()  # type: ignore[no-untyped-call]
+            matrix: np.ndarray = instruction.to_matrix()
         else:
             matrix = np.eye(2**arity, dtype=np.complex128)
 
@@ -639,7 +638,11 @@ class MetalBackend:
             # Check if NumPy is linked with Accelerate
             import numpy as np
 
-            blas_info = np.__config__.get_info("blas")
+            blas_info = getattr(np, "__config__", None)
+            if blas_info and hasattr(blas_info, "get_info"):
+                blas_info = blas_info.get_info("blas")
+            else:
+                blas_info = {}
 
             # Look for Accelerate in BLAS info
             if blas_info and "libraries" in blas_info:
@@ -647,7 +650,7 @@ class MetalBackend:
                 return any("accelerate" in lib.lower() or "veclib" in lib.lower() for lib in libs)
 
             return False
-        except:
+        except Exception:
             return False
 
     def _check_simd_support(self) -> bool:
@@ -656,7 +659,7 @@ class MetalBackend:
             import platform
 
             return platform.system() == "Darwin" and platform.machine() in ["arm64", "aarch64"]
-        except:
+        except Exception:
             return False
 
     def _initialize_optimized_state(
@@ -672,7 +675,7 @@ class MetalBackend:
     ) -> np.ndarray:
         """Convert instruction to matrix with Apple Silicon optimizations."""
         if hasattr(instruction, "to_matrix"):
-            matrix = instruction.to_matrix()
+            matrix: np.ndarray = instruction.to_matrix()
         else:
             matrix = np.eye(2**arity, dtype=np.complex128)
 
@@ -690,7 +693,9 @@ class MetalBackend:
         # Try Metal acceleration first if available
         if self.metal_accelerator:
             try:
-                return self.metal_accelerator.apply_single_qubit_gate_metal(state, matrix, qubit)
+                return np.array(
+                    self.metal_accelerator.apply_single_qubit_gate_metal(state, matrix, qubit)
+                )
             except Exception:
                 pass  # Fall back to SIMD
 
@@ -757,8 +762,10 @@ class MetalBackend:
         # Try Metal acceleration first if available
         if self.metal_accelerator:
             try:
-                return self.metal_accelerator.apply_two_qubit_gate_metal(
-                    state, matrix, (qubits[0], qubits[1])
+                return np.array(
+                    self.metal_accelerator.apply_two_qubit_gate_metal(
+                        state, matrix, (qubits[0], qubits[1])
+                    )
                 )
             except Exception:
                 pass  # Fall back to other methods

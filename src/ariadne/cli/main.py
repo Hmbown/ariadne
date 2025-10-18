@@ -6,23 +6,62 @@ including simulation, configuration management, and system monitoring.
 """
 
 import argparse
+import logging
 import os
 import sys
 import time
+from argparse import ArgumentParser, _SubParsersAction
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 from qiskit import QuantumCircuit
+
+if TYPE_CHECKING:
+    from ariadne.backends.health_check import HealthMetrics
+    from ariadne.core.logging import AriadneLogger
+    from ariadne.results import SimulationResult
+    from ariadne.types import BackendType
+
+# Check if YAML is available
+yaml: Any | None
+try:
+    import yaml as _yaml_module
+except ImportError:
+    YAML_AVAILABLE = False
+    yaml = None
+else:
+    YAML_AVAILABLE = True
+    yaml = _yaml_module
+
+
+def _describe_config_keys(config: object) -> str:
+    """Return a readable list of configuration keys for logging/display."""
+
+    if isinstance(config, dict):
+        return ", ".join(sorted(str(key) for key in config.keys()))
+
+    if hasattr(config, "model_dump"):
+        try:
+            data = config.model_dump()
+        except Exception:  # pragma: no cover - defensive fallback
+            data = getattr(config, "__dict__", {})
+        if isinstance(data, dict):
+            return ", ".join(sorted(str(key) for key in data.keys()))
+
+    if hasattr(config, "__dict__"):
+        return ", ".join(sorted(str(key) for key in vars(config)))
+
+    return ""
+
 
 try:
     from ariadne import simulate
     from ariadne.backends import (
         get_health_checker,
-        get_performance_monitor,
         get_pool_manager,
     )
     from ariadne.config import (
         ConfigFormat,
-        ConfigTemplate,
         create_default_template,
         create_development_template,
         create_production_template,
@@ -56,8 +95,8 @@ class ProgressIndicator:
     def __init__(self, description: str = "Processing"):
         """Initialize progress indicator."""
         self.description = description
-        self.start_time = None
-        self.last_update = 0
+        self.start_time: float | None = None
+        self.last_update: float = 0
 
     def start(self) -> None:
         """Start the progress indicator."""
@@ -67,23 +106,28 @@ class ProgressIndicator:
     def update(self, message: str = "") -> None:
         """Update the progress indicator."""
         current_time = time.time()
-        if current_time - self.last_update > 0.5:  # Update every 0.5 seconds
+        if (
+            self.start_time is not None and current_time - self.last_update > 0.5
+        ):  # Update every 0.5 seconds
             elapsed = current_time - self.start_time
             print(f"\r{self.description}... ({elapsed:.1f}s){message}", end="", flush=True)
             self.last_update = current_time
 
     def finish(self, message: str = "done") -> None:
         """Finish the progress indicator."""
-        elapsed = time.time() - self.start_time if self.start_time else 0
-        print(f"\r{self.description}... {message} ({elapsed:.1f}s)")
+        if self.start_time is not None:
+            elapsed = time.time() - self.start_time
+            print(f"\r{self.description}... {message} ({elapsed:.1f}s)")
+        else:
+            print(f"\r{self.description}... {message} (0.0s)")
 
 
 class AriadneCLI:
     """Main CLI class for Ariadne."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the CLI."""
-        self.logger = None
+        self.logger: AriadneLogger | None = None
 
     def run(self, args: list[str] | None = None) -> int:
         """
@@ -99,18 +143,22 @@ class AriadneCLI:
         parsed_args = parser.parse_args(args)
 
         # Configure logging
-        log_level = getattr(parsed_args, "log_level", "INFO")
+        log_level_name = getattr(parsed_args, "log_level", "INFO")
+        log_level = getattr(logging, log_level_name.upper(), logging.INFO)
         configure_logging(level=log_level)
         self.logger = get_logger("cli")
 
         # Execute command
         try:
-            return getattr(self, f"_cmd_{parsed_args.command}")(parsed_args)
+            cmd_method = getattr(self, f"_cmd_{parsed_args.command}")
+            result: int = cmd_method(parsed_args)
+            return result
         except KeyboardInterrupt:
             print("\nOperation cancelled by user.")
             return 130
         except Exception as e:
-            self.logger.error(f"Command failed: {e}")
+            if self.logger:
+                self.logger.error(f"Command failed: {e}")
             return 1
 
     def _create_parser(self) -> argparse.ArgumentParser:
@@ -157,7 +205,7 @@ Examples:
 
         return parser
 
-    def _add_simulate_command(self, subparsers: argparse.ArgumentParser) -> None:
+    def _add_simulate_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the simulate command."""
         parser = subparsers.add_parser(
             "simulate",
@@ -181,7 +229,7 @@ Examples:
 
         parser.add_argument("--config", help="Configuration file path")
 
-    def _add_config_command(self, subparsers: argparse.ArgumentParser) -> None:
+    def _add_config_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the config command."""
         parser = subparsers.add_parser(
             "config",
@@ -226,7 +274,7 @@ Examples:
             "--format", choices=["yaml", "json"], default="yaml", help="Output format"
         )
 
-    def _add_status_command(self, subparsers: argparse.ArgumentParser) -> None:
+    def _add_status_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the status command."""
         parser = subparsers.add_parser(
             "status",
@@ -240,7 +288,7 @@ Examples:
             "--detailed", action="store_true", help="Show detailed status information"
         )
 
-    def _add_benchmark_command(self, subparsers: argparse.ArgumentParser) -> None:
+    def _add_benchmark_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the benchmark command."""
         parser = subparsers.add_parser(
             "benchmark",
@@ -278,7 +326,8 @@ Examples:
             progress.finish("loaded")
         except Exception as e:
             progress.finish("failed")
-            self.logger.error(f"Failed to load circuit: {e}")
+            if self.logger:
+                self.logger.error(f"Failed to load circuit: {e}")
             return 1
 
         # Load configuration if specified
@@ -286,9 +335,14 @@ Examples:
         if args.config:
             try:
                 config = load_config(config_paths=[args.config])
-                self.logger.info(f"Loaded configuration from {args.config}")
+                if self.logger:
+                    self.logger.info(f"Loaded configuration from {args.config}")
+                config_keys = _describe_config_keys(config)
+                if config_keys:
+                    print(f"Using configuration keys: {config_keys}")
             except Exception as e:
-                self.logger.warning(f"Failed to load configuration: {e}")
+                if self.logger:
+                    self.logger.warning(f"Failed to load configuration: {e}")
 
         # Simulate circuit
         progress = ProgressIndicator("Simulating circuit")
@@ -321,7 +375,8 @@ Examples:
 
         except Exception as e:
             progress.finish("failed")
-            self.logger.error(f"Simulation failed: {e}")
+            if self.logger:
+                self.logger.error(f"Simulation failed: {e}")
             return 1
 
     def _cmd_config(self, args: argparse.Namespace) -> int:
@@ -333,7 +388,8 @@ Examples:
         elif args.config_action == "show":
             return self._cmd_config_show(args)
         else:
-            self.logger.error(f"Unknown config action: {args.config_action}")
+            if self.logger:
+                self.logger.error(f"Unknown config action: {args.config_action}")
             return 1
 
     def _cmd_config_create(self, args: argparse.Namespace) -> int:
@@ -351,7 +407,8 @@ Examples:
                 template = create_production_template()
             else:
                 progress.finish("failed")
-                self.logger.error(f"Unknown template: {args.template}")
+                if self.logger:
+                    self.logger.error(f"Unknown template: {args.template}")
                 return 1
 
             # Get format
@@ -363,7 +420,8 @@ Examples:
                 format = ConfigFormat.TOML
             else:
                 progress.finish("failed")
-                self.logger.error(f"Unknown format: {args.format}")
+                if self.logger:
+                    self.logger.error(f"Unknown format: {args.format}")
                 return 1
 
             # Save template
@@ -375,7 +433,8 @@ Examples:
 
         except Exception as e:
             progress.finish("failed")
-            self.logger.error(f"Failed to create configuration: {e}")
+            if self.logger:
+                self.logger.error(f"Failed to create configuration: {e}")
             return 1
 
     def _cmd_config_validate(self, args: argparse.Namespace) -> int:
@@ -388,12 +447,17 @@ Examples:
             config = load_config(config_paths=[args.config_file])
             progress.finish("valid")
 
-            print(f"Configuration is valid: {args.config_file}")
+            config_keys = _describe_config_keys(config)
+            if config_keys:
+                print(f"Configuration is valid: {args.config_file} (keys: {config_keys})")
+            else:
+                print(f"Configuration is valid: {args.config_file}")
             return 0
 
         except Exception as e:
             progress.finish("invalid")
-            self.logger.error(f"Configuration validation failed: {e}")
+            if self.logger:
+                self.logger.error(f"Configuration validation failed: {e}")
             return 1
 
     def _cmd_config_show(self, args: argparse.Namespace) -> int:
@@ -403,22 +467,18 @@ Examples:
             config = load_config()
 
             # Display configuration
-            if args.format == "json":
+            if args.format == "json" or not YAML_AVAILABLE or yaml is None:
                 import json
 
                 print(json.dumps(config, indent=2))
             else:
-                if YAML_AVAILABLE:
-                    import yaml
-
-                    print(yaml.dump(config, default_flow_style=False, sort_keys=False))
-                else:
-                    print(json.dumps(config, indent=2))
+                print(yaml.dump(config, default_flow_style=False, sort_keys=False))
 
             return 0
 
         except Exception as e:
-            self.logger.error(f"Failed to show configuration: {e}")
+            if self.logger:
+                self.logger.error(f"Failed to show configuration: {e}")
             return 1
 
     def _cmd_status(self, args: argparse.Namespace) -> int:
@@ -485,7 +545,8 @@ Examples:
                 progress.finish("loaded")
             except Exception as e:
                 progress.finish("failed")
-                self.logger.error(f"Failed to load circuit: {e}")
+                if self.logger:
+                    self.logger.error(f"Failed to load circuit: {e}")
                 return 1
         else:
             # Create benchmark circuit
@@ -524,9 +585,12 @@ Examples:
                         times.append(end_time - start_time)
                         success_count += 1
 
-                        print(f"  Iteration {i+1}: {end_time - start_time:.4f}s")
+                        print(f"  Iteration {i + 1}: {end_time - start_time:.4f}s")
+                        if i == 0:
+                            counts_preview = dict(list(result.counts.items())[:3])
+                            print(f"    Sample counts: {counts_preview}")
                     except Exception as e:
-                        print(f"  Iteration {i+1}: Failed - {e}")
+                        print(f"  Iteration {i + 1}: Failed - {e}")
 
                 # Calculate statistics
                 if times:
@@ -544,12 +608,12 @@ Examples:
                     }
 
                     print(
-                        f"  Success rate: {success_count}/{args.iterations} ({success_count/args.iterations:.2%})"
+                        f"  Success rate: {success_count}/{args.iterations} ({success_count / args.iterations:.2%})"
                     )
                     print(f"  Average time: {avg_time:.4f}s")
                     print(f"  Min time: {min_time:.4f}s")
                     print(f"  Max time: {max_time:.4f}s")
-                    print(f"  Throughput: {args.shots/avg_time:.0f} shots/s")
+                    print(f"  Throughput: {args.shots / avg_time:.0f} shots/s")
                 else:
                     print("  All iterations failed")
 
@@ -593,7 +657,7 @@ Examples:
         else:
             raise ValueError(f"Unsupported circuit file format: {circuit_path.suffix}")
 
-    def _save_results(self, result, output_path: str) -> None:
+    def _save_results(self, result: "SimulationResult", output_path: str) -> None:
         """Save simulation results to file."""
         import json
 
@@ -617,7 +681,7 @@ Examples:
         with open(output_path, "w") as f:
             json.dump(result_dict, f, indent=2)
 
-    def _save_benchmark_results(self, results, output_path: str) -> None:
+    def _save_benchmark_results(self, results: dict[str, Any], output_path: str) -> None:
         """Save benchmark results to file."""
         import json
         from datetime import datetime
@@ -629,7 +693,7 @@ Examples:
         with open(output_path, "w") as f:
             json.dump(benchmark_results, f, indent=2)
 
-    def _parse_backend_type(self, backend_name: str):
+    def _parse_backend_type(self, backend_name: str) -> "BackendType | None":
         """Parse backend name to BackendType enum."""
         from ariadne.types import BackendType
 
@@ -638,13 +702,15 @@ Examples:
         except ValueError:
             return None
 
-    def _get_available_backends(self):
+    def _get_available_backends(self) -> list["BackendType"]:
         """Get list of available backends."""
         from ariadne.types import BackendType
 
         return list(BackendType)
 
-    def _print_backend_status(self, backend_type, metrics, detailed=False):
+    def _print_backend_status(
+        self, backend_type: "BackendType", metrics: "HealthMetrics", detailed: bool = False
+    ) -> None:
         """Print status for a specific backend."""
         print(f"{backend_type.value}:")
         print(f"  Status: {metrics.status.value}")
@@ -690,7 +756,7 @@ Examples:
         return circuit
 
 
-def main():
+def main() -> int:
     """Main entry point for the CLI."""
     cli = AriadneCLI()
     return cli.run()

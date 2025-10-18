@@ -20,7 +20,7 @@ def trivial_cancel(circuit: QuantumCircuit) -> QuantumCircuit:
     """Return a copy of ``circuit`` with adjacent inverse pairs removed."""
 
     simplified = circuit.copy()
-    new_data = []
+    new_data: list[tuple[Instruction, Iterable, Iterable]] = []
 
     for item in simplified.data:
         if hasattr(item, "operation"):
@@ -28,7 +28,7 @@ def trivial_cancel(circuit: QuantumCircuit) -> QuantumCircuit:
             qubits = item.qubits
             clbits = item.clbits
         else:
-            instruction, qubits, clbits = item  # type: ignore[misc]
+            instruction, qubits, clbits = item
 
         if new_data:
             last_instruction, last_qubits, last_clbits = new_data[-1]
