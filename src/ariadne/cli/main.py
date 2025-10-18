@@ -653,7 +653,23 @@ Examples:
             from qiskit.qpy import load
 
             with open(circuit_path, "rb") as f:
-                return load(f)
+                loaded_circuits = load(f)
+
+            if isinstance(loaded_circuits, QuantumCircuit):
+                return loaded_circuits
+
+            try:
+                iterator = iter(loaded_circuits)
+            except TypeError as exc:
+                raise ValueError(
+                    "Loaded QPY data must be a QuantumCircuit or an iterable of QuantumCircuit objects."
+                ) from exc
+
+            for candidate in iterator:
+                if isinstance(candidate, QuantumCircuit):
+                    return candidate
+
+            raise ValueError("QPY file does not contain any QuantumCircuit objects.")
         else:
             raise ValueError(f"Unsupported circuit file format: {circuit_path.suffix}")
 
