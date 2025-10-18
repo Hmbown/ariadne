@@ -35,7 +35,7 @@ body:
       label: Steps to Reproduce
       description: Please provide detailed steps to reproduce the issue.
       placeholder: |
-        1. Install ariadne-quantum
+        1. Install ariadne-router
         2. Run the following code...
         3. See error
     validations:
@@ -92,7 +92,7 @@ body:
     id: ariadne-version
     attributes:
       label: Ariadne Version
-      description: What version of ariadne-quantum are you using?
+      description: What version of ariadne-router are you using?
       placeholder: e.g., 1.0.0
     validations:
       required: true

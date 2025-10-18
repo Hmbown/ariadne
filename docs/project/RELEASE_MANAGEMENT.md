@@ -2,7 +2,7 @@
 
 ## Release Strategy
 
-Ariadne follows a **predictable, quality-focused release strategy** aligned with our principle of \"no ML, just math\" - every release is deterministic, well-tested, and thoroughly documented.
+Ariadne follows a **predictable, quality-focused release strategy** — every release is deterministic, well-tested, and thoroughly documented.
 
 ## Versioning
 

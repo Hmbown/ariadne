@@ -9,9 +9,17 @@
 [![CI/CD Pipeline](https://img.shields.io/github/actions/workflow/status/Hmbown/ariadne/ci.yml?branch=main&label=CI%2FCD&style=for-the-badge)](https://github.com/Hmbown/ariadne/actions/workflows/ci.yml)
 [![codecov](https://img.shields.io/codecov/c/github/Hmbown/ariadne/main?style=for-the-badge)](https://codecov.io/gh/Hmbown/ariadne)
 [![Code Style](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![PyPI version](https://badge.fury.io/py/ariadne-quantum.svg)](https://badge.fury.io/py/ariadne-quantum)
+[![PyPI version](https://badge.fury.io/py/ariadne-router.svg)](https://badge.fury.io/py/ariadne-router)
 
 </div>
+
+---
+
+## 🔄 Release Status
+
+- **PyPI package name**: `ariadne-router`
+- **Publishing method**: Trusted Publisher (GitHub Actions OIDC)
+- **Status**: Pending publisher configured. Next step is to push a tag (e.g., `v0.2.0`) to publish.
 
 ---
 
@@ -105,9 +113,29 @@ python examples/routing_matrix.py --shots 256 --generate-image docs/source/_stat
 
 ---
 
+## 🔌 Supported Backends & Integrations
+
+The following backends are detected and routed to when available. Many are optional and only used if their dependencies are installed.
+
+- Qiskit CPU simulator (`qiskit`) — always available baseline
+- Stim stabilizer simulator (`stim`) — specialized for Clifford circuits
+- Matrix Product State (`mps`) via `quimb`
+- Tensor Network (`tensor_network`) via `cotengra`/`quimb`
+- JAX Metal (`jax_metal`) — Apple Silicon acceleration when JAX/Metal is available
+- CUDA (`cuda`) — GPU acceleration via `cupy`
+- DDSIM (`ddsim`) — alternative simulator via `mqt.ddsim`
+- Cirq (`cirq`) — via `src/ariadne/backends/cirq_backend.py`
+- PennyLane (`pennylane`) — via `src/ariadne/backends/pennylane_backend.py`
+- Qulacs (`qulacs`) — via `src/ariadne/backends/qulacs_backend.py`
+- Experimental: PyQuil (`pyquil`), Braket (`braket`), Q# (`qsharp`), OpenCL (`opencl`)
+
+Backends are implemented under `src/ariadne/backends/` and selected through the router in `src/ariadne/router.py` and the decision tree in `src/ariadne/route/routing_tree.py`.
+
+---
+
 ## 🎯 The Ariadne Advantage: Intelligent Automation
 
-Ariadne's core innovation is its ability to mathematically analyze a circuit's structure to determine the optimal execution environment. This eliminates the need for quantum developers to manually select backends based on circuit characteristics.
+Ariadne's core innovation is its comprehensive routing tree that analyzes circuit properties (size, gate types, entanglement patterns) and system capabilities (available backends, hardware acceleration) to automatically select the optimal execution environment. This eliminates the need for quantum developers to manually benchmark and select from 15+ different backends.
 
 ### Transparent Decision Making
 
@@ -142,7 +170,7 @@ print(show_routing_tree())
 
 **Quick Install:**
 ```bash
-git clone https://github.com/Shannon-Labs/ariadne.git
+git clone https://github.com/Hmbown/ariadne.git
 cd ariadne
 pip install -e .
 ```
@@ -268,11 +296,19 @@ print(f"Expected speedup: {decision.expected_speedup:.1f}x")
 
 Available routing strategies:
 - `SPEED_FIRST` - Prioritize execution speed
+- `ACCURACY_FIRST` - Favor accuracy/robustness when applicable
 - `MEMORY_EFFICIENT` - Optimize for memory usage
 - `CLIFFORD_OPTIMIZED` - Specialized for Clifford circuits
+- `ENTANGLEMENT_AWARE` - Prefer TN/MPS paths for low entanglement
+- `STABILIZER_FOCUSED` - Emphasize stabilizer-friendly paths
 - `APPLE_SILICON_OPTIMIZED` - Hardware-aware for M-series chips
 - `CUDA_OPTIMIZED` - GPU acceleration focused
+- `CPU_OPTIMIZED` - Prefer portable CPU simulators
+- `RESEARCH_MODE` - Exploration-oriented defaults
+- `EDUCATION_MODE` - Deterministic, simplified defaults
+- `PRODUCTION_MODE` - Conservative, reproducible defaults
 - `AUTO_DETECT` - Intelligent analysis (default)
+- `HYBRID_MULTI_BACKEND` - Adaptive, multi-path strategy
 
 
 ```
@@ -307,7 +343,7 @@ We welcome contributions of all kinds, from bug fixes to new features. Please re
 ### Development Setup
 
 ```bash
-git clone https://github.com/Shannon-Labs/ariadne.git
+git clone https://github.com/Hmbown/ariadne.git
 cd ariadne
 pip install -e .[dev]
 
@@ -324,9 +360,9 @@ make test
 
 ## 💬 Community
 
-- **GitHub Discussions:** [Ask questions and share ideas](https://github.com/Shannon-Labs/ariadne/discussions)
-- **Issue Tracker:** [Report bugs and request features](https://github.com/Shannon-Labs/ariadne/issues)
-- **Twitter:** [Follow @ShannonLabs for updates](https://twitter.com/shannonlabs)
+- **GitHub Discussions:** [Ask questions and share ideas](https://github.com/Hmbown/ariadne/discussions)
+- **Issue Tracker:** [Report bugs and request features](https://github.com/Hmbown/ariadne/issues)
+- **Twitter:** [Follow @Hmbown for updates](https://twitter.com/Hmbown)
 
 ---
 
@@ -351,5 +387,3 @@ Ariadne builds upon excellent open-source quantum computing frameworks:
 - [JAX](https://github.com/google/jax) for hardware acceleration
 
 ---
-
-*Ariadne: Intelligent Quantum Routing - No ML, Just Math*

@@ -31,7 +31,7 @@ Comprehensive installation instructions for Ariadne on all supported platforms a
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/Shannon-Labs/ariadne.git
+   git clone https://github.com/Hmbown/ariadne.git
    cd ariadne
    ```
 
@@ -50,7 +50,7 @@ Comprehensive installation instructions for Ariadne on all supported platforms a
 
 Once published to PyPI:
 ```bash
-pip install ariadne-quantum
+pip install ariadne-router
 ```
 
 ## Optional Dependencies
@@ -281,8 +281,8 @@ pip install -e .[apple]
 If you encounter installation issues:
 
 1. **Check our [Troubleshooting Guide](troubleshooting.md)**
-2. **Search [GitHub Issues](https://github.com/Shannon-Labs/ariadne/issues)**
-3. **Ask in [GitHub Discussions](https://github.com/Shannon-Labs/ariadne/discussions)**
+2. **Search [GitHub Issues](https://github.com/Hmbown/ariadne/issues)**
+3. **Ask in [GitHub Discussions](https://github.com/Hmbown/ariadne/discussions)**
 4. **Verify system requirements match your environment**
 
 ## Next Steps

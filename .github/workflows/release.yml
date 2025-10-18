@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/ariadne-quantum
+      url: https://pypi.org/p/ariadne-router
 
     steps:
       - uses: actions/download-artifact@v4
@@ -86,7 +86,7 @@ jobs:
 
             ### Installation
             ```bash
-            pip install ariadne-quantum==${{ steps.version.outputs.VERSION }}
+            pip install ariadne-router==${{ steps.version.outputs.VERSION }}
             ```
 
             ### What's Changed

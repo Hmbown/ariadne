@@ -311,11 +311,11 @@ class PerformancePredictor:
         memory_usage_mb: float = 0.0,
         success: bool = True,
     ) -> None:
-        """Record actual performance (No ML training, just logging/future use)."""
-        # Since ML is removed, this function now serves as a placeholder or logging hook.
+        """Record actual performance (logging hook for future analysis)."""
+        # This function currently serves as a placeholder or logging hook.
         # We keep it to avoid breaking external calls, but it does nothing related to training.
         warnings.warn(
-            "ML training is disabled. Actual performance recording is currently a no-op.",
+            "Performance recording is currently a no-op (no training performed).",
             stacklevel=2,
         )
         pass

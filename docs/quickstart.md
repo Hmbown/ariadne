@@ -10,7 +10,7 @@ Get up and running with Ariadne in 5 minutes! This guide will help you install A
 
 ### Install from Source
 ```bash
-git clone https://github.com/Shannon-Labs/ariadne.git
+git clone https://github.com/Hmbown/ariadne.git
 cd ariadne
 pip install -e .
 ```
@@ -156,8 +156,8 @@ If you encounter any issues:
 ## Need Help?
 
 - Check our [Troubleshooting Guide](troubleshooting.md)
-- Join our [GitHub Discussions](https://github.com/Shannon-Labs/ariadne/discussions)
-- Report issues on our [Issue Tracker](https://github.com/Shannon-Labs/ariadne/issues)
+- Join our [GitHub Discussions](https://github.com/Hmbown/ariadne/discussions)
+- Report issues on our [Issue Tracker](https://github.com/Hmbown/ariadne/issues)
 
 ---
 

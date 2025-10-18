@@ -14,7 +14,6 @@ Examples of behavior that contributes to creating a positive environment include
 * Focusing on what is best for the community
 * Showing empathy towards other community members
 * Prioritizing mathematical rigor and honest performance reporting
-* Respecting the principle of \"no ML, just math\" in technical discussions
 
 Examples of unacceptable behavior by participants include:
 
@@ -59,7 +58,7 @@ In addition to general conduct standards, we maintain specific technical princip
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project team at conduct@shannon-labs.com. All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. The project team is obligated to maintain confidentiality with regard to the reporter of an incident. Further details of specific enforcement policies may be posted separately.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported via the repository's [Security Policy](https://github.com/Hmbown/ariadne/security/policy) or by contacting the maintainers through GitHub Discussions.
 
 Project maintainers who do not follow or enforce the Code of Conduct in good faith may face temporary or permanent repercussions as determined by other members of the project's leadership.
 
@@ -74,8 +73,7 @@ For answers to common questions about this code of conduct, see https://www.cont
 ## Contact
 
 For questions about this Code of Conduct or to report violations:
-- Email: conduct@shannon-labs.com
-- Project discussions: [GitHub Discussions](https://github.com/Shannon-Labs/ariadne/discussions)
+- Project discussions: [GitHub Discussions](https://github.com/Hmbown/ariadne/discussions)
 - Security issues: See [SECURITY.md](SECURITY.md)
 
 ---

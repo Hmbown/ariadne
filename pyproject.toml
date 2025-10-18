@@ -1,5 +1,5 @@
 [project]
-name = "ariadne-quantum"
+name = "ariadne-router"
 description = "Intelligent quantum circuit routing system with automatic backend selection and performance optimization"
 readme = "README.md"
 requires-python = ">=3.11"

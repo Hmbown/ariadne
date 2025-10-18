@@ -17,8 +17,9 @@ We take the security of Ariadne seriously. If you have discovered a security vul
 ### 1. Do NOT Create a Public Issue
 Security vulnerabilities should **never** be reported through public GitHub issues.
 
-### 2. Email Us Directly
-Send your report to: **security@shannonlabs.ai**
+### 2. Report via GitHub Security Policy
+Please report vulnerabilities through the repository's **Security Policy**:
+https://github.com/Hmbown/ariadne/security/policy
 
 Include the following information:
 - Type of vulnerability
@@ -62,7 +63,7 @@ Ariadne includes several security features:
 
 ## Acknowledgments
 
-We maintain a [Security Hall of Fame](https://ariadne.shannonlabs.ai/security/hall-of-fame) to recognize security researchers who have helped keep Ariadne secure.
+We appreciate responsible disclosure from the security community.
 
 ---
 

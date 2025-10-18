@@ -3,14 +3,14 @@
 Quick installation commands for common use cases.
 
 ## Package Naming Note
-- **Install with**: `pip install ariadne-quantum`
+- **Install with**: `pip install ariadne-router`
 - **Import in Python**: `import ariadne`
 
 ## Quick Install
 
 ### Basic Installation
 ```bash
-git clone https://github.com/Shannon-Labs/ariadne.git
+git clone https://github.com/Hmbown/ariadne.git
 cd ariadne
 pip install -e .
 ```
@@ -32,7 +32,7 @@ pip install -e .[apple,cuda,viz]
 
 ### Development Setup
 ```bash
-git clone https://github.com/Shannon-Labs/ariadne.git
+git clone https://github.com/Hmbown/ariadne.git
 cd ariadne
 pip install -e .[dev]
 pre-commit install

@@ -57,12 +57,12 @@ This guide provides detailed installation instructions for the Ariadne quantum r
 
 **Important Note**: There is a difference between the package name for installation and the import name:
 
-- **Installation package**: `ariadne-quantum` (used with pip)
+- **Installation package**: `ariadne-router` (used with pip)
 - **Python import**: `ariadne` (used in Python code)
 
 ```bash
 # Install the package
-pip install ariadne-quantum
+pip install ariadne-router
 
 # Use in Python
 import ariadne
@@ -76,7 +76,7 @@ This naming convention distinguishes the Ariadne quantum package from other pote
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/Shannon-Labs/ariadne.git
+   git clone https://github.com/Hmbown/ariadne.git
    cd ariadne
    ```
 
@@ -95,7 +95,7 @@ This naming convention distinguishes the Ariadne quantum package from other pote
 
 Once published to PyPI:
 ```bash
-pip install ariadne-quantum
+pip install ariadne-router
 ```
 
 ### Method 3: Install with Optional Dependencies
@@ -104,19 +104,19 @@ For specific hardware acceleration or features:
 
 ```bash
 # Basic installation
-pip install ariadne-quantum
+pip install ariadne-router
 
 # With Apple Silicon acceleration
-pip install ariadne-quantum[apple]
+pip install ariadne-router[apple]
 
 # With CUDA acceleration
-pip install ariadne-quantum[cuda]
+pip install ariadne-router[cuda]
 
 # With visualization tools
-pip install ariadne-quantum[viz]
+pip install ariadne-router[viz]
 
 # With all optional dependencies
-pip install ariadne-quantum[apple,cuda,viz]
+pip install ariadne-router[apple,cuda,viz]
 ```
 
 ## Platform-Specific Instructions
@@ -488,7 +488,7 @@ For contributors to Ariadne:
 
 1. **Clone and install with development dependencies**:
    ```bash
-   git clone https://github.com/Shannon-Labs/ariadne.git
+   git clone https://github.com/Hmbown/ariadne.git
    cd ariadne
    pip install -e .[dev]
    ```
@@ -579,7 +579,7 @@ For production environments:
 
 ```bash
 # Standard installation
-git clone https://github.com/Shannon-Labs/ariadne.git
+git clone https://github.com/Hmbown/ariadne.git
 cd ariadne
 pip install -e .
 

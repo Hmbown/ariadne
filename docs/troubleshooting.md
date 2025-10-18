@@ -382,8 +382,8 @@ profiler.print_stats(sort='time')
 
 If you can't resolve an issue:
 
-1. **Check existing issues**: [GitHub Issues](https://github.com/Shannon-Labs/ariadne/issues)
-2. **Search discussions**: [GitHub Discussions](https://github.com/Shannon-Labs/ariadne/discussions)
+1. **Check existing issues**: [GitHub Issues](https://github.com/Hmbown/ariadne/issues)
+2. **Search discussions**: [GitHub Discussions](https://github.com/Hmbown/ariadne/discussions)
 3. **Create minimal reproducible example**:
    ```python
    # Include this in bug reports
@@ -429,4 +429,4 @@ result = job.result()
 
 ---
 
-*Still having issues? Check our [GitHub Issues](https://github.com/Shannon-Labs/ariadne/issues) or create a new discussion with your problem details.*
+*Still having issues? Check our [GitHub Issues](https://github.com/Hmbown/ariadne/issues) or create a new discussion with your problem details.*

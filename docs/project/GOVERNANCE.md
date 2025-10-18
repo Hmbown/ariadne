@@ -22,7 +22,7 @@ Ariadne follows a **meritocratic governance model** that prioritizes technical e
 
 ### Maintainers
 
-**Lead Maintainer**: Shannon Labs Team
+**Lead Maintainer**: Project Maintainers
 - Overall project direction and technical vision
 - Final decision authority on breaking changes
 - Release management and security oversight
@@ -69,7 +69,7 @@ Ariadne follows a **meritocratic governance model** that prioritizes technical e
 1. **Technical Disputes**: Resolved through benchmarks and mathematical analysis
 2. **Design Disagreements**: Community discussion with maintainer mediation
 3. **Code of Conduct Issues**: Handled by lead maintainer with community input
-4. **Appeal Process**: Escalation to Shannon Labs governance team if needed
+4. **Appeal Process**: Escalation to project maintainers via GitHub Discussions if needed
 
 ## Technical Standards
 
@@ -133,7 +133,6 @@ Ariadne follows a **meritocratic governance model** that prioritizes technical e
 ### Current Model
 - **Open Source**: Core project remains Apache 2.0 licensed
 - **Community Driven**: Development priorities set by user needs
-- **Corporate Backing**: Shannon Labs provides initial development resources
 - **Grant Funding**: Seeking research grants for advanced features
 
 ### Future Sustainability
@@ -165,12 +164,11 @@ See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for detailed community standards. K
 - **User Rights**: Clear data deletion and access policies
 - **GDPR Compliance**: European privacy regulation adherence
 
-## Contact Information
+### Contact Information
 
-- **General Inquiries**: governance@shannon-labs.com
-- **Security Issues**: security@shannon-labs.com
-- **Code of Conduct**: conduct@shannon-labs.com
-- **Legal Questions**: legal@shannon-labs.com
+- **General Inquiries**: Use GitHub Discussions
+- **Security Issues**: See repository Security Policy
+- **Code of Conduct**: See CODE_OF_CONDUCT.md
 
 ---
 

@@ -121,9 +121,9 @@ CMD ["python", "-c", "import ariadne; print('Ariadne Quantum Router ready')"]
 # Add labels for container metadata
 LABEL org.opencontainers.image.title="Ariadne Quantum Circuit Router"
 LABEL org.opencontainers.image.description="Intelligent quantum circuit routing with automatic backend selection"
-LABEL org.opencontainers.image.authors="Shannon Labs"
-LABEL org.opencontainers.image.url="https://github.com/Shannon-Labs/ariadne"
-LABEL org.opencontainers.image.source="https://github.com/Shannon-Labs/ariadne"
+LABEL org.opencontainers.image.authors="Hmbown"
+LABEL org.opencontainers.image.url="https://github.com/Hmbown/ariadne"
+LABEL org.opencontainers.image.source="https://github.com/Hmbown/ariadne"
 LABEL org.opencontainers.image.version="1.0.0"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 

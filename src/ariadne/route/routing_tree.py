@@ -113,6 +113,15 @@ class ComprehensiveRoutingTree:
         # Check DDSIM
         availability[BackendType.DDSIM] = find_spec("mqt.ddsim") is not None
 
+        # Additional optional backends
+        availability[BackendType.CIRQ] = find_spec("cirq") is not None
+        availability[BackendType.PENNYLANE] = find_spec("pennylane") is not None
+        availability[BackendType.QULACS] = find_spec("qulacs") is not None
+        availability[BackendType.PYQUIL] = find_spec("pyquil") is not None
+        availability[BackendType.BRAKET] = find_spec("braket") is not None
+        availability[BackendType.QSHARP] = find_spec("qsharp") is not None
+        availability[BackendType.OPENCL] = find_spec("pyopencl") is not None
+
         return availability
 
     def _build_routing_tree(self) -> RoutingNode:
@@ -211,7 +220,37 @@ class ComprehensiveRoutingTree:
             metadata={"description": "Qiskit for small circuits"},
         )
 
-        small_circuits.children = [small_apple_silicon, small_cuda, small_qiskit]
+        # Additional options for small circuits (try optional backends before Qiskit fallback)
+        small_cirq = RoutingNode(
+            name="small_cirq",
+            condition="backend_available(BackendType.CIRQ)",
+            backend=BackendType.CIRQ,
+            confidence=0.70,
+            metadata={"description": "Cirq backend for small circuits"},
+        )
+        small_qulacs = RoutingNode(
+            name="small_qulacs",
+            condition="backend_available(BackendType.QULACS)",
+            backend=BackendType.QULACS,
+            confidence=0.72,
+            metadata={"description": "Qulacs backend for small circuits"},
+        )
+        small_pennylane = RoutingNode(
+            name="small_pennylane",
+            condition="backend_available(BackendType.PENNYLANE)",
+            backend=BackendType.PENNYLANE,
+            confidence=0.68,
+            metadata={"description": "PennyLane backend for small circuits"},
+        )
+
+        small_circuits.children = [
+            small_apple_silicon,
+            small_cuda,
+            small_cirq,
+            small_qulacs,
+            small_pennylane,
+            small_qiskit,
+        ]
 
         # Level 3: Medium circuits - entanglement-aware routing
         medium_low_entanglement = RoutingNode(
@@ -272,7 +311,37 @@ class ComprehensiveRoutingTree:
             metadata={"description": "JAX Metal for high-entanglement medium circuits"},
         )
 
-        medium_high_entanglement.children = [medium_cuda_high, medium_apple_high, medium_qiskit]
+        # Optional alternatives for medium high entanglement
+        medium_opencl = RoutingNode(
+            name="medium_opencl",
+            condition="backend_available(BackendType.OPENCL)",
+            backend=BackendType.OPENCL,
+            confidence=0.60,
+            metadata={"description": "OpenCL backend for medium circuits"},
+        )
+        medium_cirq = RoutingNode(
+            name="medium_cirq",
+            condition="backend_available(BackendType.CIRQ)",
+            backend=BackendType.CIRQ,
+            confidence=0.62,
+            metadata={"description": "Cirq backend for medium circuits"},
+        )
+        medium_qulacs = RoutingNode(
+            name="medium_qulacs",
+            condition="backend_available(BackendType.QULACS)",
+            backend=BackendType.QULACS,
+            confidence=0.65,
+            metadata={"description": "Qulacs backend for medium circuits"},
+        )
+
+        medium_high_entanglement.children = [
+            medium_cuda_high,
+            medium_apple_high,
+            medium_opencl,
+            medium_cirq,
+            medium_qulacs,
+            medium_qiskit,
+        ]
 
         # Level 3: Large circuits - specialized backends only
         large_mps = RoutingNode(
@@ -299,6 +368,22 @@ class ComprehensiveRoutingTree:
             metadata={"description": "DDSIM for large circuits"},
         )
 
+        # For completeness, include experimental large-circuit fallbacks
+        large_braket = RoutingNode(
+            name="large_braket",
+            condition="backend_available(BackendType.BRAKET)",
+            backend=BackendType.BRAKET,
+            confidence=0.40,
+            metadata={"description": "Braket local simulators (experimental)"},
+        )
+        large_qsharp = RoutingNode(
+            name="large_qsharp",
+            condition="backend_available(BackendType.QSHARP)",
+            backend=BackendType.QSHARP,
+            confidence=0.35,
+            metadata={"description": "Q# simulator (experimental)"},
+        )
+
         large_fail = RoutingNode(
             name="large_fail",
             condition="always",
@@ -307,7 +392,14 @@ class ComprehensiveRoutingTree:
             metadata={"description": "Qiskit fallback for large circuits (likely to fail)"},
         )
 
-        large_circuits.children = [large_mps, large_tensor, large_ddsim, large_fail]
+        large_circuits.children = [
+            large_mps,
+            large_tensor,
+            large_ddsim,
+            large_braket,
+            large_qsharp,
+            large_fail,
+        ]
 
         return root
 

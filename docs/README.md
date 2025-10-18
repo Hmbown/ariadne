@@ -67,7 +67,7 @@ Comprehensive documentation for the Ariadne Intelligent Quantum Router.
 
 ## 🚀 Mission Statement
 
-Ariadne's mission is to **take agency back from the agents** in quantum computing. We provide intelligent quantum circuit routing with **no ML, just math** - using deterministic algorithms and mathematical analysis to automatically select the optimal quantum computing backend for your circuits.
+Ariadne's mission is to **take agency back from the agents** in quantum computing. We provide intelligent quantum circuit routing using deterministic algorithms and mathematical analysis to automatically select the optimal quantum computing backend for your circuits.
 
 ## 📋 Documentation Standards
 
