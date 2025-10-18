@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 
 from ariadne.route.execute import decide_backend
 
+if TYPE_CHECKING:
+    from qiskit import QuantumCircuit
 
-def low_treewidth_circuit(n: int = 10):
+
+def low_treewidth_circuit(n: int = 10) -> QuantumCircuit:
     from qiskit import QuantumCircuit
 
     qc = QuantumCircuit(n)
@@ -16,7 +21,7 @@ def low_treewidth_circuit(n: int = 10):
     return qc
 
 
-def dense_circuit(n: int = 10):
+def dense_circuit(n: int = 10) -> QuantumCircuit:
     from qiskit import QuantumCircuit
 
     qc = QuantumCircuit(n)

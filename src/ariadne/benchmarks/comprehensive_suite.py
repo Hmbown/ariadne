@@ -10,7 +10,8 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import asdict, dataclass
+from collections.abc import Callable
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -37,7 +38,7 @@ class BenchmarkResult:
     shots: int = 1000
     timestamp: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.timestamp:
             self.timestamp = datetime.now().isoformat()
 
@@ -54,16 +55,34 @@ class BenchmarkSuite:
     repetitions: int = 3
 
 
+@dataclass
+class BackendPerformanceStats:
+    """Aggregate statistics for backend executions."""
+
+    times: list[float] = field(default_factory=list)
+    success_count: int = 0
+    total_count: int = 0
+
+
+@dataclass
+class AlgorithmPerformanceStats:
+    """Aggregate statistics for algorithm benchmarks."""
+
+    success: int = 0
+    total: int = 0
+    times: list[float] = field(default_factory=list)
+
+
 class QuantumAlgorithmBenchmarks:
     """Comprehensive quantum algorithm benchmark suite."""
 
-    def __init__(self, output_dir: str | None = None):
+    def __init__(self, output_dir: str | None = None) -> None:
         """Initialize benchmark suite."""
         self.output_dir = Path(output_dir) if output_dir else Path("benchmark_results")
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Standard benchmark configurations
-        self.benchmark_suites = {
+        self.benchmark_suites: dict[str, BenchmarkSuite] = {
             "quick": BenchmarkSuite(
                 name="Quick Validation",
                 description="Fast benchmarks for basic validation",
@@ -101,7 +120,7 @@ class QuantumAlgorithmBenchmarks:
             ),
         }
 
-    def create_clifford_circuit(self, num_qubits: int, depth: int = None) -> QuantumCircuit:
+    def create_clifford_circuit(self, num_qubits: int, depth: int | None = None) -> QuantumCircuit:
         """Create Clifford circuit for stabilizer simulation benchmarks."""
         if depth is None:
             depth = num_qubits * 2
@@ -132,7 +151,7 @@ class QuantumAlgorithmBenchmarks:
         circuit.measure_all()
         return circuit
 
-    def create_random_circuit(self, num_qubits: int, depth: int = None) -> QuantumCircuit:
+    def create_random_circuit(self, num_qubits: int, depth: int | None = None) -> QuantumCircuit:
         """Create random quantum circuit."""
         if depth is None:
             depth = num_qubits * 3
@@ -148,7 +167,9 @@ class QuantumAlgorithmBenchmarks:
         circuit.measure_all()
         return circuit
 
-    def create_quantum_volume_circuit(self, num_qubits: int, depth: int = None) -> QuantumCircuit:
+    def create_quantum_volume_circuit(
+        self, num_qubits: int, depth: int | None = None
+    ) -> QuantumCircuit:
         """Create Quantum Volume circuit."""
         if depth is None:
             depth = num_qubits
@@ -312,7 +333,7 @@ class QuantumAlgorithmBenchmarks:
         """Benchmark a single circuit on a specific backend."""
 
         # Create circuit
-        circuit_creators = {
+        circuit_creators: dict[str, Callable[[int], QuantumCircuit]] = {
             "clifford": self.create_clifford_circuit,
             "random": self.create_random_circuit,
             "qft": self.create_qft_circuit,
@@ -443,7 +464,7 @@ class QuantumAlgorithmBenchmarks:
         print(f"📊 Qubit ranges: {suite.qubit_ranges}")
         print()
 
-        all_results = {}
+        all_results: dict[str, Any] = {}
         total_benchmarks = (
             len(suite.benchmarks)
             * len(suite.qubit_ranges)
@@ -484,16 +505,18 @@ class QuantumAlgorithmBenchmarks:
 
         return all_results
 
-    def _save_benchmark_results(self, suite_name: str, results: dict[str, list[BenchmarkResult]]):
+    def _save_benchmark_results(
+        self, suite_name: str, results: dict[str, list[BenchmarkResult]]
+    ) -> None:
         """Save benchmark results to file."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"benchmark_{suite_name}_{timestamp}.json"
         filepath = self.output_dir / filename
 
         # Convert results to serializable format
-        serializable_results = {}
-        for key, result_list in results.items():
-            serializable_results[key] = [asdict(result) for result in result_list]
+        serializable_results: dict[str, list[dict[str, Any]]] = {}
+        for result_key, result_list in results.items():
+            serializable_results[result_key] = [asdict(result) for result in result_list]
 
         with open(filepath, "w") as f:
             json.dump(serializable_results, f, indent=2)
@@ -505,7 +528,7 @@ class QuantumAlgorithmBenchmarks:
     ) -> str:
         """Generate a comprehensive benchmark report."""
 
-        report_lines = []
+        report_lines: list[str] = []
         report_lines.append(f"# Ariadne Benchmark Report: {suite_name}")
         report_lines.append(f"**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         report_lines.append("")
@@ -515,32 +538,23 @@ class QuantumAlgorithmBenchmarks:
         successful_tests = sum(
             sum(1 for r in result_list if r.success) for result_list in results.values()
         )
+        success_percentage = successful_tests / total_tests * 100 if total_tests > 0 else 0.0
 
         report_lines.append("## Summary")
         report_lines.append(f"- **Total Tests**: {total_tests}")
-        report_lines.append(
-            f"- **Successful**: {successful_tests} ({successful_tests / total_tests * 100:.1f}%)"
-        )
+        report_lines.append(f"- **Successful**: {successful_tests} ({success_percentage:.1f}%)")
         report_lines.append(f"- **Failed**: {total_tests - successful_tests}")
         report_lines.append("")
 
         # Backend performance comparison
-        backend_stats = {}
+        backend_stats: dict[str, BackendPerformanceStats] = {}
         for result_list in results.values():
             for result in result_list:
+                stats = backend_stats.setdefault(result.backend_name, BackendPerformanceStats())
                 if result.success:
-                    if result.backend_name not in backend_stats:
-                        backend_stats[result.backend_name] = {
-                            "times": [],
-                            "success_count": 0,
-                            "total_count": 0,
-                        }
-                    backend_stats[result.backend_name]["times"].append(result.execution_time)
-                    backend_stats[result.backend_name]["success_count"] += 1
-                backend_stats.setdefault(
-                    result.backend_name, {"success_count": 0, "total_count": 0}
-                )
-                backend_stats[result.backend_name]["total_count"] += 1
+                    stats.times.append(result.execution_time)
+                    stats.success_count += 1
+                stats.total_count += 1
 
         report_lines.append("## Backend Performance")
         report_lines.append(
@@ -550,12 +564,16 @@ class QuantumAlgorithmBenchmarks:
             "|---------|--------------|--------------|--------------|--------------|"
         )
 
-        for backend_name, stats in backend_stats.items():
-            success_rate = stats["success_count"] / stats["total_count"] * 100
-            if stats["times"]:
-                avg_time = np.mean(stats["times"])
-                min_time = np.min(stats["times"])
-                max_time = np.max(stats["times"])
+        for backend_name, backend_stat in backend_stats.items():
+            success_rate = (
+                backend_stat.success_count / backend_stat.total_count * 100
+                if backend_stat.total_count
+                else 0.0
+            )
+            if backend_stat.times:
+                avg_time = float(np.mean(backend_stat.times))
+                min_time = float(np.min(backend_stat.times))
+                max_time = float(np.max(backend_stat.times))
                 report_lines.append(
                     f"| {backend_name} | {success_rate:.1f}% | {avg_time:.3f} | {min_time:.3f} | {max_time:.3f} |"
                 )
@@ -565,28 +583,28 @@ class QuantumAlgorithmBenchmarks:
         report_lines.append("")
 
         # Algorithm performance breakdown
-        algorithm_stats = {}
+        algorithm_stats: dict[str, AlgorithmPerformanceStats] = {}
         for key, result_list in results.items():
-            parts = key.split("_")
-            algorithm = parts[0]
-            if algorithm not in algorithm_stats:
-                algorithm_stats[algorithm] = {"success": 0, "total": 0, "times": []}
+            algorithm = key.split("_")[0]
+            algorithm_stat = algorithm_stats.setdefault(algorithm, AlgorithmPerformanceStats())
 
             for result in result_list:
-                algorithm_stats[algorithm]["total"] += 1
+                algorithm_stat.total += 1
                 if result.success:
-                    algorithm_stats[algorithm]["success"] += 1
-                    algorithm_stats[algorithm]["times"].append(result.execution_time)
+                    algorithm_stat.success += 1
+                    algorithm_stat.times.append(result.execution_time)
 
         report_lines.append("## Algorithm Performance")
         report_lines.append("| Algorithm | Success Rate | Avg Time (s) | Std Dev (s) |")
         report_lines.append("|-----------|--------------|--------------|-------------|")
 
-        for algorithm, stats in algorithm_stats.items():
-            success_rate = stats["success"] / stats["total"] * 100
-            if stats["times"]:
-                avg_time = np.mean(stats["times"])
-                std_time = np.std(stats["times"])
+        for algorithm, algorithm_stat in algorithm_stats.items():
+            success_rate = (
+                algorithm_stat.success / algorithm_stat.total * 100 if algorithm_stat.total else 0.0
+            )
+            if algorithm_stat.times:
+                avg_time = float(np.mean(algorithm_stat.times))
+                std_time = float(np.std(algorithm_stat.times))
                 report_lines.append(
                     f"| {algorithm} | {success_rate:.1f}% | {avg_time:.3f} | {std_time:.3f} |"
                 )
@@ -599,18 +617,17 @@ class QuantumAlgorithmBenchmarks:
         report_lines.append("## Performance by Circuit Size")
 
         # Group by qubit count
-        qubit_stats = {}
-        for key, result_list in results.items():
+        qubit_stats: dict[int, list[float]] = {}
+        for _result_key, result_list in results.items():
             for result in result_list:
                 if result.success:
-                    qubits = result.circuit_params["num_qubits"]
-                    if qubits not in qubit_stats:
-                        qubit_stats[qubits] = []
-                    qubit_stats[qubits].append(result.execution_time)
+                    qubits_value = result.circuit_params.get("num_qubits")
+                    if isinstance(qubits_value, int):
+                        qubit_stats.setdefault(qubits_value, []).append(result.execution_time)
 
         for qubits in sorted(qubit_stats.keys()):
             times = qubit_stats[qubits]
-            avg_time = np.mean(times)
+            avg_time = float(np.mean(times))
             report_lines.append(
                 f"- **{qubits} qubits**: {avg_time:.3f}s average, {len(times)} successful runs"
             )

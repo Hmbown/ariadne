@@ -4,10 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import math
 import statistics
-import sys
 import time
 from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass
@@ -15,10 +15,6 @@ from pathlib import Path
 from random import Random
 
 from qiskit import QuantumCircuit
-
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
 
 from ariadne.backends.tensor_network_backend import TensorNetworkBackend
 from ariadne.route.analyze import analyze_circuit
@@ -262,47 +258,46 @@ def benchmark_case(
     )
 
     if case.category == "clifford":
-        try:
-            import stim  # Check if Stim is available
-
+        if importlib.util.find_spec("stim") is None:
+            timings.append(
+                TimingResult(
+                    backend="stim",
+                    mean_time=float("inf"),
+                    stdev=0.0,
+                    repetitions=0,
+                    succeeded=False,
+                    error="Stim backend not available",
+                )
+            )
+        else:
             stim_router = EnhancedQuantumRouter()
 
             def stim_run() -> None:
                 stim_router._simulate_stim(circuit, shots)
 
-            stim_timings, stim_success, stim_error = time_function(stim_run, repetitions)
-            timings.append(
-                TimingResult(
-                    backend="stim",
-                    mean_time=statistics.mean(stim_timings) if stim_timings else float("inf"),
-                    stdev=statistics.pstdev(stim_timings) if len(stim_timings) > 1 else 0.0,
-                    repetitions=len(stim_timings),
-                    succeeded=stim_success,
-                    error=stim_error,
+            try:
+                stim_timings, stim_success, stim_error = time_function(stim_run, repetitions)
+                timings.append(
+                    TimingResult(
+                        backend="stim",
+                        mean_time=statistics.mean(stim_timings) if stim_timings else float("inf"),
+                        stdev=statistics.pstdev(stim_timings) if len(stim_timings) > 1 else 0.0,
+                        repetitions=len(stim_timings),
+                        succeeded=stim_success,
+                        error=stim_error,
+                    )
                 )
-            )
-        except ImportError as exc:  # pragma: no cover - stim optional
-            timings.append(
-                TimingResult(
-                    backend="stim",
-                    mean_time=float("inf"),
-                    stdev=0.0,
-                    repetitions=0,
-                    succeeded=False,
-                    error=f"Stim backend not available: {str(exc)}",
+            except Exception as exc:  # pragma: no cover - other errors
+                timings.append(
+                    TimingResult(
+                        backend="stim",
+                        mean_time=float("inf"),
+                        stdev=0.0,
+                        repetitions=0,
+                        succeeded=False,
+                        error=f"Stim backend error: {str(exc)}",
+                    )
                 )
-            )
-        except Exception as exc:  # pragma: no cover - other errors
-            timings.append(
-                TimingResult(
-                    backend="stim",
-                    mean_time=float("inf"),
-                    stdev=0.0,
-                    repetitions=0,
-                    succeeded=False,
-                    error=f"Stim backend error: {str(exc)}",
-                )
-            )
 
     if enable_tensor_network and num_qubits <= 14:
         try:

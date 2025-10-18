@@ -126,6 +126,9 @@ def demonstrate_routing():
         # Analyze circuit
         analysis = analyze_circuit(circuit)
         entropy = router.circuit_entropy(circuit)
+        console.print(
+            f"  Clifford ratio: {analysis['clifford_ratio']:.2f}, depth {analysis['depth']}"
+        )
 
         # Get routing decision
         decision = router.select_optimal_backend(circuit)
@@ -277,6 +280,7 @@ def demonstrate_speed_comparison():
     console.print(f"  • Naive Qiskit time: {qiskit_time:.3f}s")
     console.print(f"  • Intelligent routing time: {intelligent_time:.3f}s")
     console.print(f"  • Speedup: {speedup:.1f}x")
+    console.print(f"  • Sample naive counts: {dict(list(result1.items())[:3])}")
 
     if result2.routing_decision.recommended_backend == BackendType.STIM:
         console.print(f"  • Backend chosen: {result2.backend_used.value} (optimal for Clifford)")

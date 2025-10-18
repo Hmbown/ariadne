@@ -91,13 +91,13 @@ def benchmark_backend(
             # Force CUDA selection by temporarily modifying router
             original_cuda_available = router._cuda_available
             router._cuda_available = True
-            result = router.simulate(circuit, shots=shots)
+            router.simulate(circuit, shots=shots)
             router._cuda_available = original_cuda_available
         else:
             # For other backends, we need to modify the router's backend selection
             # This is a simplified approach - in practice, you'd want to modify
             # the select_optimal_backend method or create a custom router
-            result = router.simulate(circuit, shots=shots)
+            router.simulate(circuit, shots=shots)
 
         execution_time = time.perf_counter() - start_time
 

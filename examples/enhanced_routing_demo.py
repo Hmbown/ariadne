@@ -14,9 +14,20 @@ from qiskit import QuantumCircuit
 # Import the new enhanced routing system
 try:
     from ariadne.ml.performance_prediction import PerformancePredictor
-    from ariadne.optimization.multi_objective import MultiObjectiveOptimizer, ObjectiveWeight
-    from ariadne.route.context_detection import ContextDetector, detect_user_context
-    from ariadne.route.enhanced_router import EnhancedQuantumRouter, RouterType, WorkflowType
+
+    from ariadne.optimization.multi_objective import (
+        MultiObjectiveOptimizer,
+        ObjectiveWeight,
+    )
+    from ariadne.route.context_detection import (
+        ContextDetector,
+        detect_user_context,
+    )
+    from ariadne.route.enhanced_router import (
+        EnhancedQuantumRouter,
+        RouterType,
+        WorkflowType,
+    )
     from ariadne.router import BackendType
 except ImportError as e:
     print(f"⚠️  Import error: {e}")
@@ -51,7 +62,7 @@ def create_example_circuits():
     # 3. Large random circuit (benchmarking)
     large = QuantumCircuit(15)
     np.random.seed(42)
-    for layer in range(10):
+    for _ in range(10):
         for i in range(15):
             large.ry(np.random.random() * np.pi, i)
         for i in range(0, 14, 2):
@@ -75,6 +86,7 @@ def demonstrate_context_detection():
 
     # Analyze user context
     context = detector.analyze_user_context(circuit_history)
+    helper_context = detect_user_context(circuit_history)
 
     print("📊 Detected Context:")
     print(f"  Workflow Type: {context.workflow_type.value}")
@@ -83,6 +95,12 @@ def demonstrate_context_detection():
     print(f"  Memory: {context.hardware_profile.total_memory_gb:.1f} GB")
     print(f"  Apple Silicon: {context.hardware_profile.apple_silicon}")
     print(f"  CUDA Available: {context.hardware_profile.cuda_capable}")
+    print()
+
+    if helper_context.workflow_type == WorkflowType.BENCHMARKING:
+        print("📈 Helper detected benchmarking workflow focus")
+    else:
+        print(f"📈 Helper detected workflow: {helper_context.workflow_type.value}")
     print()
 
     print("🎯 Performance Preferences:")
@@ -257,7 +275,7 @@ def run_performance_comparison():
             basic_time = time.time() - start_time
             print(
                 f"  Basic Router: {basic_decision.recommended_backend.value} "
-                f"({basic_time*1000:.1f}ms)"
+                f"({basic_time * 1000:.1f}ms)"
             )
         except Exception as e:
             print(f"  Basic Router: Failed - {e}")
@@ -268,7 +286,7 @@ def run_performance_comparison():
         enhanced_time = time.time() - start_time
         print(
             f"  Enhanced Router: {enhanced_decision.recommended_backend.value} "
-            f"({enhanced_time*1000:.1f}ms, confidence: {enhanced_decision.confidence_score:.1%})"
+            f"({enhanced_time * 1000:.1f}ms, confidence: {enhanced_decision.confidence_score:.1%})"
         )
 
         print()

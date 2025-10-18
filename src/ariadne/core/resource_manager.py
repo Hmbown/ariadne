@@ -69,10 +69,10 @@ class ResourceManager:
     circuit simulations and tracks resource usage.
     """
 
-    _instance = None
+    _instance: ResourceManager | None = None
     _lock = threading.Lock()
 
-    def __new__(cls):
+    def __new__(cls) -> ResourceManager:
         """Implement singleton pattern."""
         with cls._lock:
             if cls._instance is None:
@@ -80,10 +80,12 @@ class ResourceManager:
                 cls._instance._initialized = False
             return cls._instance
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the resource manager."""
         if self._initialized:
             return
+
+        self._initialized: bool = False
 
         if not PSUTIL_AVAILABLE:
             raise DependencyError(
@@ -125,8 +127,8 @@ class ResourceManager:
                 architecture=architecture,
             )
 
-        except Exception as e:
-            raise ResourceError(f"Failed to update system resources: {e}")
+        except Exception as exc:
+            raise ResourceError(f"Failed to update system resources: {exc}") from exc
 
     def _get_gpu_info(self) -> tuple[float | None, bool]:
         """Get GPU information if available."""

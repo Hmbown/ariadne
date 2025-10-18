@@ -19,7 +19,7 @@ class MetalBackend:
     and tested on M4 Mac hardware.
     """
 
-    def __init__(self, device: str | None = None):
+    def __init__(self, device: str | None = None) -> None:
         """
         Initialize Metal backend.
 
@@ -77,7 +77,7 @@ class JAXBackend:
     Will provide GPU acceleration on both NVIDIA and Apple Silicon.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         raise NotImplementedError(
             "JAX backend pending implementation. "
             "Use metal-development branch for Apple Silicon support."

@@ -120,7 +120,7 @@ class PerformanceRegressionDetector:
 
         logger.info("PerformanceRegressionDetector initialized")
 
-    def _init_database(self):
+    def _init_database(self) -> None:
         """Initialize SQLite database for storing performance data."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute("""
@@ -191,7 +191,7 @@ class PerformanceRegressionDetector:
         circuit: QuantumCircuit | None = None,
         circuit_hash: str | None = None,
         metadata: dict[str, Any] | None = None,
-    ):
+    ) -> None:
         """Record a performance metric measurement."""
         if circuit is not None:
             circuit_hash = self._hash_circuit(circuit)
@@ -227,7 +227,7 @@ class PerformanceRegressionDetector:
 
         logger.debug(f"Recorded metric: {metric_type.value} = {value} for backend {backend}")
 
-    def _store_metric_db(self, metric: PerformanceMetric):
+    def _store_metric_db(self, metric: PerformanceMetric) -> None:
         """Store metric in database."""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -290,63 +290,75 @@ class PerformanceRegressionDetector:
         """Generate a unique key for baseline storage."""
         return f"{metric_type.value}:{backend}:{circuit_hash}"
 
-    def _check_for_regression(self, metric: PerformanceMetric):
+    def _check_for_regression(self, metric: PerformanceMetric) -> None:
         """Check if a metric indicates a performance regression."""
         baseline_key = self._get_baseline_key(
             metric.metric_type, metric.backend, metric.circuit_hash
         )
 
         # Get or create baseline
-        baseline = self._get_baseline(
+        baseline_result: StatisticalBaseline | None = self._get_baseline(
             baseline_key, metric.metric_type, metric.backend, metric.circuit_hash
         )
 
-        if baseline is None or baseline.sample_count < self.min_samples:
+        if baseline_result is None or baseline_result.sample_count < self.min_samples:
             # Not enough data for regression detection
             return
 
         # Calculate expected range based on baseline
-        expected_max = baseline.mean + 2 * baseline.std
+        expected_max = baseline_result.mean + 2 * baseline_result.std
 
         # For execution time and latency, higher values are worse
         if metric.metric_type in [MetricType.EXECUTION_TIME, MetricType.BACKEND_LATENCY]:
-            threshold_value = baseline.mean * (1 + self.detection_threshold)
+            threshold_value = baseline_result.mean * (1 + self.detection_threshold)
 
             if metric.value > threshold_value:
-                degradation_percent = ((metric.value - baseline.mean) / baseline.mean) * 100
+                degradation_percent = (
+                    (metric.value - baseline_result.mean) / baseline_result.mean
+                ) * 100
                 confidence = min(
                     1.0, (metric.value - threshold_value) / (expected_max - threshold_value)
                 )
 
                 if confidence >= self.confidence_threshold:
-                    self._create_regression_alert(metric, baseline, degradation_percent, confidence)
+                    self._create_regression_alert(
+                        metric, baseline_result, degradation_percent, confidence
+                    )
 
         # For throughput and accuracy, lower values are worse
         elif metric.metric_type in [MetricType.THROUGHPUT, MetricType.ACCURACY]:
-            threshold_value = baseline.mean * (1 - self.detection_threshold)
+            threshold_value = baseline_result.mean * (1 - self.detection_threshold)
 
             if metric.value < threshold_value:
-                degradation_percent = ((baseline.mean - metric.value) / baseline.mean) * 100
-                expected_min = baseline.mean - 2 * baseline.std
+                degradation_percent = (
+                    (baseline_result.mean - metric.value) / baseline_result.mean
+                ) * 100
+                expected_min = baseline_result.mean - 2 * baseline_result.std
                 confidence = min(
                     1.0, (threshold_value - metric.value) / (threshold_value - expected_min)
                 )
 
                 if confidence >= self.confidence_threshold:
-                    self._create_regression_alert(metric, baseline, degradation_percent, confidence)
+                    self._create_regression_alert(
+                        metric, baseline_result, degradation_percent, confidence
+                    )
 
         # For error rate, higher values are worse
         elif metric.metric_type == MetricType.ERROR_RATE:
-            threshold_value = baseline.mean * (1 + self.detection_threshold)
+            threshold_value = baseline_result.mean * (1 + self.detection_threshold)
 
             if metric.value > threshold_value:
-                degradation_percent = ((metric.value - baseline.mean) / baseline.mean) * 100
+                degradation_percent = (
+                    (metric.value - baseline_result.mean) / baseline_result.mean
+                ) * 100
                 confidence = min(
                     1.0, (metric.value - threshold_value) / (expected_max - threshold_value)
                 )
 
                 if confidence >= self.confidence_threshold:
-                    self._create_regression_alert(metric, baseline, degradation_percent, confidence)
+                    self._create_regression_alert(
+                        metric, baseline_result, degradation_percent, confidence
+                    )
 
     def _create_regression_alert(
         self,
@@ -354,7 +366,7 @@ class PerformanceRegressionDetector:
         baseline: StatisticalBaseline,
         degradation_percent: float,
         confidence: float,
-    ):
+    ) -> None:
         """Create a regression alert."""
         # Determine severity
         if degradation_percent < 25:
@@ -410,7 +422,7 @@ class PerformanceRegressionDetector:
 
         logger.warning(f"Performance regression detected: {description}")
 
-    def _store_alert_db(self, alert: RegressionAlert):
+    def _store_alert_db(self, alert: RegressionAlert) -> None:
         """Store regression alert in database."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -443,12 +455,14 @@ class PerformanceRegressionDetector:
         """Get or compute baseline for a metric."""
         with self._lock:
             if baseline_key in self.baselines:
-                baseline = self.baselines[baseline_key]
+                baseline: StatisticalBaseline = self.baselines[baseline_key]
 
                 # Check if baseline needs refresh
                 if time.time() - baseline.last_updated > 86400:  # 24 hours
                     self._update_baseline(baseline_key, metric_type, backend, circuit_hash)
-                    baseline = self.baselines.get(baseline_key)
+                    refreshed = self.baselines.get(baseline_key)
+                    if refreshed is not None:
+                        baseline = refreshed
 
                 return baseline
             else:
@@ -508,7 +522,7 @@ class PerformanceRegressionDetector:
 
     def _update_baseline(
         self, baseline_key: str, metric_type: MetricType, backend: str, circuit_hash: str
-    ):
+    ) -> None:
         """Update an existing baseline with new data."""
         new_baseline = self._compute_baseline(baseline_key, metric_type, backend, circuit_hash)
 
@@ -518,7 +532,7 @@ class PerformanceRegressionDetector:
 
             logger.debug(f"Updated baseline for {baseline_key}")
 
-    def _store_baseline_db(self, baseline_key: str, baseline: StatisticalBaseline):
+    def _store_baseline_db(self, baseline_key: str, baseline: StatisticalBaseline) -> None:
         """Store baseline in database."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -541,7 +555,7 @@ class PerformanceRegressionDetector:
             )
             conn.commit()
 
-    def _load_baselines(self):
+    def _load_baselines(self) -> None:
         """Load existing baselines from database."""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -572,7 +586,7 @@ class PerformanceRegressionDetector:
                 return
             raise
 
-    def start_monitoring(self, check_interval: float = 300.0):
+    def start_monitoring(self, check_interval: float = 300.0) -> None:
         """Start background monitoring thread."""
         if self._running:
             logger.warning("Monitoring already running")
@@ -586,7 +600,7 @@ class PerformanceRegressionDetector:
 
         logger.info("Started performance regression monitoring")
 
-    def stop_monitoring(self):
+    def stop_monitoring(self) -> None:
         """Stop background monitoring."""
         self._running = False
 
@@ -595,7 +609,7 @@ class PerformanceRegressionDetector:
 
         logger.info("Stopped performance regression monitoring")
 
-    def _monitoring_loop(self, check_interval: float):
+    def _monitoring_loop(self, check_interval: float) -> None:
         """Background monitoring loop."""
         while self._running:
             try:
@@ -611,7 +625,7 @@ class PerformanceRegressionDetector:
                 logger.error(f"Error in monitoring loop: {e}")
                 time.sleep(60)  # Back off on error
 
-    def _refresh_stale_baselines(self):
+    def _refresh_stale_baselines(self) -> None:
         """Refresh baselines that are older than 24 hours."""
         current_time = time.time()
         stale_baselines = []
@@ -630,7 +644,7 @@ class PerformanceRegressionDetector:
 
                 self._update_baseline(baseline_key, metric_type, backend, circuit_hash)
 
-    def _cleanup_old_data(self):
+    def _cleanup_old_data(self) -> None:
         """Clean up old performance data to manage database size."""
         # Keep data for 90 days
         cutoff_time = time.time() - (90 * 86400)
@@ -675,7 +689,7 @@ class PerformanceRegressionDetector:
                 FROM regression_alerts
                 WHERE detection_timestamp >= ?
             """
-            params = [cutoff_time]
+            params: list[Any] = [cutoff_time]
 
             if severity:
                 query += " AND severity = ?"
@@ -757,7 +771,7 @@ class PerformanceRegressionDetector:
                 "generated_at": time.time(),
             }
 
-    def acknowledge_alert(self, alert_id: int):
+    def acknowledge_alert(self, alert_id: int) -> None:
         """Acknowledge a regression alert."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -809,7 +823,7 @@ def record_performance_metric(
     circuit: QuantumCircuit | None = None,
     circuit_hash: str | None = None,
     metadata: dict[str, Any] | None = None,
-):
+) -> None:
     """Convenience function to record a performance metric."""
     detector = get_regression_detector()
     detector.record_metric(metric_type, value, backend, circuit, circuit_hash, metadata)

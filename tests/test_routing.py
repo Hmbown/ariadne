@@ -10,16 +10,16 @@ from ariadne.route.analyze import analyze_circuit
 class TestEnhancedQuantumRouter:
     """Test the EnhancedQuantumRouter class."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.router = EnhancedQuantumRouter()
 
-    def test_router_initialization(self):
+    def test_router_initialization(self) -> None:
         """Test router initializes correctly."""
         assert self.router is not None
         assert hasattr(self.router, "select_optimal_backend")
 
-    def test_clifford_circuit_routing(self):
+    def test_clifford_circuit_routing(self) -> None:
         """Test that pure Clifford circuits route to Stim."""
         # Create a Clifford-only circuit
         qc = QuantumCircuit(3)
@@ -34,7 +34,7 @@ class TestEnhancedQuantumRouter:
         # Note: circuit_entropy calculation may vary based on implementation
         assert decision.circuit_entropy >= 0  # Entropy should be non-negative
 
-    def test_general_circuit_routing(self):
+    def test_general_circuit_routing(self) -> None:
         """Test that circuits with T gates don't route to Stim."""
         # Create circuit with T gates
         qc = QuantumCircuit(2)
@@ -47,7 +47,7 @@ class TestEnhancedQuantumRouter:
         assert decision.recommended_backend.value != "stim"
         assert decision.circuit_entropy > 0.1
 
-    def test_large_circuit_routing(self):
+    def test_large_circuit_routing(self) -> None:
         """Test routing for large circuits."""
         # Create a large sparse circuit
         qc = QuantumCircuit(100)
@@ -61,7 +61,7 @@ class TestEnhancedQuantumRouter:
         # Large sparse circuits might use tensor networks
         assert decision.recommended_backend.value in ["stim", "tensor_network"]
 
-    def test_parameterized_circuit_routing(self):
+    def test_parameterized_circuit_routing(self) -> None:
         """Test routing for parameterized circuits."""
         qc = QuantumCircuit(3)
         qc.rx(0.5, 0)
@@ -82,7 +82,7 @@ class TestEnhancedQuantumRouter:
             (100, "stim"),  # Very large Clifford
         ],
     )
-    def test_scalability(self, n_qubits, expected_backend):
+    def test_scalability(self, n_qubits: int, expected_backend: str) -> None:
         """Test routing scales with circuit size."""
         qc = QuantumCircuit(n_qubits)
         # Create GHZ state (Clifford circuit)
@@ -98,7 +98,7 @@ class TestEnhancedQuantumRouter:
 class TestSimulateFunction:
     """Test the main simulate() function."""
 
-    def test_simulate_basic(self):
+    def test_simulate_basic(self) -> None:
         """Test basic simulation functionality."""
         qc = QuantumCircuit(2)
         qc.h(0)
@@ -115,7 +115,7 @@ class TestSimulateFunction:
         assert sum(result.counts.values()) == 1000
         assert set(result.counts.keys()).issubset({"00", "11"})
 
-    def test_simulate_forced_backend(self):
+    def test_simulate_forced_backend(self) -> None:
         """Test forcing a specific backend."""
         qc = QuantumCircuit(2)
         qc.h(0)
@@ -125,7 +125,7 @@ class TestSimulateFunction:
         result = simulate(qc, shots=100, backend="qiskit")
         assert result.backend_used.value == "qiskit"
 
-    def test_simulate_shots_parameter(self):
+    def test_simulate_shots_parameter(self) -> None:
         """Test different shot counts."""
         qc = QuantumCircuit(1)
         qc.h(0)
@@ -135,7 +135,7 @@ class TestSimulateFunction:
             result = simulate(qc, shots=shots)
             assert sum(result.counts.values()) == shots
 
-    def test_simulate_deterministic_circuit(self):
+    def test_simulate_deterministic_circuit(self) -> None:
         """Test deterministic circuit gives consistent results."""
         qc = QuantumCircuit(1)
         qc.x(0)  # |0> -> |1>
@@ -144,7 +144,7 @@ class TestSimulateFunction:
         result = simulate(qc, shots=100)
         assert result.counts == {"1": 100}
 
-    def test_simulate_empty_circuit(self):
+    def test_simulate_empty_circuit(self) -> None:
         """Test empty circuit simulation."""
         qc = QuantumCircuit(3)
         qc.measure_all()
@@ -156,7 +156,7 @@ class TestSimulateFunction:
 class TestCircuitAnalysis:
     """Test circuit analysis functionality."""
 
-    def test_analyze_circuit_basic(self):
+    def test_analyze_circuit_basic(self) -> None:
         """Test basic circuit analysis."""
         qc = QuantumCircuit(3)
         qc.h(0)
@@ -170,7 +170,7 @@ class TestCircuitAnalysis:
         assert "clifford_ratio" in analysis
         assert "is_clifford" in analysis
 
-    def test_clifford_detection(self):
+    def test_clifford_detection(self) -> None:
         """Test Clifford circuit detection."""
         # Pure Clifford circuit
         qc1 = QuantumCircuit(2)
@@ -191,7 +191,7 @@ class TestCircuitAnalysis:
         assert not analysis2["is_clifford"]
         assert analysis2["clifford_ratio"] < 1.0
 
-    def test_gate_counting(self):
+    def test_gate_counting(self) -> None:
         """Test gate counting functionality."""
         qc = QuantumCircuit(3)
         qc.h(0)
@@ -207,7 +207,7 @@ class TestCircuitAnalysis:
         assert analysis["depth"] > 0
         assert not analysis["is_clifford"]  # T gate makes it non-Clifford
 
-    def test_two_qubit_depth(self):
+    def test_two_qubit_depth(self) -> None:
         """Test two-qubit depth calculation."""
         qc = QuantumCircuit(3)
         qc.h(0)  # Layer 1 (single-qubit)
@@ -224,7 +224,7 @@ class TestCircuitAnalysis:
 class TestPerformance:
     """Performance benchmarks for routing decisions."""
 
-    def test_routing_speed(self):
+    def test_routing_speed(self) -> None:
         """Test that routing decisions are fast."""
         qc = QuantumCircuit(20)
         for i in range(20):
@@ -238,7 +238,7 @@ class TestPerformance:
         result = router.select_optimal_backend(qc)
         assert result is not None
 
-    def test_analysis_speed(self):
+    def test_analysis_speed(self) -> None:
         """Test that circuit analysis works for larger circuits."""
         qc = QuantumCircuit(50)
         for i in range(50):

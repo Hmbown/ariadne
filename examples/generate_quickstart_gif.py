@@ -1,7 +1,7 @@
 import argparse
 import os
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, List, Tuple
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
@@ -47,14 +47,14 @@ def build_general_nonclifford() -> QuantumCircuit:
     return qc
 
 
-def collect_results(shots: int = 256) -> List[Tuple[str, str, str]]:
+def collect_results(shots: int = 256) -> list[tuple[str, str, str]]:
     cases = [
         Case("Clifford (Bell)", build_clifford_bell, "STIM"),
         Case("Low entanglement (pairs+T)", build_low_entanglement, "MPS"),
         Case("General (non-Clifford)", build_general_nonclifford, "QISKIT or METAL or MPS"),
     ]
 
-    results: List[Tuple[str, str, str]] = []
+    results: list[tuple[str, str, str]] = []
     for c in cases:
         qc = c.builder()
         res = simulate(qc, shots=shots)
@@ -63,11 +63,10 @@ def collect_results(shots: int = 256) -> List[Tuple[str, str, str]]:
     return results
 
 
-def make_animation(results: List[Tuple[str, str, str]], output_path: str) -> None:
+def make_animation(results: list[tuple[str, str, str]], output_path: str) -> None:
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.axis("off")
 
-    lines = []
     title = ax.text(0.5, 0.9, "Ariadne Quickstart Routing", ha="center", va="center", fontsize=16)
     subtitle = ax.text(0.5, 0.8, "", ha="center", va="center", fontsize=12)
     line_expected = ax.text(0.1, 0.6, "", ha="left", va="center", fontsize=12)
@@ -86,7 +85,9 @@ def make_animation(results: List[Tuple[str, str, str]], output_path: str) -> Non
         line_actual.set_text(f"Actual: {actual}")
         return [title, subtitle, line_expected, line_actual]
 
-    anim = FuncAnimation(fig, update, frames=len(results), init_func=init, blit=True, repeat=True, interval=1600)
+    anim = FuncAnimation(
+        fig, update, frames=len(results), init_func=init, blit=True, repeat=True, interval=1600
+    )
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     try:

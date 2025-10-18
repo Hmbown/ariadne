@@ -15,10 +15,9 @@ from enum import Enum
 from typing import Any
 
 try:
-    from ariadne.core import ConfigurationError, ValidationError
+    from ariadne.core import ConfigurationError
 except ImportError:
     # Fallback for when running as a script
-    import os
     import sys
 
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -83,7 +82,9 @@ class ValidationResult:
 class ValidationRule:
     """Base class for validation rules."""
 
-    def __init__(self, message: str, suggestion: str | None = None, code: str | None = None):
+    def __init__(
+        self, message: str, suggestion: str | None = None, code: str | None = None
+    ) -> None:
         """
         Initialize validation rule.
 
@@ -116,7 +117,7 @@ class ValidationRule:
 class TypeRule(ValidationRule):
     """Rule for validating value type."""
 
-    def __init__(self, expected_type: type, message: str | None = None, **kwargs):
+    def __init__(self, expected_type: type, message: str | None = None, **kwargs: Any) -> None:
         """
         Initialize type rule.
 
@@ -157,7 +158,12 @@ class TypeRule(ValidationRule):
 class RangeRule(ValidationRule):
     """Rule for validating numeric ranges."""
 
-    def __init__(self, min_value: float | None = None, max_value: float | None = None, **kwargs):
+    def __init__(
+        self,
+        min_value: float | None = None,
+        max_value: float | None = None,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize range rule.
 
@@ -184,7 +190,7 @@ class RangeRule(ValidationRule):
         self, field_path: str, value: Any, context: dict[str, Any]
     ) -> ValidationIssue | None:
         """Validate numeric range."""
-        if not isinstance(value, (int, float)):
+        if not isinstance(value, int | float):
             return None  # Type validation should catch this
 
         if self.min_value is not None and value < self.min_value:
@@ -213,7 +219,7 @@ class RangeRule(ValidationRule):
 class ChoiceRule(ValidationRule):
     """Rule for validating choices from a set of options."""
 
-    def __init__(self, choices: list[Any], case_sensitive: bool = True, **kwargs):
+    def __init__(self, choices: list[Any], case_sensitive: bool = True, **kwargs: Any) -> None:
         """
         Initialize choice rule.
 
@@ -256,7 +262,7 @@ class ChoiceRule(ValidationRule):
 class RegexRule(ValidationRule):
     """Rule for validating string patterns with regular expressions."""
 
-    def __init__(self, pattern: str, **kwargs):
+    def __init__(self, pattern: str, **kwargs: Any) -> None:
         """
         Initialize regex rule.
 
@@ -300,8 +306,8 @@ class PathRule(ValidationRule):
         must_be_dir: bool = False,
         is_readable: bool = False,
         is_writable: bool = False,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize path rule.
 
@@ -396,7 +402,9 @@ class PathRule(ValidationRule):
 class CustomRule(ValidationRule):
     """Rule for custom validation logic."""
 
-    def __init__(self, validator: Callable[[Any, dict[str, Any]], str | None], **kwargs):
+    def __init__(
+        self, validator: Callable[[Any, dict[str, Any]], str | None], **kwargs: Any
+    ) -> None:
         """
         Initialize custom rule.
 
@@ -436,7 +444,7 @@ class FieldSchema:
         required: bool = True,
         rules: list[ValidationRule] | None = None,
         examples: list[Any] | None = None,
-    ):
+    ) -> None:
         """
         Initialize field schema.
 
@@ -501,7 +509,7 @@ class FieldSchema:
 class ConfigurationSchema:
     """Schema definition for configuration objects."""
 
-    def __init__(self, description: str = ""):
+    def __init__(self, description: str = "") -> None:
         """
         Initialize configuration schema.
 
@@ -548,7 +556,7 @@ class ConfigurationSchema:
 class ConfigurationValidator:
     """Validator for configuration objects."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize configuration validator."""
         self.schemas: dict[str, ConfigurationSchema] = {}
         self.global_rules: list[ValidationRule] = []
@@ -573,7 +581,11 @@ class ConfigurationValidator:
             Validation result
         """
         if schema_name not in self.schemas:
-            raise ConfigurationError(f"Unknown schema: {schema_name}")
+            raise ConfigurationError(
+                "schema",
+                schema_name,
+                f"Unknown schema '{schema_name}'",
+            )
 
         schema = self.schemas[schema_name]
         result = schema.validate(config)

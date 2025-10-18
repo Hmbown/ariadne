@@ -12,6 +12,7 @@ import json
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from statistics import fmean
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -105,7 +106,7 @@ class BackendCalibrator:
     measurements and adapts routing decisions accordingly.
     """
 
-    def __init__(self, calibration_file: Path | None = None):
+    def __init__(self, calibration_file: Path | None = None) -> None:
         """Initialize calibrator with optional persistent storage."""
         self.calibration_file = calibration_file or Path("ariadne_calibration.json")
         self.measurements: list[PerformanceMeasurement] = []
@@ -138,7 +139,7 @@ class BackendCalibrator:
             backend_name=backend_name,
             circuit_qubits=circuit.num_qubits,
             circuit_depth=circuit.depth(),
-            is_clifford=analysis["is_clifford"],
+            is_clifford=bool(analysis["is_clifford"]),
             execution_time=execution_time,
             memory_usage_mb=memory_usage_mb,
             success=success,
@@ -207,11 +208,12 @@ class BackendCalibrator:
             return CLIFFORD_DEFAULT_CAPACITY  # Default capacity
 
         # Higher capacity = lower execution time (better performance)
-        avg_time = np.mean(clifford_times)
+        avg_time = float(np.mean(clifford_times))
         baseline_time = CLIFFORD_BASELINE_TIME_S  # Baseline time for Clifford circuits
 
         # Scale capacity: faster execution = higher capacity
-        capacity = max(CLIFFORD_MIN_CAPACITY, baseline_time / avg_time * CLIFFORD_SCALING_FACTOR)
+        raw_capacity = baseline_time / avg_time * CLIFFORD_SCALING_FACTOR
+        capacity = max(CLIFFORD_MIN_CAPACITY, raw_capacity)
         return min(CLIFFORD_MAX_CAPACITY, capacity)  # Cap at reasonable maximum
 
     def _calculate_general_capacity(self, measurements: list[PerformanceMeasurement]) -> float:
@@ -225,10 +227,11 @@ class BackendCalibrator:
         if not general_times:
             return GENERAL_DEFAULT_CAPACITY  # Default capacity
 
-        avg_time = np.mean(general_times)
+        avg_time = float(np.mean(general_times))
         baseline_time = GENERAL_BASELINE_TIME_S  # Baseline time for general circuits
 
-        capacity = max(GENERAL_MIN_CAPACITY, baseline_time / avg_time * GENERAL_SCALING_FACTOR)
+        raw_capacity = baseline_time / avg_time * GENERAL_SCALING_FACTOR
+        capacity = max(GENERAL_MIN_CAPACITY, raw_capacity)
         return min(GENERAL_MAX_CAPACITY, capacity)
 
     def _calculate_memory_efficiency(self, measurements: list[PerformanceMeasurement]) -> float:
@@ -263,7 +266,7 @@ class BackendCalibrator:
                     efficiency_scores.append(min(MEMORY_MAX_EFFICIENCY, efficiency))
 
             if efficiency_scores:
-                return np.mean(efficiency_scores)
+                return fmean(efficiency_scores)
         except Exception:
             pass
 
@@ -280,14 +283,18 @@ class BackendCalibrator:
             return PLATFORM_BOOST_MIN  # No boost if insufficient data
 
         # Lower variance suggests more consistent (optimized) performance
-        time_std = np.std(times)
-        time_mean = np.mean(times)
+        time_std = float(np.std(times))
+        time_mean = float(np.mean(times))
 
         if time_mean > 0:
             cv = time_std / time_mean  # Coefficient of variation
             # Lower CV = more consistent = better optimization
-            boost = max(PLATFORM_BOOST_MIN, PLATFORM_BOOST_SCALING_FACTOR - cv)
-            return min(PLATFORM_BOOST_MAX, boost)
+            candidate: float = PLATFORM_BOOST_SCALING_FACTOR - cv
+            if candidate < PLATFORM_BOOST_MIN:
+                candidate = PLATFORM_BOOST_MIN
+
+            boost = candidate if candidate <= PLATFORM_BOOST_MAX else PLATFORM_BOOST_MAX
+            return boost
 
         return PLATFORM_BOOST_MIN
 

@@ -132,7 +132,7 @@ class CircuitFamilyDetector:
 
     def _count_gates(self, circuit: QuantumCircuit) -> dict[str, int]:
         """Count gate types in circuit."""
-        gate_counts = defaultdict(int)
+        gate_counts: defaultdict[str, int] = defaultdict(int)
 
         for instruction, _, _ in circuit.data:
             if instruction.name not in ["measure", "barrier", "delay"]:
@@ -259,8 +259,8 @@ class WorkflowDetector:
             all_families.extend(p.circuit_families)
 
         # Most common gates and families
-        gate_counts = defaultdict(int)
-        family_counts = defaultdict(int)
+        gate_counts: defaultdict[str, int] = defaultdict(int)
+        family_counts: defaultdict[str, int] = defaultdict(int)
 
         for gate in all_gates:
             gate_counts[gate] += 1
@@ -334,7 +334,8 @@ class HardwareProfiler:
         try:
             import cupy
 
-            return cupy.cuda.runtime.getDeviceCount() > 0
+            device_count = cupy.cuda.runtime.getDeviceCount()
+            return bool(device_count > 0)
         except Exception:
             return False
 
@@ -351,7 +352,7 @@ class HardwareProfiler:
     def _detect_oneapi_capable(self) -> bool:
         """Detect Intel oneAPI GPU capability (best-effort via dpctl)."""
         try:
-            import dpctl  # type: ignore
+            import dpctl
 
             try:
                 devices = dpctl.get_devices()
@@ -364,7 +365,7 @@ class HardwareProfiler:
     def _detect_opencl_available(self) -> bool:
         """Detect OpenCL availability via pyopencl."""
         try:
-            import pyopencl as cl  # type: ignore
+            import pyopencl as cl
 
             try:
                 plats = cl.get_platforms()
@@ -390,15 +391,15 @@ class ContextDetector:
         self.hardware_profiler = HardwareProfiler()
 
         # Session tracking
-        self.session_circuits: deque = deque(maxlen=100)  # Keep last 100 circuits
+        self.session_circuits: deque[QuantumCircuit] = deque(maxlen=100)
         self.session_start_time = time.time()
         self.performance_history = self._load_performance_history()
 
     def analyze_user_context(
         self,
         circuit_history: list[QuantumCircuit],
-        backend_usage: dict[BackendType, int] = None,
-        execution_times: dict[BackendType, list[float]] = None,
+        backend_usage: dict[BackendType, int] | None = None,
+        execution_times: dict[BackendType, list[float]] | None = None,
     ) -> UserContext:
         """Analyze comprehensive user context from circuit history and usage patterns."""
 
@@ -461,7 +462,7 @@ class ContextDetector:
         avg_depth = sum(c.depth() for c in circuits) / len(circuits)
 
         # Analyze gate usage
-        all_gates = []
+        all_gates: list[str] = []
         clifford_count = 0
 
         for circuit in circuits:
@@ -483,7 +484,7 @@ class ContextDetector:
         clifford_ratio = clifford_count / len(circuits)
 
         # Most common gates
-        gate_counts = defaultdict(int)
+        gate_counts: defaultdict[str, int] = defaultdict(int)
         for gate in all_gates:
             gate_counts[gate] += 1
 
@@ -493,12 +494,12 @@ class ContextDetector:
         ]
 
         # Detect circuit families
-        all_families = []
+        all_families: list[str] = []
         for circuit in circuits:
             families = self.circuit_family_detector.detect_circuit_family(circuit)
             all_families.extend(families)
 
-        family_counts = defaultdict(int)
+        family_counts: defaultdict[str, int] = defaultdict(int)
         for family in all_families:
             family_counts[family] += 1
 
@@ -574,7 +575,7 @@ class ContextDetector:
             return []
 
         # Sort by usage count and return top choices
-        sorted_backends = sorted(backend_usage.items(), key=lambda x: x[1], reverse=True)
+        sorted_backends = sorted(backend_usage.items(), key=lambda item: item[1], reverse=True)
         return [backend for backend, count in sorted_backends[:3] if count > 0]
 
     def _load_performance_history(self) -> PerformanceHistory:

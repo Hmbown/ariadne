@@ -8,6 +8,7 @@ visualization, and comparative studies.
 
 from __future__ import annotations
 
+import importlib.util
 import math
 import time
 from dataclasses import dataclass
@@ -19,22 +20,8 @@ import numpy as np
 import seaborn as sns
 from matplotlib.figure import Figure
 
-# Optional imports for enhanced visualization
-try:
-    import plotly.express as px
-    import plotly.graph_objects as go
-    from plotly.subplots import make_subplots
-
-    PLOTLY_AVAILABLE = True
-except ImportError:
-    PLOTLY_AVAILABLE = False
-
-try:
-    import pandas as pd
-
-    PANDAS_AVAILABLE = True
-except ImportError:
-    PANDAS_AVAILABLE = False
+PLOTLY_AVAILABLE = importlib.util.find_spec("plotly") is not None
+PANDAS_AVAILABLE = importlib.util.find_spec("pandas") is not None
 
 
 @dataclass
@@ -83,7 +70,7 @@ class ResultAnalyzer:
             plt.style.use("default")
         sns.set_palette(self.config.color_palette)
 
-    def analyze_single_result(self, result) -> dict[str, Any]:
+    def analyze_single_result(self, result: Any) -> dict[str, Any]:
         """Analyze a single simulation result."""
 
         analysis = {
@@ -111,7 +98,7 @@ class ResultAnalyzer:
 
         return analysis
 
-    def analyze_batch_results(self, results: list) -> dict[str, Any]:
+    def analyze_batch_results(self, results: list[Any]) -> dict[str, Any]:
         """Analyze multiple simulation results."""
 
         if not results:
@@ -122,7 +109,7 @@ class ResultAnalyzer:
 
         # Aggregate statistics
         execution_times = [a["execution_time"] for a in individual_analyses]
-        backend_usage = {}
+        backend_usage: dict[str, int] = {}
         total_shots = sum(a["total_shots"] for a in individual_analyses)
 
         for analysis in individual_analyses:
@@ -150,7 +137,7 @@ class ResultAnalyzer:
     def compare_backends(self, backend_results: dict[str, Any]) -> dict[str, Any]:
         """Compare results across different backends."""
 
-        comparison = {
+        comparison: dict[str, Any] = {
             "backends_compared": list(backend_results.keys()),
             "performance_comparison": {},
             "accuracy_comparison": {},
@@ -218,11 +205,13 @@ class ResultAnalyzer:
         probabilities = [count / total_shots for count in counts.values()]
 
         return {
-            "mean_probability": np.mean(probabilities),
-            "std_probability": np.std(probabilities),
-            "max_probability": max(probabilities),
-            "min_probability": min(probabilities),
-            "coefficient_of_variation": np.std(probabilities) / max(np.mean(probabilities), 1e-10),
+            "mean_probability": float(np.mean(probabilities)),
+            "std_probability": float(np.std(probabilities)),
+            "max_probability": float(max(probabilities)),
+            "min_probability": float(min(probabilities)),
+            "coefficient_of_variation": float(
+                np.std(probabilities) / max(float(np.mean(probabilities)), 1e-10)
+            ),
         }
 
     def _analyze_performance_trends(self, analyses: list[dict[str, Any]]) -> dict[str, Any]:
@@ -253,7 +242,9 @@ class ResultVisualizer:
         self.config = config or VisualizationConfig()
         self.analyzer = ResultAnalyzer(config)
 
-    def create_single_result_plots(self, result, save_prefix: str = "single_result") -> list[Path]:
+    def create_single_result_plots(
+        self, result: Any, save_prefix: str = "single_result"
+    ) -> list[Path]:
         """Create comprehensive plots for a single simulation result."""
 
         saved_files = []
@@ -316,7 +307,7 @@ class ResultVisualizer:
 
         return saved_files
 
-    def _plot_measurement_distribution(self, result) -> Figure:
+    def _plot_measurement_distribution(self, result: Any) -> Figure:
         """Plot measurement outcome distribution."""
 
         fig, axes = plt.subplots(1, 2, figsize=self.config.figure_size)
@@ -343,7 +334,7 @@ class ResultVisualizer:
         plt.tight_layout()
         return fig
 
-    def _plot_performance_metrics(self, result) -> Figure:
+    def _plot_performance_metrics(self, result: Any) -> Figure:
         """Plot performance metrics."""
 
         fig, axes = plt.subplots(2, 2, figsize=self.config.figure_size)
@@ -479,7 +470,7 @@ class ResultVisualizer:
         ax1.tick_params(axis="x", rotation=45)
 
         # Add value labels on bars
-        for i, (bar, time_val) in enumerate(zip(bars1, execution_times, strict=False)):
+        for bar, time_val in zip(bars1, execution_times, strict=False):
             height = bar.get_height()
             # Calculate position manually to avoid Mock object arithmetic
             x_pos = bar.get_x() + bar.get_width() / 2.0
@@ -615,7 +606,7 @@ class ResultVisualizer:
         prob2 = np.array([counts2.get(state, 0) / total2 for state in all_states])
 
         # Calculate Bhattacharyya coefficient (similarity measure)
-        similarity = np.sqrt(prob1 * prob2).sum()
+        similarity = float(np.sqrt(prob1 * prob2).sum())
 
         return similarity
 
@@ -636,7 +627,7 @@ class ResultVisualizer:
 
 # Convenience functions
 def visualize_result(
-    result, save_prefix: str = "result", config: VisualizationConfig | None = None
+    result: Any, save_prefix: str = "result", config: VisualizationConfig | None = None
 ) -> list[Path]:
     """Create visualizations for a single simulation result."""
 
@@ -677,7 +668,7 @@ def visualize_decision(
     decision_path: list[tuple[str, str]],
     final_backend: str,
     performance_gain: str,
-):
+) -> None:
     """
     Prints a clear, structured, text-based visualization of the routing decision process.
 
@@ -688,12 +679,12 @@ def visualize_decision(
         performance_gain: A string describing the estimated performance gain.
     """
 
-    SEPARATOR = "=" * 50
-    CHECK_SEPARATOR = "-" * 50
+    separator = "=" * 50
+    check_separator = "-" * 50
 
-    print(SEPARATOR)
+    print(separator)
     print(f"ARIADNE ROUTING DECISION: {circuit_name}")
-    print(SEPARATOR)
+    print(separator)
 
     for i, (analyzer, result) in enumerate(decision_path):
         # Determine Decision based on result string content for visualization clarity
@@ -710,8 +701,8 @@ def visualize_decision(
         print(f"[{i + 1}] Analyzer: {analyzer}")
         print(f"    Result: {result}")
         print(f"    Decision: {decision}")
-        print(CHECK_SEPARATOR)
+        print(check_separator)
 
     print(f"FINAL BACKEND: {final_backend}")
     print(f"PERFORMANCE GAIN: {performance_gain}")
-    print(SEPARATOR)
+    print(separator)

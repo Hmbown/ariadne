@@ -6,6 +6,7 @@ across different platforms, architectures, and configurations to optimize
 quantum circuit routing and backend selection.
 """
 
+import importlib.util
 import json
 import logging
 import platform
@@ -15,13 +16,15 @@ import sys
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import psutil
 from qiskit import QuantumCircuit
 
 logger = logging.getLogger(__name__)
+
+SummaryStats = dict[str, dict[str, float | int]]
 
 
 class PlatformType(Enum):
@@ -62,7 +65,7 @@ class SystemInfo:
     os_version: str = ""
     architecture: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.python_version:
             self.python_version = (
                 f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
@@ -109,7 +112,7 @@ class ComparisonReport:
 
     title: str
     results: list[PerformanceResult]
-    summary_stats: dict[str, Any] = field(default_factory=dict)
+    summary_stats: SummaryStats = field(default_factory=dict)
     recommendations: list[str] = field(default_factory=list)
     generated_at: float = field(default_factory=time.time)
 
@@ -124,7 +127,7 @@ class SystemProfiler:
         platform_type = SystemProfiler._detect_platform_type()
 
         # Get CPU information
-        cpu_count = psutil.cpu_count(logical=True)
+        cpu_count = psutil.cpu_count(logical=True) or 1
 
         # Handle CPU frequency gracefully on macOS
         cpu_frequency = 0.0
@@ -177,7 +180,7 @@ class SystemProfiler:
     @staticmethod
     def _get_gpu_info() -> dict[str, Any]:
         """Get GPU information if available."""
-        gpu_info = {"available": False}
+        gpu_info: dict[str, Any] = {"available": False}
 
         try:
             # Try NVIDIA GPU detection
@@ -214,31 +217,24 @@ class SystemProfiler:
         except (subprocess.TimeoutExpired, subprocess.SubprocessError, FileNotFoundError):
             pass
 
-        try:
-            # Try Apple Metal detection on macOS
-            import platform
-
-            if platform.system() == "Darwin":
-                import Metal  # type: ignore
-
-                gpu_info["metal"] = {"available": True}
-                gpu_info["available"] = True
-        except ImportError:
-            pass
+        # Try Apple Metal detection on macOS
+        if platform.system() == "Darwin" and importlib.util.find_spec("Metal") is not None:
+            gpu_info["metal"] = {"available": True}
+            gpu_info["available"] = True
 
         try:
             # Try OpenCL detection
-            import pyopencl as cl  # type: ignore
+            import pyopencl as cl
 
             platforms = cl.get_platforms()
             opencl_devices = []
 
-            for platform in platforms:
-                for device in platform.get_devices():
+            for cl_platform in platforms:
+                for device in cl_platform.get_devices():
                     opencl_devices.append(
                         {
                             "name": device.name,
-                            "type": cl.device_type.to_string(device.type),
+                            "type": str(device.type),
                             "memory_mb": device.global_mem_size // (1024 * 1024),
                         }
                     )
@@ -271,39 +267,26 @@ class BenchmarkRunner:
         available = [BackendType.CPU_NUMPY]  # Always available
 
         # Check for Metal (Apple Silicon)
-        if self.system_info.platform_type == PlatformType.MACOS_APPLE_SILICON:
-            try:
-                import Metal  # type: ignore
-
-                available.append(BackendType.METAL_APPLE)
-            except ImportError:
-                pass
+        if (
+            self.system_info.platform_type == PlatformType.MACOS_APPLE_SILICON
+            and importlib.util.find_spec("Metal") is not None
+        ):
+            available.append(BackendType.METAL_APPLE)
 
         # Check for CUDA
-        if self.system_info.gpu_info.get("nvidia"):
-            try:
-                import cupy  # type: ignore
-
-                available.append(BackendType.CUDA_NVIDIA)
-            except ImportError:
-                pass
+        if self.system_info.gpu_info.get("nvidia") and importlib.util.find_spec("cupy") is not None:
+            available.append(BackendType.CUDA_NVIDIA)
 
         # Check for OpenCL
-        if self.system_info.gpu_info.get("opencl"):
-            try:
-                import pyopencl  # type: ignore
-
-                available.append(BackendType.OPENCL)
-            except ImportError:
-                pass
+        if (
+            self.system_info.gpu_info.get("opencl")
+            and importlib.util.find_spec("pyopencl") is not None
+        ):
+            available.append(BackendType.OPENCL)
 
         # Check for Qiskit Aer
-        try:
-            from qiskit_aer import AerSimulator  # type: ignore
-
+        if importlib.util.find_spec("qiskit_aer") is not None:
             available.append(BackendType.SIMULATOR_AER)
-        except ImportError:
-            pass
 
         return available
 
@@ -512,8 +495,8 @@ class BenchmarkRunner:
             result = backend.simulate(circuit, shots=shots)
 
             return {"counts": result}
-        except ImportError:
-            raise RuntimeError("Metal backend not available")
+        except ImportError as err:
+            raise RuntimeError("Metal backend not available") from err
 
     def _execute_cuda_nvidia(self, circuit: QuantumCircuit, shots: int) -> dict[str, Any]:
         """Execute circuit using CUDA backend."""
@@ -524,8 +507,8 @@ class BenchmarkRunner:
             result = backend.simulate(circuit, shots=shots)
 
             return {"counts": result}
-        except ImportError:
-            raise RuntimeError("CUDA backend not available")
+        except ImportError as err:
+            raise RuntimeError("CUDA backend not available") from err
 
     def _execute_aer_simulator(self, circuit: QuantumCircuit, shots: int) -> dict[str, Any]:
         """Execute circuit using Qiskit Aer simulator."""
@@ -539,8 +522,8 @@ class BenchmarkRunner:
             result = job.result()
 
             return {"counts": result.get_counts()}
-        except ImportError:
-            raise RuntimeError("Aer simulator not available")
+        except ImportError as err:
+            raise RuntimeError("Aer simulator not available") from err
 
     def _generate_comparison_report(
         self, results: list[PerformanceResult], backends: list[BackendType]
@@ -548,13 +531,15 @@ class BenchmarkRunner:
         """Generate comprehensive comparison report."""
 
         # Group results by backend
-        backend_results = {backend: [] for backend in backends}
+        backend_results: dict[BackendType, list[PerformanceResult]] = {
+            backend: [] for backend in backends
+        }
         for result in results:
             if result.backend_type in backend_results:
                 backend_results[result.backend_type].append(result)
 
         # Calculate summary statistics
-        summary_stats = {}
+        summary_stats: SummaryStats = {}
         recommendations = []
 
         for backend, backend_results_list in backend_results.items():
@@ -604,7 +589,7 @@ class BenchmarkRunner:
 
         return report
 
-    def _save_results(self, report: ComparisonReport, filename: str):
+    def _save_results(self, report: ComparisonReport, filename: str) -> None:
         """Save benchmark results to file."""
         # Convert dataclasses to dicts for JSON serialization
         report_dict = {
@@ -689,7 +674,7 @@ class PerformanceAnalyzer:
     @staticmethod
     def compare_platforms(reports: list[ComparisonReport]) -> dict[str, Any]:
         """Compare performance across multiple platform reports."""
-        platform_comparison = {}
+        platform_comparison: dict[str, dict[str, Any]] = {}
 
         for report in reports:
             if not report.results:
@@ -703,39 +688,44 @@ class PerformanceAnalyzer:
             }
 
         # Find best performing platform for each metric
-        best_platforms = {}
+        best_platforms: dict[str, dict[str, float | str]] = {}
 
         for metric in ["avg_execution_time", "max_throughput", "avg_memory_peak"]:
-            best_platform = None
-            best_value = None
+            best_platform: str | None = None
+            best_value: float | None = None
 
             for platform, data in platform_comparison.items():
-                if not data["summary_stats"]:
+                summary_stats = cast(SummaryStats, data["summary_stats"])
+                if not summary_stats:
                     continue
 
                 # Get the best backend value for this platform
-                platform_values = []
-                for backend_stats in data["summary_stats"].values():
+                platform_values: list[float] = []
+                for backend_stats in summary_stats.values():
                     if metric in backend_stats:
-                        platform_values.append(backend_stats[metric])
+                        value = backend_stats[metric]
+                        if isinstance(value, int | float):
+                            platform_values.append(float(value))
 
                 if platform_values:
-                    if metric == "avg_execution_time" or metric == "avg_memory_peak":
+                    if metric in {"avg_execution_time", "avg_memory_peak"}:
                         platform_best = min(platform_values)
                     else:  # max_throughput
                         platform_best = max(platform_values)
 
-                    if best_value is None or (
-                        (
-                            metric in ["avg_execution_time", "avg_memory_peak"]
-                            and platform_best < best_value
-                        )
-                        or (metric == "max_throughput" and platform_best > best_value)
-                    ):
+                    should_update = False
+                    if best_value is None:
+                        should_update = True
+                    elif metric in {"avg_execution_time", "avg_memory_peak"}:
+                        should_update = platform_best < best_value
+                    else:  # max_throughput
+                        should_update = platform_best > best_value
+
+                    if should_update:
                         best_value = platform_best
                         best_platform = platform
 
-            if best_platform:
+            if best_platform and best_value is not None:
                 best_platforms[metric] = {"platform": best_platform, "value": best_value}
 
         return {
@@ -747,10 +737,10 @@ class PerformanceAnalyzer:
     @staticmethod
     def generate_scaling_analysis(results: list[PerformanceResult]) -> dict[str, Any]:
         """Analyze how performance scales with circuit size."""
-        scaling_analysis = {}
+        scaling_analysis: dict[str, Any] = {}
 
         # Group by backend
-        backend_results = {}
+        backend_results: dict[str, list[PerformanceResult]] = {}
         for result in results:
             backend = result.backend_type.value
             if backend not in backend_results:
@@ -759,8 +749,8 @@ class PerformanceAnalyzer:
 
         for backend, backend_results_list in backend_results.items():
             # Analyze scaling with qubit count
-            qubit_scaling = {}
-            depth_scaling = {}
+            qubit_scaling: dict[int, list[float]] = {}
+            depth_scaling: dict[int, list[float]] = {}
 
             for result in backend_results_list:
                 qubits = result.circuit_qubits
@@ -768,11 +758,11 @@ class PerformanceAnalyzer:
 
                 if qubits not in qubit_scaling:
                     qubit_scaling[qubits] = []
-                qubit_scaling[qubits].append(result.execution_time)
+                qubit_scaling[qubits].append(float(result.execution_time))
 
                 if depth not in depth_scaling:
                     depth_scaling[depth] = []
-                depth_scaling[depth].append(result.execution_time)
+                depth_scaling[depth].append(float(result.execution_time))
 
             # Calculate average execution times
             qubit_averages = {q: statistics.mean(times) for q, times in qubit_scaling.items()}

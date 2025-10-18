@@ -6,6 +6,7 @@ This script provides standardized benchmarks that can be run in CI/CD
 environments to validate performance and detect regressions.
 """
 
+import importlib.util
 import json
 import time
 from dataclasses import asdict, dataclass
@@ -334,14 +335,14 @@ class ReproducibleBenchmarks:
             from ariadne.backends.metal_backend import is_metal_available
 
             metal_available = is_metal_available()
-        except:
+        except Exception:  # pragma: no cover - environment inspection best-effort
             metal_available = False
 
         try:
             from ariadne.backends.cuda_backend import is_cuda_available
 
             cuda_available = is_cuda_available()
-        except:
+        except Exception:  # pragma: no cover - environment inspection best-effort
             cuda_available = False
 
         return {
@@ -365,17 +366,14 @@ class ReproducibleBenchmarks:
                 continue
 
             # Validate expected backends for Clifford circuits
-            if result.expected_backend == "stim" and result.backend_used != "stim":
-                # Only flag as issue if Stim is available
-                try:
-                    import stim
-
-                    issues.append(
-                        f"⚠️  {result.circuit_name}: Expected Stim but used {result.backend_used}"
-                    )
-                except ImportError:
-                    # Stim not available, fallback is expected
-                    pass
+            if (
+                result.expected_backend == "stim"
+                and result.backend_used != "stim"
+                and importlib.util.find_spec("stim") is not None
+            ):
+                issues.append(
+                    f"⚠️  {result.circuit_name}: Expected Stim but used {result.backend_used}"
+                )
 
             # Check for reasonable execution times (< 10 seconds for test circuits)
             if result.execution_time > 10.0:

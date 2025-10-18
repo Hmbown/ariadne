@@ -64,7 +64,7 @@ class OptimizationResult:
         """Calculate depth reduction percentage."""
         if self.original_circuit.depth() == 0:
             return 0.0
-        return (
+        return float(
             (self.original_circuit.depth() - self.optimized_circuit.depth())
             / self.original_circuit.depth()
             * 100
@@ -78,13 +78,15 @@ class OptimizationResult:
 
         if original_count == 0:
             return 0.0
-        return (original_count - optimized_count) / original_count * 100
+
+        result = float((original_count - optimized_count) / original_count * 100.0)
+        return result
 
 
 class CircuitOptimizer(ABC):
     """Base class for circuit optimizers."""
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         """
         Initialize the circuit optimizer.
 
@@ -95,7 +97,7 @@ class CircuitOptimizer(ABC):
         self.logger = get_logger(f"optimizer.{name}")
 
     @abstractmethod
-    def optimize(self, circuit: QuantumCircuit, **kwargs) -> OptimizationResult:
+    def optimize(self, circuit: QuantumCircuit, **kwargs: Any) -> OptimizationResult:
         """
         Optimize a quantum circuit.
 
@@ -129,7 +131,7 @@ class CircuitOptimizer(ABC):
         """Calculate depth reduction percentage."""
         if original.depth() == 0:
             return 0.0
-        return (original.depth() - optimized.depth()) / original.depth() * 100
+        return float((original.depth() - optimized.depth()) / original.depth() * 100)
 
     def _calculate_gate_count_reduction(
         self, original: QuantumCircuit, optimized: QuantumCircuit
@@ -140,7 +142,7 @@ class CircuitOptimizer(ABC):
 
         if original_count == 0:
             return 0.0
-        return (original_count - optimized_count) / original_count * 100
+        return float((original_count - optimized_count) / original_count * 100)
 
 
 class GateFusionOptimizer(CircuitOptimizer):
@@ -156,7 +158,7 @@ class GateFusionOptimizer(CircuitOptimizer):
         super().__init__("gate_fusion")
         self.max_fusion_size = max_fusion_size
 
-    def optimize(self, circuit: QuantumCircuit, **kwargs) -> OptimizationResult:
+    def optimize(self, circuit: QuantumCircuit, **kwargs: Any) -> OptimizationResult:
         """Optimize circuit by fusing compatible gates."""
         start_time = time.time()
 
@@ -200,11 +202,11 @@ class GateFusionOptimizer(CircuitOptimizer):
 class GateCancellationOptimizer(CircuitOptimizer):
     """Optimizer for gate cancellation operations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the gate cancellation optimizer."""
         super().__init__("gate_cancellation")
 
-    def optimize(self, circuit: QuantumCircuit, **kwargs) -> OptimizationResult:
+    def optimize(self, circuit: QuantumCircuit, **kwargs: Any) -> OptimizationResult:
         """Optimize circuit by canceling redundant gates."""
         start_time = time.time()
 
@@ -238,11 +240,11 @@ class GateCancellationOptimizer(CircuitOptimizer):
 class DepthReductionOptimizer(CircuitOptimizer):
     """Optimizer for reducing circuit depth."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the depth reduction optimizer."""
         super().__init__("depth_reduction")
 
-    def optimize(self, circuit: QuantumCircuit, **kwargs) -> OptimizationResult:
+    def optimize(self, circuit: QuantumCircuit, **kwargs: Any) -> OptimizationResult:
         """Optimize circuit to reduce depth."""
         start_time = time.time()
 
@@ -288,7 +290,7 @@ class CustomUnrollOptimizer(CircuitOptimizer):
         super().__init__("custom_unroll")
         self.basis_gates = basis_gates or ["cx", "h", "t", "tdg", "s", "sdg", "x", "y", "z"]
 
-    def optimize(self, circuit: QuantumCircuit, **kwargs) -> OptimizationResult:
+    def optimize(self, circuit: QuantumCircuit, **kwargs: Any) -> OptimizationResult:
         """Optimize circuit by unrolling custom gates."""
         start_time = time.time()
 
@@ -333,7 +335,7 @@ class CompositeOptimizer(CircuitOptimizer):
         super().__init__("composite")
         self.optimizers = optimizers
 
-    def optimize(self, circuit: QuantumCircuit, **kwargs) -> OptimizationResult:
+    def optimize(self, circuit: QuantumCircuit, **kwargs: Any) -> OptimizationResult:
         """Apply multiple optimization passes in sequence."""
         start_time = time.time()
 
@@ -342,8 +344,8 @@ class CompositeOptimizer(CircuitOptimizer):
         original_circuit = circuit
 
         # Apply each optimizer in sequence
-        optimization_types = []
-        total_metrics = {}
+        optimization_types: list[OptimizationType] = []
+        total_metrics: dict[str, Any] = {}
 
         for optimizer in self.optimizers:
             result = optimizer.optimize(current_circuit, **kwargs)
@@ -376,7 +378,7 @@ class CompositeOptimizer(CircuitOptimizer):
 class CircuitOptimizationManager:
     """Manager for circuit optimization operations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the circuit optimization manager."""
         self.logger = get_logger("optimization_manager")
 
@@ -406,7 +408,7 @@ class CircuitOptimizationManager:
         }
 
     def optimize(
-        self, circuit: QuantumCircuit, optimization_type: OptimizationType | str, **kwargs
+        self, circuit: QuantumCircuit, optimization_type: OptimizationType | str, **kwargs: Any
     ) -> OptimizationResult:
         """
         Optimize a circuit using the specified optimization type.
@@ -436,8 +438,8 @@ class CircuitOptimizationManager:
                         optimizer = self._optimizers[opt_type]
                     else:
                         raise ValueError(f"Unknown optimization type: {optimization_type}")
-                except ValueError:
-                    raise ValueError(f"Unknown optimization type: {optimization_type}")
+                except ValueError as exc:
+                    raise ValueError(f"Unknown optimization type: {optimization_type}") from exc
         else:
             raise ValueError(f"Invalid optimization type: {optimization_type}")
 
@@ -463,36 +465,39 @@ class CircuitOptimizationManager:
         Returns:
             Analysis results
         """
-        analysis = {
-            "circuit_info": {
-                "num_qubits": circuit.num_qubits,
-                "depth": circuit.depth(),
-                "gate_count": len(circuit.data),
-            },
-            "optimization_opportunities": {},
-            "recommendations": [],
+        circuit_info: dict[str, int] = {
+            "num_qubits": circuit.num_qubits,
+            "depth": circuit.depth(),
+            "gate_count": len(circuit.data),
+        }
+        optimization_opportunities: dict[str, dict[str, Any]] = {}
+        recommendations: list[str] = []
+        analysis: dict[str, Any] = {
+            "circuit_info": circuit_info,
+            "optimization_opportunities": optimization_opportunities,
+            "recommendations": recommendations,
         }
 
         # Analyze for gate cancellation opportunities
         cancellation_opportunities = self._analyze_cancellation_opportunities(circuit)
-        analysis["optimization_opportunities"]["gate_cancellation"] = cancellation_opportunities
+        optimization_opportunities["gate_cancellation"] = cancellation_opportunities
 
         if cancellation_opportunities["potential_reduction"] > 5:
-            analysis["recommendations"].append("Consider applying gate cancellation optimization")
+            recommendations.append("Consider applying gate cancellation optimization")
 
         # Analyze for gate fusion opportunities
         fusion_opportunities = self._analyze_fusion_opportunities(circuit)
-        analysis["optimization_opportunities"]["gate_fusion"] = fusion_opportunities
+        optimization_opportunities["gate_fusion"] = fusion_opportunities
 
         if fusion_opportunities["potential_reduction"] > 5:
-            analysis["recommendations"].append("Consider applying gate fusion optimization")
+            recommendations.append("Consider applying gate fusion optimization")
 
         # Analyze for depth reduction opportunities
         depth_opportunities = self._analyze_depth_opportunities(circuit)
-        analysis["optimization_opportunities"]["depth_reduction"] = depth_opportunities
+        optimization_opportunities["depth_reduction"] = depth_opportunities
 
         if depth_opportunities["potential_reduction"] > 10:
-            analysis["recommendations"].append("Consider applying depth reduction optimization")
+            recommendations.append("Consider applying depth reduction optimization")
 
         return analysis
 
@@ -500,7 +505,7 @@ class CircuitOptimizationManager:
         """Analyze circuit for gate cancellation opportunities."""
         # Count consecutive identical gates on the same qubit
         consecutive_gates = 0
-        gate_sequences = {}
+        gate_sequences: dict[Any, int] = {}
 
         for item in circuit.data:
             if hasattr(item, "operation"):
@@ -508,7 +513,7 @@ class CircuitOptimizationManager:
                 qargs = list(item.qubits)
                 cargs = list(item.clbits)
             else:  # Legacy tuple form
-                instruction, qargs, cargs = item  # type: ignore[misc]
+                instruction, qargs, cargs = item
 
             gate_name = instruction.name
             qubit_indices = tuple(circuit.find_bit(q).index for q in qargs)
@@ -544,7 +549,7 @@ class CircuitOptimizationManager:
                 qargs = list(item.qubits)
                 cargs = list(item.clbits)
             else:  # Legacy tuple form
-                instruction, qargs, cargs = item  # type: ignore[misc]
+                instruction, qargs, cargs = item
 
             if len(qargs) == 1:  # Single-qubit gate
                 qubit = circuit.find_bit(qargs[0]).index
@@ -577,7 +582,7 @@ class CircuitOptimizationManager:
                 qargs = list(item.qubits)
                 cargs = list(item.clbits)
             else:  # Legacy tuple form
-                instruction, qargs, cargs = item  # type: ignore[misc]
+                instruction, qargs, cargs = item
 
             if len(qargs) == 1:
                 single_qubit_count += 1
@@ -612,7 +617,7 @@ def get_optimization_manager() -> CircuitOptimizationManager:
 
 
 def optimize_circuit(
-    circuit: QuantumCircuit, optimization_type: OptimizationType | str = "aggressive", **kwargs
+    circuit: QuantumCircuit, optimization_type: OptimizationType | str = "aggressive", **kwargs: Any
 ) -> OptimizationResult:
     """
     Optimize a circuit using the global optimization manager.

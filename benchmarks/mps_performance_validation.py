@@ -8,18 +8,12 @@ circuits by comparing simulation times across a range of qubit counts (10 to 20)
 
 import math
 import statistics
-import sys
 import time
 from collections.abc import Callable
-from pathlib import Path
 from random import Random
 
 from qiskit import QuantumCircuit
 from qiskit.providers.basic_provider import BasicProvider
-
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
 
 # Assuming ariadne is installed or path is set up correctly
 # Assuming ariadne is installed or path is set up correctly
@@ -69,7 +63,7 @@ def build_low_entanglement_circuit(num_qubits: int, depth: int) -> QuantumCircui
     qc = QuantumCircuit(num_qubits, num_qubits)
     rng = Random(42)  # Fixed seed for reproducibility
 
-    for d in range(depth):
+    for _ in range(depth):
         # Single qubit rotations
         for i in range(num_qubits):
             qc.rx(rng.random() * math.pi, i)
@@ -118,16 +112,16 @@ def run_mps_validation_benchmark(
         circuit = build_low_entanglement_circuit(n_qubits, depth)
 
         # 1. Benchmark MPS Backend (State Vector simulation mode)
-        def mps_run():
+        def mps_run(current_circuit: QuantumCircuit = circuit):
             # MPSBackend.simulate returns the state vector, which is sufficient for timing
-            mps_backend.simulate(circuit)
+            mps_backend.simulate(current_circuit)
 
         mps_mean, mps_stdev, mps_success, mps_error = time_function(mps_run, repetitions)
 
         # 2. Benchmark Standard State Vector Backend (Qiskit Basic Simulator)
-        def sv_run():
+        def sv_run(current_circuit: QuantumCircuit = circuit):
             # We run the Qiskit job and wait for results
-            job = sv_backend.run(circuit, shots=shots)
+            job = sv_backend.run(current_circuit, shots=shots)
             job.result().get_counts()
 
         sv_mean, sv_stdev, sv_success, sv_error = time_function(sv_run, repetitions)
@@ -145,8 +139,8 @@ def run_mps_validation_benchmark(
         )
 
         # Print intermediate results
-        mps_status = f"{mps_mean*1e3:.3f} ms" if mps_success else f"FAIL ({mps_error})"
-        sv_status = f"{sv_mean*1e3:.3f} ms" if sv_success else f"FAIL ({sv_error})"
+        mps_status = f"{mps_mean * 1e3:.3f} ms" if mps_success else f"FAIL ({mps_error})"
+        sv_status = f"{sv_mean * 1e3:.3f} ms" if sv_success else f"FAIL ({sv_error})"
 
         print(f"  MPS Time: {mps_status}")
         print(f"  SV Time:  {sv_status}")

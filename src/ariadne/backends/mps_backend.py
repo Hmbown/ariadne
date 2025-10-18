@@ -1,6 +1,6 @@
 """A backend for simulating quantum circuits using Matrix Product States."""
 
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import quimb.tensor as tn
@@ -17,7 +17,7 @@ class MPSBackend(UniversalBackend):
     circuits with low entanglement.
     """
 
-    def __init__(self, max_bond_dimension: int = 64):
+    def __init__(self, max_bond_dimension: int = 64) -> None:
         """
         Initializes the MPS backend.
 
@@ -26,7 +26,7 @@ class MPSBackend(UniversalBackend):
         """
         self.max_bond_dimension = max_bond_dimension
 
-    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs) -> dict[str, int]:
+    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs: Any) -> dict[str, int]:
         """
         Simulates the given quantum circuit using an MPS representation.
 
@@ -47,7 +47,8 @@ class MPSBackend(UniversalBackend):
                 instruction = item.operation
                 qargs = list(item.qubits)
             else:  # Legacy tuple form
-                instruction, qargs, _ = item  # type: ignore[misc]
+                instruction_tuple = cast(tuple[Any, list[Any], Any], item)
+                instruction, qargs, _ = instruction_tuple
             gate_name = getattr(instruction, "name", "")
             if gate_name in {"measure", "barrier", "reset"}:
                 continue
@@ -84,17 +85,20 @@ class MPSBackend(UniversalBackend):
                 instruction = item.operation
                 qargs = list(item.qubits)
             else:  # Legacy tuple form
-                instruction, qargs, _ = item  # type: ignore[misc]
+                instruction_tuple = cast(tuple[Any, list[Any], Any], item)
+                instruction, qargs, _ = instruction_tuple
 
             gate_name = instruction.name
             physical_qubits = [circuit.num_qubits - 1 - circuit.find_bit(q).index for q in qargs]
 
             try:
                 gate_matrix = instruction.to_matrix()
-            except Exception:
+            except Exception as err:
                 if gate_name in ["measure", "barrier", "reset"]:
                     continue
-                raise NotImplementedError(f"Gate '{gate_name}' not supported by MPS backend.")
+                raise NotImplementedError(
+                    f"Gate '{gate_name}' not supported by MPS backend."
+                ) from err
 
             if not physical_qubits:
                 continue
@@ -112,7 +116,7 @@ class MPSBackend(UniversalBackend):
                 gate_matrix = gate_tensor.reshape(2**k, 2**k)
 
             if len(qubits) == 1:
-                contract_mode = True
+                contract_mode: bool | str = True
             elif len(qubits) == 2:
                 contract_mode = "swap+split"
             else:
@@ -131,7 +135,7 @@ class MPSBackend(UniversalBackend):
         samples_gen = mps.sample(shots)
 
         # Convert samples generator to list and process
-        counts = {}
+        counts: dict[str, int] = {}
 
         for state_list, _ in list(samples_gen):
             bitstring = "".join(str(bit) for bit in state_list)
@@ -165,9 +169,12 @@ class MPSBackend(UniversalBackend):
             capabilities=self.get_capabilities(),
             hardware_requirements=["CPU"],
             estimated_cost_factor=0.1,
+            gate_times={"single_qubit": 1e-9, "two_qubit": 5e-9},
+            error_rates={"single_qubit": 1e-5, "two_qubit": 5e-4},
+            connectivity_map=None,
         )
 
-    def can_simulate(self, circuit: QuantumCircuit, **kwargs) -> tuple[bool, str]:
+    def can_simulate(self, circuit: QuantumCircuit, **kwargs: Any) -> tuple[bool, str]:
         if circuit.num_qubits > 50:
             return False, "Too many qubits for MPS backend"
         return True, "Can simulate"

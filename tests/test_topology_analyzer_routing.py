@@ -16,7 +16,7 @@ def build_chain_like_nonclifford(n: int = 8) -> QuantumCircuit:
     return qc
 
 
-def test_detects_chain_like_topology():
+def test_detects_chain_like_topology() -> None:
     qc = build_chain_like_nonclifford(8)
     props = detect_layout_properties(qc)
     assert isinstance(props, dict)
@@ -24,7 +24,7 @@ def test_detects_chain_like_topology():
     assert props.get("max_degree", 0) <= 2
 
 
-def test_router_prefers_mps_for_chain_like():
+def test_router_prefers_mps_for_chain_like() -> None:
     qc = build_chain_like_nonclifford(8)
     router = EnhancedQuantumRouter()
     decision = router.select_optimal_backend(qc)

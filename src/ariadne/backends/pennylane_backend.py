@@ -16,9 +16,10 @@ PennyLane Features:
 
 from __future__ import annotations
 
+import importlib.util
 import warnings
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -55,25 +56,20 @@ class PennyLaneBackend:
         self.device = self._create_device()
 
         # ML framework integration
-        self.ml_framework = None
+        self.ml_framework: str | None = None
         if enable_ml_features:
             self.ml_framework = self._detect_ml_framework()
 
     def _check_pennylane_availability(self) -> bool:
         """Check if PennyLane is installed and available."""
-        try:
-            import pennylane as qml
+        return importlib.util.find_spec("pennylane") is not None
 
-            return True
-        except ImportError:
-            return False
-
-    def _create_device(self):
+    def _create_device(self) -> Any:
         """Create PennyLane device."""
         import pennylane as qml
 
         # Device creation with appropriate parameters
-        device_kwargs = {}
+        device_kwargs: dict[str, Any] = {}
         if self.shots is not None:
             device_kwargs["shots"] = self.shots
 
@@ -92,26 +88,12 @@ class PennyLaneBackend:
         """Detect available ML frameworks for integration."""
         frameworks = []
 
-        try:
-            import torch
-
+        if importlib.util.find_spec("torch") is not None:
             frameworks.append("torch")
-        except ImportError:
-            pass
-
-        try:
-            import tensorflow as tf
-
+        if importlib.util.find_spec("tensorflow") is not None:
             frameworks.append("tensorflow")
-        except ImportError:
-            pass
-
-        try:
-            import jax
-
+        if importlib.util.find_spec("jax") is not None:
             frameworks.append("jax")
-        except ImportError:
-            pass
 
         # Return the first available framework
         return frameworks[0] if frameworks else None
@@ -147,19 +129,17 @@ class PennyLaneBackend:
             warnings.warn(f"PennyLane simulation failed: {e}, falling back to Qiskit", stacklevel=2)
             return self._simulate_with_qiskit(circuit, shots)
 
-    def _convert_qiskit_to_pennylane(self, circuit: QuantumCircuit):
+    def _convert_qiskit_to_pennylane(self, circuit: QuantumCircuit) -> Callable[..., Any]:
         """Convert Qiskit circuit to PennyLane QNode."""
         import pennylane as qml
 
         # Extract parameters from circuit
         circuit_params = list(circuit.parameters)
-        len(circuit_params)
 
         # Create parameter mapping
         param_mapping = {param: i for i, param in enumerate(circuit_params)}
 
-        @qml.qnode(self.device)
-        def qnode(*params):
+        def circuit_fn(*params: float) -> list[Any]:
             # Apply circuit operations
             self._apply_qiskit_operations(circuit, params, param_mapping)
 
@@ -171,14 +151,20 @@ class PennyLaneBackend:
                 # No explicit measurements, measure all qubits
                 return [qml.sample(qml.PauliZ(i)) for i in range(circuit.num_qubits)]
 
-        return qnode
+        qnode = qml.qnode(self.device)(circuit_fn)
+        return cast(Callable[..., list[Any]], qnode)
 
-    def _apply_qiskit_operations(self, circuit: QuantumCircuit, params: tuple, param_mapping: dict):
+    def _apply_qiskit_operations(
+        self,
+        circuit: QuantumCircuit,
+        params: tuple[float, ...],
+        param_mapping: dict[Parameter, int],
+    ) -> None:
         """Apply Qiskit circuit operations in PennyLane."""
         import pennylane as qml
 
         # Mapping of Qiskit gates to PennyLane operations
-        gate_mapping = {
+        gate_mapping: dict[str, Callable[[int], Any]] = {
             "id": lambda qubit: None,  # Identity does nothing
             "x": lambda qubit: qml.PauliX(wires=qubit),
             "y": lambda qubit: qml.PauliY(wires=qubit),
@@ -191,7 +177,7 @@ class PennyLaneBackend:
         }
 
         # Parameterized single-qubit gates
-        param_gate_mapping = {
+        param_gate_mapping: dict[str, Callable[[int, float], Any]] = {
             "rx": lambda qubit, angle: qml.RX(angle, wires=qubit),
             "ry": lambda qubit, angle: qml.RY(angle, wires=qubit),
             "rz": lambda qubit, angle: qml.RZ(angle, wires=qubit),
@@ -200,7 +186,7 @@ class PennyLaneBackend:
         }
 
         # Two-qubit gates
-        two_qubit_mapping = {
+        two_qubit_mapping: dict[str, Callable[[int, int], Any]] = {
             "cx": lambda control, target: qml.CNOT(wires=[control, target]),
             "cy": lambda control, target: qml.CY(wires=[control, target]),
             "cz": lambda control, target: qml.CZ(wires=[control, target]),
@@ -273,14 +259,16 @@ class PennyLaneBackend:
                 # Unsupported gate
                 warnings.warn(f"Unsupported gate: {gate_name}, skipping", stacklevel=2)
 
-    def _get_pennylane_measurements(self, circuit: QuantumCircuit):
+    def _get_pennylane_measurements(self, circuit: QuantumCircuit) -> list[Any]:
         """Get PennyLane measurements based on circuit structure."""
         import pennylane as qml
 
         # For now, measure all qubits in computational basis
         return [qml.sample(qml.PauliZ(i)) for i in range(circuit.num_qubits)]
 
-    def _execute_with_shots(self, qnode, circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    def _execute_with_shots(
+        self, qnode: Callable[..., Any], circuit: QuantumCircuit, shots: int
+    ) -> dict[str, int]:
         """Execute QNode with finite shots."""
         # Create parameter values (zeros for now if no parameters)
         num_params = len(circuit.parameters)
@@ -295,12 +283,14 @@ class PennyLaneBackend:
         # Convert samples to counts
         return self._samples_to_counts(samples, circuit.num_qubits, shots)
 
-    def _execute_exact(self, qnode, circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    def _execute_exact(
+        self, qnode: Callable[..., Any], circuit: QuantumCircuit, shots: int
+    ) -> dict[str, int]:
         """Execute QNode with exact simulation."""
         # For exact simulation, we'll use the state vector and sample from it
         return self._execute_with_shots(qnode, circuit, shots)
 
-    def _samples_to_counts(self, samples, num_qubits: int, shots: int) -> dict[str, int]:
+    def _samples_to_counts(self, samples: Any, num_qubits: int, shots: int) -> dict[str, int]:
         """Convert PennyLane samples to count dictionary."""
         if not isinstance(samples, list | tuple):
             samples = [samples]
@@ -308,7 +298,7 @@ class PennyLaneBackend:
         # Handle different sample formats
         if isinstance(samples[0], np.ndarray):
             # Multiple measurement results
-            counts = {}
+            counts: dict[str, int] = {}
 
             # Transpose to get samples per shot
             if len(samples) > 1:
@@ -334,7 +324,7 @@ class PennyLaneBackend:
 
     def _generate_random_counts(self, num_qubits: int, shots: int) -> dict[str, int]:
         """Generate random measurement counts (fallback)."""
-        counts = {}
+        counts: dict[str, int] = {}
 
         for _ in range(shots):
             # Generate random bitstring
@@ -347,7 +337,9 @@ class PennyLaneBackend:
     def _simulate_with_qiskit(self, circuit: QuantumCircuit, shots: int) -> dict[str, int]:
         """Fallback simulation using Qiskit."""
         try:
-            from qiskit.providers.basic_provider import BasicProvider
+            from qiskit.providers.basic_provider import (
+                BasicProvider,
+            )
 
             provider = BasicProvider()
             backend = provider.get_backend("basic_simulator")
@@ -356,8 +348,8 @@ class PennyLaneBackend:
 
             return {str(k): v for k, v in counts.items()}
 
-        except ImportError:
-            raise RuntimeError("Neither PennyLane nor Qiskit BasicProvider available")
+        except ImportError as err:
+            raise RuntimeError("Neither PennyLane nor Qiskit BasicProvider available") from err
 
     def create_variational_circuit(
         self, num_qubits: int, num_layers: int = 1, entangling_gate: str = "cnot"
@@ -367,7 +359,7 @@ class PennyLaneBackend:
 
     def get_backend_info(self) -> dict[str, Any]:
         """Get information about the backend configuration."""
-        info = {
+        info: dict[str, Any] = {
             "name": "pennylane",
             "device_name": self.device_name,
             "pennylane_available": self.pennylane_available,
@@ -425,12 +417,11 @@ class VariationalCircuit:
         # Each layer has 3 parameters per qubit (RX, RY, RZ rotations)
         return 3 * self.num_qubits * self.num_layers
 
-    def _create_qnode(self):
+    def _create_qnode(self) -> Callable[..., Any]:
         """Create PennyLane QNode for the variational circuit."""
         import pennylane as qml
 
-        @qml.qnode(self.backend.device)
-        def variational_circuit(params):
+        def circuit_fn(params: np.ndarray) -> list[Any]:
             # Apply variational layers
             for layer in range(self.num_layers):
                 # Single-qubit rotations
@@ -454,15 +445,16 @@ class VariationalCircuit:
             # Return expectation value of all qubits
             return [qml.expval(qml.PauliZ(i)) for i in range(self.num_qubits)]
 
-        return variational_circuit
+        variational_circuit = qml.qnode(self.backend.device)(circuit_fn)
+        return cast(Callable[..., list[Any]], variational_circuit)
 
     def execute(self, params: np.ndarray) -> np.ndarray:
         """Execute variational circuit with given parameters."""
-        return self.qnode(params)
+        return cast(np.ndarray, self.qnode(params))
 
     def optimize(
         self,
-        cost_function: Callable,
+        cost_function: Callable[[np.ndarray], float],
         initial_params: np.ndarray | None = None,
         optimizer: str = "adam",
         learning_rate: float = 0.1,
@@ -499,7 +491,7 @@ class VariationalCircuit:
 
         # Optimization loop
         params = initial_params.copy()
-        cost_history = []
+        cost_history: list[float] = []
 
         for iteration in range(num_iterations):
             params, cost = opt.step_and_cost(cost_function, params)
@@ -513,12 +505,7 @@ class VariationalCircuit:
 
 def is_pennylane_available() -> bool:
     """Check if PennyLane is available for use."""
-    try:
-        import pennylane as qml
-
-        return True
-    except ImportError:
-        return False
+    return importlib.util.find_spec("pennylane") is not None
 
 
 def list_pennylane_devices() -> list[str]:
@@ -545,7 +532,7 @@ def list_pennylane_devices() -> list[str]:
         ]
 
         # Filter to only available devices
-        available_devices = []
+        available_devices: list[str] = []
         for device in devices:
             try:
                 # Try to create a minimal device instance
@@ -580,7 +567,9 @@ def create_pennylane_backend(
 
 
 def benchmark_pennylane_ml(
-    num_qubits_list: list[int] = None, num_layers_list: list[int] = None, num_iterations: int = 50
+    num_qubits_list: list[int] | None = None,
+    num_layers_list: list[int] | None = None,
+    num_iterations: int = 50,
 ) -> dict[str, Any]:
     """
     Benchmark PennyLane ML capabilities.
@@ -599,7 +588,7 @@ def benchmark_pennylane_ml(
         num_layers_list = [1, 2, 3]
     if num_qubits_list is None:
         num_qubits_list = [4, 6, 8]
-    results = {}
+    results: dict[str, Any] = {}
 
     for num_qubits in num_qubits_list:
         for num_layers in num_layers_list:
@@ -612,9 +601,9 @@ def benchmark_pennylane_ml(
                 vqc = backend.create_variational_circuit(num_qubits, num_layers)
 
                 # Define simple cost function (minimize energy)
-                def cost_function(params):
-                    outputs = vqc.execute(params)
-                    return sum(outputs)  # Sum of expectation values
+                def cost_function(params: np.ndarray, circuit: VariationalCircuit = vqc) -> float:
+                    outputs = circuit.execute(params)
+                    return cast(float, sum(outputs))  # Sum of expectation values
 
                 # Time the optimization
                 start_time = time.time()

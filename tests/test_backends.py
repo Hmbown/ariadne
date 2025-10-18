@@ -10,12 +10,12 @@ from ariadne.backends.cuda_backend import CUDABackend, is_cuda_available
 class TestCUDABackend:
     """Test CUDA backend functionality."""
 
-    def test_cuda_availability(self):
+    def test_cuda_availability(self) -> None:
         """Test CUDA availability detection."""
         available = is_cuda_available()
         assert isinstance(available, bool)
 
-    def test_cuda_backend_cpu_fallback(self):
+    def test_cuda_backend_cpu_fallback(self) -> None:
         """Test CPU fallback works correctly."""
         backend = CUDABackend(allow_cpu_fallback=True)
 
@@ -28,7 +28,7 @@ class TestCUDABackend:
         assert isinstance(result, dict)
         assert sum(result.values()) == 100
 
-    def test_cuda_backend_basic_gates(self):
+    def test_cuda_backend_basic_gates(self) -> None:
         """Test basic quantum gates."""
         backend = CUDABackend()
 
@@ -48,7 +48,7 @@ class TestCUDABackend:
         assert 400 < result.get("0", 0) < 600
         assert 400 < result.get("1", 0) < 600
 
-    def test_cuda_backend_entanglement(self):
+    def test_cuda_backend_entanglement(self) -> None:
         """Test entangled states."""
         backend = CUDABackend()
 
@@ -65,7 +65,7 @@ class TestCUDABackend:
         assert 400 < result.get("11", 0) < 600
 
     @pytest.mark.skipif(not is_cuda_available(), reason="CUDA not available")
-    def test_cuda_backend_gpu_mode(self):
+    def test_cuda_backend_gpu_mode(self) -> None:
         """Test GPU execution mode."""
         backend = CUDABackend(prefer_gpu=True, allow_cpu_fallback=False)
         assert backend.backend_mode == "cuda"
@@ -78,7 +78,7 @@ class TestCUDABackend:
         result = backend.simulate(qc, shots=100)
         assert sum(result.values()) == 100
 
-    def test_cuda_backend_statevector(self):
+    def test_cuda_backend_statevector(self) -> None:
         """Test statevector simulation."""
         backend = CUDABackend()
 
@@ -96,7 +96,7 @@ class TestCUDABackend:
         norm = np.sum(np.abs(statevector) ** 2)
         assert abs(norm - 1.0) < 1e-10
 
-    def test_cuda_backend_large_circuit(self):
+    def test_cuda_backend_large_circuit(self) -> None:
         """Test larger circuit simulation."""
         backend = CUDABackend()
 
@@ -114,7 +114,7 @@ class TestCUDABackend:
 class TestBackendIntegration:
     """Test backend integration with main API."""
 
-    def test_backend_selection_clifford(self):
+    def test_backend_selection_clifford(self) -> None:
         """Test Clifford circuits select appropriate backend."""
         qc = QuantumCircuit(5)
         for i in range(5):
@@ -126,7 +126,7 @@ class TestBackendIntegration:
         result = simulate(qc, shots=100)
         assert result.backend_used == BackendType.STIM
 
-    def test_backend_selection_general(self):
+    def test_backend_selection_general(self) -> None:
         """Test general circuits select appropriate backend."""
         qc = QuantumCircuit(3)
         qc.h(0)
@@ -146,7 +146,7 @@ class TestBackendIntegration:
             BackendType.QULACS,
         ]
 
-    def test_forced_backend_override(self):
+    def test_forced_backend_override(self) -> None:
         """Test forcing specific backend works."""
         qc = QuantumCircuit(2)
         qc.h(0)
@@ -157,7 +157,7 @@ class TestBackendIntegration:
         result = simulate(qc, shots=100, backend="qiskit")
         assert result.backend_used == BackendType.QISKIT
 
-    def test_invalid_backend_error(self):
+    def test_invalid_backend_error(self) -> None:
         """Test error handling for invalid backend."""
         qc = QuantumCircuit(1)
         qc.h(0)
@@ -170,7 +170,7 @@ class TestBackendIntegration:
 class TestBackendConsistency:
     """Test consistency across backends."""
 
-    def test_deterministic_circuit_consistency(self):
+    def test_deterministic_circuit_consistency(self) -> None:
         """Test all backends give same results for deterministic circuits."""
         qc = QuantumCircuit(3)
         qc.x(0)
@@ -190,7 +190,7 @@ class TestBackendConsistency:
         for _backend, counts in results.items():
             assert counts == {"101": 100}
 
-    def test_bell_state_consistency(self):
+    def test_bell_state_consistency(self) -> None:
         """Test Bell state preparation is consistent."""
         qc = QuantumCircuit(2)
         qc.h(0)

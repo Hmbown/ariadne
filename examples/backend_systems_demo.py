@@ -65,6 +65,7 @@ def demo_health_checking():
     print("\n=== Backend Health Checking Demo ===")
 
     logger = get_logger("health_demo")
+    logger.info("Starting backend health checking demo")
     health_checker = get_health_checker()
 
     # Create mock backends with different success rates
@@ -86,6 +87,9 @@ def demo_health_checking():
     unhealthy_check = create_circuit_based_health_check(
         "unhealthy", unhealthy_backend.simulate, simple_circuit
     )
+
+    health_checker.register_health_check(BackendType.QISKIT, healthy_check)
+    health_checker.register_health_check(BackendType.CUDA, unhealthy_check)
 
     # Note: In a real implementation, we would map these to actual BackendType values
     # For this demo, we'll just show the health checking concept
@@ -145,7 +149,7 @@ def demo_backend_pooling():
         wait_time = time.time() - start_time
 
         backends.append(backend)
-        print(f"✓ Acquired backend instance {i+1} (wait time: {wait_time:.3f}s)")
+        print(f"✓ Acquired backend instance {i + 1} (wait time: {wait_time:.3f}s)")
 
     # Use backends
     print("\n--- Using Backend Instances ---")
@@ -157,13 +161,14 @@ def demo_backend_pooling():
         result = backend.simulate(circuit, shots=100)
         exec_time = time.time() - start_time
 
-        print(f"✓ Backend {i+1} simulated circuit in {exec_time:.3f}s")
+        print(f"✓ Backend {i + 1} simulated circuit in {exec_time:.3f}s")
+        print(f"    Sample counts: {result}")
 
     # Return backends to pool
     print("\n--- Returning Backend Instances ---")
     for i, backend in enumerate(backends):
         pool.return_backend(backend)
-        print(f"✓ Returned backend instance {i+1} to pool")
+        print(f"✓ Returned backend instance {i + 1} to pool")
 
     # Show pool statistics
     print("\n--- Pool Statistics ---")
@@ -299,6 +304,9 @@ def demo_fallback_strategy():
     def reliable_fallback(circuit, shots):
         return reliable_backend.simulate(circuit, shots)
 
+    fallback_manager.register_fallback_function(BackendType.CUDA, fast_fallback)
+    fallback_manager.register_fallback_function(BackendType.QISKIT, reliable_fallback)
+
     # In a real implementation, we would register these with actual BackendType values
     # For demo purposes, we'll show the fallback concept
 
@@ -355,9 +363,9 @@ def demo_fallback_strategy():
     print("\n--- Attempt Details ---")
     for i, attempt in enumerate(result.attempts):
         if attempt.success:
-            print(f"Attempt {i+1}: ✓ {attempt.backend.value} - SUCCESS")
+            print(f"Attempt {i + 1}: ✓ {attempt.backend.value} - SUCCESS")
         else:
-            print(f"Attempt {i+1}: ✗ {attempt.backend.value} - {attempt.error_message}")
+            print(f"Attempt {i + 1}: ✗ {attempt.backend.value} - {attempt.error_message}")
 
     # Show fallback statistics
     print("\n--- Fallback Statistics ---")

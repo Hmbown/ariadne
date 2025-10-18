@@ -40,10 +40,11 @@ def demo_async_operations():
     print("\n=== Asynchronous Operations Demo ===")
 
     logger = get_logger("async_demo")
+    logger.info("Preparing asynchronous simulation batch")
 
     # Create test circuits
     circuits = []
-    for i in range(5):
+    for _ in range(5):
         circuit = QuantumCircuit(3, 3)
         circuit.h(0)
         circuit.cx(0, 1)
@@ -84,14 +85,20 @@ def demo_async_operations():
     print("\nResults:")
     print(f"  Async time: {async_time:.3f}s")
     print(f"  Sync time: {sync_time:.3f}s")
-    print(f"  Speedup: {sync_time/async_time:.2f}x")
+    print(f"  Speedup: {sync_time / async_time:.2f}x")
 
     # Check results
     for i, (async_result, sync_result) in enumerate(zip(results, sync_results, strict=False)):
         if async_result.success and async_result.result:
-            print(f"  Circuit {i+1}: Success")
+            print(f"  Circuit {i + 1}: Success")
         else:
-            print(f"  Circuit {i+1}: Failed - {async_result.error}")
+            print(f"  Circuit {i + 1}: Failed - {async_result.error}")
+
+        async_counts = getattr(async_result, "counts", None)
+        sync_counts = getattr(sync_result, "counts", None)
+        if async_counts is not None and sync_counts is not None:
+            status = "match" if async_counts == sync_counts else "differ"
+            print(f"    Result counts {status} between async and sync runs")
 
 
 def demo_circuit_optimization():
@@ -99,6 +106,7 @@ def demo_circuit_optimization():
     print("\n=== Circuit Optimization Demo ===")
 
     logger = get_logger("optimization_demo")
+    logger.info("Analyzing circuit for optimization opportunities")
 
     # Create a circuit that can be optimized
     circuit = QuantumCircuit(4, 4)
@@ -166,6 +174,7 @@ def demo_memory_management():
     print("\n=== Memory Management Demo ===")
 
     logger = get_logger("memory_demo")
+    logger.info("Inspecting memory usage and optimization suggestions")
 
     # Get memory manager
     memory_manager = get_memory_manager()
@@ -212,10 +221,11 @@ def demo_parallel_processing():
     print("\n=== Parallel Processing Demo ===")
 
     logger = get_logger("parallel_demo")
+    logger.info("Benchmarking different execution modes")
 
     # Create test circuits
     circuits = []
-    for i in range(8):
+    for _ in range(8):
         circuit = QuantumCircuit(3, 3)
         circuit.h(0)
         circuit.cx(0, 1)
@@ -264,12 +274,12 @@ def demo_parallel_processing():
     print("\nParallel vs Sequential:")
     print(f"  Parallel time: {parallel_time:.3f}s")
     print(f"  Sequential time: {sequential_time:.3f}s")
-    print(f"  Speedup: {sequential_time/parallel_time:.2f}x")
+    print(f"  Speedup: {sequential_time / parallel_time:.2f}x")
 
     # Check results
     success_count = sum(1 for r in parallel_results if r.success)
     print(
-        f"  Success rate: {success_count}/{len(parallel_results)} ({success_count/len(parallel_results):.2%})"
+        f"  Success rate: {success_count}/{len(parallel_results)} ({success_count / len(parallel_results):.2%})"
     )
 
 
@@ -278,6 +288,7 @@ def demo_intelligent_caching():
     print("\n=== Intelligent Caching Demo ===")
 
     logger = get_logger("cache_demo")
+    logger.info("Demonstrating cache hits and memoization")
 
     # Get simulation cache
     cache = get_simulation_cache()
@@ -306,7 +317,7 @@ def demo_intelligent_caching():
     print("\nCaching results:")
     print(f"  First time: {first_time:.4f}s")
     print(f"  Second time: {second_time:.4f}s")
-    print(f"  Speedup: {first_time/second_time:.1f}x")
+    print(f"  Speedup: {first_time / second_time:.1f}x")
 
     # Verify results are the same
     if result1.counts == result2.counts:
@@ -344,7 +355,7 @@ def demo_intelligent_caching():
     print("Memoization results:")
     print(f"  First call: {first_call_time:.4f}s (result: {result1})")
     print(f"  Second call: {second_call_time:.4f}s (result: {result2})")
-    print(f"  Speedup: {first_call_time/second_call_time:.1f}x")
+    print(f"  Speedup: {first_call_time / second_call_time:.1f}x")
 
     if result1 == result2:
         print("✓ Memoized result matches original")
@@ -357,6 +368,7 @@ def demo_performance_integration():
     print("\n=== Performance Integration Demo ===")
 
     logger = get_logger("integration_demo")
+    logger.info("Running end-to-end performance workflow")
 
     # Create a more complex circuit
     circuit = QuantumCircuit(5, 5)
@@ -415,7 +427,9 @@ def demo_performance_integration():
 
     print(f"  Original simulation: {simulation_time:.4f}s")
     print(f"  Cached simulation: {cached_time:.4f}s")
-    print(f"  Cache speedup: {simulation_time/cached_time:.1f}x")
+    print(f"  Cache speedup: {simulation_time / cached_time:.1f}x")
+    if cached_result and cached_result.counts == result.counts:
+        print("  Cached counts verified against original run")
 
     # Step 5: Parallel batch simulation
     print("\nStep 5: Parallel batch simulation...")
@@ -428,14 +442,16 @@ def demo_performance_integration():
     parallel_time = time.time() - start_time
 
     print(f"  Parallel simulation time: {parallel_time:.4f}s")
-    print(f"  Throughput: {len(circuits)/parallel_time:.1f} circuits/s")
+    print(f"  Throughput: {len(circuits) / parallel_time:.1f} circuits/s")
+    successes = sum(1 for res in parallel_results if res.success)
+    print(f"  Successful parallel runs: {successes}/{len(parallel_results)}")
 
     # Step 6: Final performance summary
     print("\nPerformance Summary:")
     print(f"  Circuit optimization: {opt_result.depth_reduction:.1f}% depth reduction")
     print(f"  Memory usage: {memory_stats.process_memory_mb:.1f} MB")
-    print(f"  Cache speedup: {simulation_time/cached_time:.1f}x")
-    print(f"  Parallel throughput: {len(circuits)/parallel_time:.1f} circuits/s")
+    print(f"  Cache speedup: {simulation_time / cached_time:.1f}x")
+    print(f"  Parallel throughput: {len(circuits) / parallel_time:.1f} circuits/s")
 
     # Get final cache stats
     cache_stats = cache.cache.get_stats()

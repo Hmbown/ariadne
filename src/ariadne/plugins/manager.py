@@ -35,6 +35,7 @@ class PluginState(Enum):
     LOADING = "loading"
     LOADED = "loaded"
     INITIALIZING = "initializing"
+    ACTIVATING = "activating"
     ACTIVE = "active"
     DEACTIVATING = "deactivating"
     INACTIVE = "inactive"
@@ -97,12 +98,12 @@ class PluginError(Exception):
 class Plugin(ABC):
     """Base class for all plugins."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the plugin."""
         self.logger = get_logger(f"plugin.{self.__class__.__name__}")
         self._info = self.get_info()
         self._status = PluginStatus(state=PluginState.UNLOADED)
-        self._config = {}
+        self._config: dict[str, Any] = {}
 
     @abstractmethod
     def get_info(self) -> PluginInfo:
@@ -348,6 +349,11 @@ class PluginManager:
         plugin_class = self._plugin_classes[name]
 
         self.logger.info(f"Loading plugin: {name}")
+        metadata_message = (
+            f"Discovered plugin metadata - version: {plugin_info.version}, "
+            f"type: {plugin_info.plugin_type.value}"
+        )
+        self.logger.debug(metadata_message)
 
         try:
             # Create plugin instance
@@ -508,11 +514,19 @@ class PluginManager:
 
     def get_backend_plugins(self) -> list[BackendPlugin]:
         """Get all loaded backend plugins."""
-        return self.get_plugins_by_type(PluginType.BACKEND)
+        backends: list[BackendPlugin] = []
+        for plugin in self._plugins.values():
+            if isinstance(plugin, BackendPlugin):
+                backends.append(plugin)
+        return backends
 
     def get_router_plugins(self) -> list[RouterPlugin]:
         """Get all loaded router plugins."""
-        return self.get_plugins_by_type(PluginType.ROUTER)
+        routers: list[RouterPlugin] = []
+        for plugin in self._plugins.values():
+            if isinstance(plugin, RouterPlugin):
+                routers.append(plugin)
+        return routers
 
 
 # Global plugin manager instance

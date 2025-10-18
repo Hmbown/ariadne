@@ -11,6 +11,7 @@ import hashlib
 import pickle
 import time
 from collections import OrderedDict
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -28,7 +29,7 @@ class CacheEntry:
     access_count: int = 0
     last_access: float = 0.0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.last_access == 0.0:
             self.last_access = self.timestamp
 
@@ -48,7 +49,7 @@ class CircuitAnalysisCache:
     to identify equivalent circuits.
     """
 
-    def __init__(self, max_size: int = 1000, ttl_seconds: float = 3600.0):
+    def __init__(self, max_size: int = 1000, ttl_seconds: float = 3600.0) -> None:
         """
         Initialize the circuit analysis cache.
 
@@ -87,7 +88,7 @@ class CircuitAnalysisCache:
                     qargs = list(item.qubits)
                     cargs = list(item.clbits)
                 else:  # Legacy tuple form
-                    instruction, qargs, cargs = item  # type: ignore[misc]
+                    instruction, qargs, cargs = item
 
                 # Convert qubits to indices for deterministic hashing
                 qubit_indices = [circuit.find_bit(qubit).index for qubit in qargs]
@@ -107,8 +108,8 @@ class CircuitAnalysisCache:
             serialized = pickle.dumps(circuit_data, protocol=pickle.HIGHEST_PROTOCOL)
             return hashlib.sha256(serialized).hexdigest()
 
-        except Exception as e:
-            raise CacheError(f"Failed to create circuit hash: {e}")
+        except Exception as exc:
+            raise CacheError(f"Failed to create circuit hash: {exc}") from exc
 
     def get_analysis(self, circuit: QuantumCircuit) -> dict[str, Any] | None:
         """
@@ -145,8 +146,8 @@ class CircuitAnalysisCache:
 
             return entry.analysis.copy()
 
-        except Exception as e:
-            raise CacheError(f"Failed to get cached analysis: {e}")
+        except Exception as exc:
+            raise CacheError(f"Failed to get cached analysis: {exc}") from exc
 
     def store_analysis(self, circuit: QuantumCircuit, analysis: dict[str, Any]) -> None:
         """
@@ -188,8 +189,8 @@ class CircuitAnalysisCache:
 
             self._cache[circuit_hash] = entry
 
-        except Exception as e:
-            raise CacheError(f"Failed to store analysis: {e}")
+        except Exception as exc:
+            raise CacheError(f"Failed to store analysis: {exc}") from exc
 
     def clear(self) -> None:
         """Clear all entries from the cache."""
@@ -266,8 +267,8 @@ class CircuitAnalysisCache:
                 "expired": current_time - entry.timestamp > self.ttl_seconds,
             }
 
-        except Exception as e:
-            raise CacheError(f"Failed to get entry info: {e}")
+        except Exception as exc:
+            raise CacheError(f"Failed to get entry info: {exc}") from exc
 
 
 # Global cache instance
@@ -288,7 +289,9 @@ def set_global_cache(cache: CircuitAnalysisCache) -> None:
     _global_cache = cache
 
 
-def cached_analyze(circuit: QuantumCircuit, analyzer_func, *args, **kwargs) -> dict[str, Any]:
+def cached_analyze(
+    circuit: QuantumCircuit, analyzer_func: Callable[..., dict[str, Any]], *args: Any, **kwargs: Any
+) -> dict[str, Any]:
     """
     Analyze circuit with caching.
 

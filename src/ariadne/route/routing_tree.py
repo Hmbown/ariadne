@@ -10,6 +10,7 @@ from __future__ import annotations
 import platform
 from dataclasses import dataclass, field
 from enum import Enum
+from importlib.util import find_spec
 from typing import Any, Protocol
 
 from qiskit import QuantumCircuit
@@ -91,54 +92,26 @@ class ComprehensiveRoutingTree:
         availability[BackendType.QISKIT] = True
 
         # Check Stim
-        try:
-            import stim
-
-            availability[BackendType.STIM] = True
-        except ImportError:
-            availability[BackendType.STIM] = False
+        availability[BackendType.STIM] = find_spec("stim") is not None
 
         # Check CUDA
-        try:
-            import cupy
-
-            availability[BackendType.CUDA] = True
-        except ImportError:
-            availability[BackendType.CUDA] = False
+        availability[BackendType.CUDA] = find_spec("cupy") is not None
 
         # Check Metal (Apple Silicon)
-        try:
-            import jax
-
-            availability[BackendType.JAX_METAL] = (
-                platform.system() == "Darwin" and platform.machine() in ["arm64", "aarch64"]
-            )
-        except ImportError:
-            availability[BackendType.JAX_METAL] = False
+        availability[BackendType.JAX_METAL] = self._is_apple_silicon() and (
+            find_spec("jax") is not None
+        )
 
         # Check Tensor Network
-        try:
-            import cotengra
-            import quimb
-
-            availability[BackendType.TENSOR_NETWORK] = True
-        except ImportError:
-            availability[BackendType.TENSOR_NETWORK] = False
+        availability[BackendType.TENSOR_NETWORK] = bool(
+            find_spec("cotengra") and find_spec("quimb")
+        )
 
         # Check MPS
-        try:
-            import quimb
-
-            availability[BackendType.MPS] = True
-        except ImportError:
-            availability[BackendType.MPS] = False
+        availability[BackendType.MPS] = find_spec("quimb") is not None
 
         # Check DDSIM
-        try:
-            # Placeholder for DDSIM check
-            availability[BackendType.DDSIM] = True
-        except ImportError:
-            availability[BackendType.DDSIM] = False
+        availability[BackendType.DDSIM] = find_spec("mqt.ddsim") is not None
 
         return availability
 
@@ -518,7 +491,20 @@ class ComprehensiveRoutingTree:
         """Get a detailed explanation of why a particular routing was chosen."""
         decision = self.route_circuit(circuit)
 
-        analysis = analyze_circuit(circuit)
+        analysis_details = analyze_circuit(circuit)
+        backend_availability_lines = "\n".join(
+            f"- {backend.value}: {'✅' if available else '❌'}"
+            for backend, available in self.backend_availability.items()
+        )
+        alternatives_text = (
+            "\n".join(
+                f"- {backend.value}: confidence {score:.2f}"
+                for backend, score in decision.alternatives
+            )
+            if decision.alternatives
+            else "  (no alternatives)"
+        )
+        analysis_summary = "\n".join(f"- {key}: {value}" for key, value in analysis_details.items())
 
         explanation = f"""
 Routing Decision Explanation:
@@ -537,19 +523,17 @@ Hardware Environment:
 - CUDA Available: {self._has_cuda()}
 
 Backend Availability:
-{
-            chr(10).join(
-                f"- {backend.value}: {'✅' if available else '❌'}"
-                for backend, available in self.backend_availability.items()
-            )
-        }
+{backend_availability_lines}
 
-Selected Backend: {decision.backend.value}
-Confidence: {decision.confidence:.2f}
-Reasoning: {decision.reason}
+Selected Backend: {decision.recommended_backend.value}
+Confidence: {decision.confidence_score:.2f}
+Expected Speedup: {decision.expected_speedup:.2f}x
+Channel Capacity Match: {decision.channel_capacity_match:.2f}
+Alternatives:
+{alternatives_text}
 
 Analysis Details:
-{chr(10).join(f"- {key}: {value}" for key, value in decision.analysis.items())}
+{analysis_summary}
         """
 
         return explanation

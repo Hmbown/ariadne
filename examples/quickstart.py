@@ -7,10 +7,10 @@ This example demonstrates the basic usage of Ariadne's intelligent routing.
 
 from qiskit import QuantumCircuit
 
-from ariadne import QuantumRouter, simulate
+from ariadne import explain_routing, show_routing_tree, simulate
 
 
-def main():
+def main() -> None:
     print("=== Ariadne Quickstart ===\n")
 
     # Example 1: Simple Bell State
@@ -57,25 +57,22 @@ def main():
     print(f"   Execution time: {result.execution_time:.4f}s")
     print()
 
-    # Example 4: Inspect routing decision
+    # Example 4: Inspecting routing decision
     print("4. Inspecting Routing Decisions")
-    router = QuantumRouter()
 
-    # Analyze the Clifford circuit
-    decision = router.select_optimal_backend(clifford)
+    # Get a detailed, human-readable explanation of the routing decision for the Clifford circuit
     print("   Clifford circuit analysis:")
-    print(f"     - Recommended backend: {decision.recommended_backend}")
-    print(f"     - Circuit entropy: {decision.circuit_entropy:.3f}")
-    print(f"     - Confidence score: {decision.confidence_score:.2f}")
-    print()
+    explanation = explain_routing(clifford)
+    print(explanation)
 
-    # Analyze the general circuit
-    decision = router.select_optimal_backend(general)
+    # Get a detailed, human-readable explanation of the routing decision for the general circuit
     print("   General circuit analysis:")
-    print(f"     - Recommended backend: {decision.recommended_backend}")
-    print(f"     - Circuit entropy: {decision.circuit_entropy:.3f}")
-    print("     - Reason: Non-Clifford gates detected")
-    print()
+    explanation = explain_routing(general)
+    print(explanation)
+
+    # You can also visualize the entire routing tree
+    print("   Ariadne's Routing Tree:")
+    print(show_routing_tree())
 
     # Example 5: Force specific backend
     print("5. Forcing Specific Backend")
@@ -86,7 +83,7 @@ def main():
     try:
         result_cuda = simulate(bell, shots=100, backend="cuda")
         print(f"   Forced CUDA: {result_cuda.backend_used}")
-    except:
+    except Exception:
         print("   CUDA backend not available")
 
     print("\n=== Quickstart Complete ===")

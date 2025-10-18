@@ -23,7 +23,7 @@ def assert_equiv(left: QuantumCircuit, right: QuantumCircuit, *, atol: float = 1
         raise AssertionError("Circuits are not equivalent under statevector comparison")
 
     try:  # pragma: no cover - optional dependency
-        from mqt import qcec
+        import mqt.qcec as qcec
     except ImportError:
         return
 

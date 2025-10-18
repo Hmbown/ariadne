@@ -8,11 +8,13 @@ while maintaining consistent APIs and performance monitoring.
 
 from __future__ import annotations
 
+import importlib.util
 import warnings
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import Any, cast
 
 from qiskit import QuantumCircuit
 
@@ -63,14 +65,14 @@ class SimulationMetadata:
     error_message: str | None = None
     optimization_applied: bool = False
     hardware_acceleration: bool = False
-    additional_info: dict[str, Any] = None
+    additional_info: dict[str, Any] | None = None
 
 
 class UniversalBackend(ABC):
     """Abstract base class for all quantum simulation backends."""
 
     @abstractmethod
-    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs) -> dict[str, int]:
+    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs: Any) -> dict[str, int]:
         """
         Simulate quantum circuit and return measurement counts.
 
@@ -100,7 +102,7 @@ class UniversalBackend(ABC):
         pass
 
     @abstractmethod
-    def can_simulate(self, circuit: QuantumCircuit, **kwargs) -> tuple[bool, str]:
+    def can_simulate(self, circuit: QuantumCircuit, **kwargs: Any) -> tuple[bool, str]:
         """
         Check if backend can simulate the given circuit.
 
@@ -120,60 +122,49 @@ class UniversalBackend(ABC):
     def _estimate_memory_mb(self, circuit: QuantumCircuit) -> float:
         """Default memory estimation."""
         # State vector simulation memory estimate
-        return (2**circuit.num_qubits) * 16 / (1024 * 1024)
+        num_qubits = cast(int, getattr(circuit, "num_qubits", 0))
+        memory_bytes = float(2**num_qubits) * 16.0
+        return memory_bytes / (1024 * 1024)
 
     def _estimate_time_seconds(self, circuit: QuantumCircuit) -> float:
         """Default time estimation."""
         # Simple heuristic based on circuit size
-        return circuit.num_qubits * circuit.depth() * 0.001
+        num_qubits = cast(int, getattr(circuit, "num_qubits", 0))
+        depth_attr = getattr(circuit, "depth", None)
+        depth_callable: Callable[[], int] | None = (
+            cast(Callable[[], int], depth_attr) if callable(depth_attr) else None
+        )
+        depth = depth_callable() if depth_callable else 0
+        return float(num_qubits) * float(depth) * 0.001
 
 
 class BackendManager:
     """Manages all available quantum simulation backends."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.backends: dict[str, type[UniversalBackend]] = {}
         self.backend_instances: dict[str, UniversalBackend] = {}
         self._register_default_backends()
 
-    def _register_default_backends(self):
+    def _register_default_backends(self) -> None:
         """Register all available backends."""
-        try:
-            from .qulacs_backend import QulacsBackend
-
+        if importlib.util.find_spec("ariadne.backends.qulacs_backend") is not None:
             self.register_backend("qulacs", QulacsUniversalWrapper)
-        except ImportError:
-            pass
-
-        try:
-            from .pennylane_backend import PennyLaneBackend
-
+        if importlib.util.find_spec("ariadne.backends.pennylane_backend") is not None:
             self.register_backend("pennylane", PennyLaneUniversalWrapper)
-        except ImportError:
-            pass
-
-        try:
-            from .cirq_backend import CirqBackend
-
+        if importlib.util.find_spec("ariadne.backends.cirq_backend") is not None:
             self.register_backend("cirq", CirqUniversalWrapper)
-        except ImportError:
-            pass
-
-        try:
-            from .intel_qs_backend import IntelQuantumSimulatorBackend
-
+        if importlib.util.find_spec("ariadne.backends.intel_qs_backend") is not None:
             self.register_backend("intel_qs", IntelQSUniversalWrapper)
-        except ImportError:
-            pass
 
         # Always available fallback
         self.register_backend("qiskit", QiskitUniversalWrapper)
 
-    def register_backend(self, name: str, backend_class: type[UniversalBackend]):
+    def register_backend(self, name: str, backend_class: type[UniversalBackend]) -> None:
         """Register a new backend."""
         self.backends[name] = backend_class
 
-    def get_backend(self, name: str, **kwargs) -> UniversalBackend | None:
+    def get_backend(self, name: str, **kwargs: Any) -> UniversalBackend | None:
         """Get backend instance by name."""
         if name not in self.backends:
             return None
@@ -190,7 +181,7 @@ class BackendManager:
 
     def list_available_backends(self) -> list[str]:
         """List all available backend names."""
-        available = []
+        available: list[str] = []
         for name, backend_class in self.backends.items():
             try:
                 # Try to create instance to check availability
@@ -207,8 +198,8 @@ class BackendManager:
         """Find best backend for given circuit and criteria."""
         available_backends = self.list_available_backends()
 
-        best_backend = None
-        best_score = -1
+        best_backend: str | None = None
+        best_score = -1.0
 
         for backend_name in available_backends:
             backend = self.get_backend(backend_name)
@@ -244,11 +235,13 @@ class BackendManager:
 
         return best_backend
 
-    def benchmark_all_backends(self, circuit: QuantumCircuit, shots: int = 1000) -> dict[str, dict]:
+    def benchmark_all_backends(
+        self, circuit: QuantumCircuit, shots: int = 1000
+    ) -> dict[str, dict[str, Any]]:
         """Benchmark all available backends on given circuit."""
         import time
 
-        results = {}
+        results: dict[str, dict[str, Any]] = {}
         available_backends = self.list_available_backends()
 
         for backend_name in available_backends:
@@ -286,13 +279,13 @@ class BackendManager:
 class QulacsUniversalWrapper(UniversalBackend):
     """Universal wrapper for Qulacs backend."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         from .qulacs_backend import QulacsBackend
 
         self.backend = QulacsBackend(**kwargs)
 
-    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs) -> dict[str, int]:
-        return self.backend.simulate(circuit, shots)
+    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs: Any) -> dict[str, int]:
+        return self.backend.simulate(circuit, shots, **kwargs)
 
     def get_backend_info(self) -> dict[str, Any]:
         return self.backend.get_backend_info()
@@ -320,20 +313,20 @@ class QulacsUniversalWrapper(UniversalBackend):
             connectivity_map=None,
         )
 
-    def can_simulate(self, circuit: QuantumCircuit, **kwargs) -> tuple[bool, str]:
-        return self.backend.can_simulate(circuit)
+    def can_simulate(self, circuit: QuantumCircuit, **kwargs: Any) -> tuple[bool, str]:
+        return self.backend.can_simulate(circuit, **kwargs)
 
 
 class PennyLaneUniversalWrapper(UniversalBackend):
     """Universal wrapper for PennyLane backend."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         from .pennylane_backend import PennyLaneBackend
 
         self.backend = PennyLaneBackend(**kwargs)
 
-    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs) -> dict[str, int]:
-        return self.backend.simulate(circuit, shots)
+    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs: Any) -> dict[str, int]:
+        return self.backend.simulate(circuit, shots, **kwargs)
 
     def get_backend_info(self) -> dict[str, Any]:
         return self.backend.get_backend_info()
@@ -365,7 +358,7 @@ class PennyLaneUniversalWrapper(UniversalBackend):
             connectivity_map=None,
         )
 
-    def can_simulate(self, circuit: QuantumCircuit, **kwargs) -> tuple[bool, str]:
+    def can_simulate(self, circuit: QuantumCircuit, **kwargs: Any) -> tuple[bool, str]:
         if circuit.num_qubits > 20:
             return False, "Too many qubits for PennyLane backend"
         return True, "Can simulate"
@@ -374,13 +367,13 @@ class PennyLaneUniversalWrapper(UniversalBackend):
 class CirqUniversalWrapper(UniversalBackend):
     """Universal wrapper for Cirq backend."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         from .cirq_backend import CirqBackend
 
         self.backend = CirqBackend(**kwargs)
 
-    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs) -> dict[str, int]:
-        return self.backend.simulate(circuit, shots)
+    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs: Any) -> dict[str, int]:
+        return self.backend.simulate(circuit, shots, **kwargs)
 
     def get_backend_info(self) -> dict[str, Any]:
         return self.backend.get_backend_info()
@@ -412,7 +405,7 @@ class CirqUniversalWrapper(UniversalBackend):
             connectivity_map=None,
         )
 
-    def can_simulate(self, circuit: QuantumCircuit, **kwargs) -> tuple[bool, str]:
+    def can_simulate(self, circuit: QuantumCircuit, **kwargs: Any) -> tuple[bool, str]:
         if circuit.num_qubits > 22:
             return False, "Too many qubits for Cirq backend"
         return True, "Can simulate"
@@ -421,13 +414,13 @@ class CirqUniversalWrapper(UniversalBackend):
 class IntelQSUniversalWrapper(UniversalBackend):
     """Universal wrapper for Intel Quantum Simulator backend."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         from .intel_qs_backend import IntelQuantumSimulatorBackend
 
         self.backend = IntelQuantumSimulatorBackend(**kwargs)
 
-    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs) -> dict[str, int]:
-        return self.backend.simulate(circuit, shots)
+    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs: Any) -> dict[str, int]:
+        return self.backend.simulate(circuit, shots, **kwargs)
 
     def get_backend_info(self) -> dict[str, Any]:
         return self.backend.get_backend_info()
@@ -455,17 +448,17 @@ class IntelQSUniversalWrapper(UniversalBackend):
             connectivity_map=None,
         )
 
-    def can_simulate(self, circuit: QuantumCircuit, **kwargs) -> tuple[bool, str]:
-        return self.backend.can_simulate(circuit)
+    def can_simulate(self, circuit: QuantumCircuit, **kwargs: Any) -> tuple[bool, str]:
+        return self.backend.can_simulate(circuit, **kwargs)
 
 
 class QiskitUniversalWrapper(UniversalBackend):
     """Universal wrapper for Qiskit backend (fallback)."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         pass  # Always available
 
-    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs) -> dict[str, int]:
+    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs: Any) -> dict[str, int]:
         try:
             from qiskit.providers.basic_provider import BasicProvider
 
@@ -476,8 +469,8 @@ class QiskitUniversalWrapper(UniversalBackend):
 
             return {str(k): v for k, v in counts.items()}
 
-        except ImportError:
-            raise RuntimeError("Qiskit BasicProvider not available")
+        except ImportError as err:
+            raise RuntimeError("Qiskit BasicProvider not available") from err
 
     def get_backend_info(self) -> dict[str, Any]:
         return {"name": "qiskit", "type": "fallback", "always_available": True}
@@ -502,14 +495,14 @@ class QiskitUniversalWrapper(UniversalBackend):
             connectivity_map=None,
         )
 
-    def can_simulate(self, circuit: QuantumCircuit, **kwargs) -> tuple[bool, str]:
+    def can_simulate(self, circuit: QuantumCircuit, **kwargs: Any) -> tuple[bool, str]:
         if circuit.num_qubits > 24:
             return False, "Too many qubits for Qiskit basic simulator"
         return True, "Can simulate"
 
 
 # Global backend manager instance
-_backend_manager = None
+_backend_manager: BackendManager | None = None
 
 
 def get_backend_manager() -> BackendManager:
@@ -525,13 +518,16 @@ def list_backends() -> list[str]:
     return get_backend_manager().list_available_backends()
 
 
-def get_backend(name: str, **kwargs) -> UniversalBackend | None:
+def get_backend(name: str, **kwargs: Any) -> UniversalBackend | None:
     """Get backend by name."""
     return get_backend_manager().get_backend(name, **kwargs)
 
 
 def simulate_with_best_backend(
-    circuit: QuantumCircuit, shots: int = 1000, criteria: str = "speed", **kwargs
+    circuit: QuantumCircuit,
+    shots: int = 1000,
+    criteria: str = "speed",
+    **kwargs: Any,
 ) -> tuple[dict[str, int], str]:
     """
     Simulate circuit with automatically selected best backend.
@@ -552,11 +548,14 @@ def simulate_with_best_backend(
         raise RuntimeError("No suitable backend found for circuit")
 
     backend = manager.get_backend(best_backend_name, **kwargs)
+    if backend is None:
+        raise RuntimeError(f"Backend {best_backend_name} could not be initialized")
+
     counts = backend.simulate(circuit, shots, **kwargs)
 
     return counts, best_backend_name
 
 
-def benchmark_circuit(circuit: QuantumCircuit, shots: int = 1000) -> dict[str, dict]:
+def benchmark_circuit(circuit: QuantumCircuit, shots: int = 1000) -> dict[str, dict[str, Any]]:
     """Benchmark circuit on all available backends."""
     return get_backend_manager().benchmark_all_backends(circuit, shots)

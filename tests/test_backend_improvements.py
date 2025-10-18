@@ -1,6 +1,9 @@
 """Test suite for Phase 2 backend improvements."""
 
+from __future__ import annotations
+
 import time
+from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
 import pytest
@@ -13,6 +16,7 @@ from ariadne.backends import (
     BackendHealthChecker,
     BackendPerformanceMonitor,
     BackendPool,
+    BackendPoolExhaustedError,
     BackendPoolManager,
     EnhancedBackendWrapper,
     FallbackResult,
@@ -33,22 +37,25 @@ from ariadne.backends import (
 from ariadne.core import BackendUnavailableError
 from ariadne.types import BackendType
 
+if TYPE_CHECKING:
+    from ariadne.backends.health_checker import HealthCheckResult
+
 
 class TestBackendHealthChecker:
     """Test the backend health checking system."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.health_checker = BackendHealthChecker(check_interval=0.1, timeout=0.5)
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """Clean up after tests."""
         self.health_checker.stop_monitoring()
 
-    def test_health_check_registration(self):
+    def test_health_check_registration(self) -> None:
         """Test health check registration."""
 
-        def mock_health_check():
+        def mock_health_check() -> HealthCheckResult:
             from ariadne.backends.health_checker import HealthCheckResult, HealthStatus
 
             return HealthCheckResult(
@@ -61,10 +68,10 @@ class TestBackendHealthChecker:
         self.health_checker.register_health_check(BackendType.QISKIT, mock_health_check)
         assert BackendType.QISKIT in self.health_checker._health_checks
 
-    def test_backend_health_check(self):
+    def test_backend_health_check(self) -> None:
         """Test individual backend health check."""
 
-        def mock_health_check():
+        def mock_health_check() -> HealthCheckResult:
             from ariadne.backends.health_checker import HealthCheckResult, HealthStatus
 
             return HealthCheckResult(
@@ -81,10 +88,10 @@ class TestBackendHealthChecker:
         assert "healthy" in result.message
         assert result.response_time > 0
 
-    def test_unhealthy_backend_detection(self):
+    def test_unhealthy_backend_detection(self) -> None:
         """Test detection of unhealthy backends."""
 
-        def failing_health_check():
+        def failing_health_check() -> HealthCheckResult:
             from ariadne.backends.health_checker import HealthCheckResult, HealthStatus
 
             return HealthCheckResult(
@@ -100,10 +107,10 @@ class TestBackendHealthChecker:
         assert result.status == HealthStatus.UNHEALTHY
         assert "unhealthy" in result.message
 
-    def test_healthy_backends_list(self):
+    def test_healthy_backends_list(self) -> None:
         """Test getting list of healthy backends."""
 
-        def healthy_check():
+        def healthy_check() -> HealthCheckResult:
             from ariadne.backends.health_checker import HealthCheckResult, HealthStatus
 
             return HealthCheckResult(
@@ -113,7 +120,7 @@ class TestBackendHealthChecker:
                 response_time=0.1,
             )
 
-        def unhealthy_check():
+        def unhealthy_check() -> HealthCheckResult:
             from ariadne.backends.health_checker import HealthCheckResult, HealthStatus
 
             return HealthCheckResult(
@@ -134,7 +141,7 @@ class TestBackendHealthChecker:
         assert BackendType.QISKIT in healthy_backends
         assert BackendType.STIM not in healthy_backends
 
-    def test_global_health_checker(self):
+    def test_global_health_checker(self) -> None:
         """Test global health checker instance."""
         global_checker = get_health_checker()
         assert isinstance(global_checker, BackendHealthChecker)
@@ -143,10 +150,10 @@ class TestBackendHealthChecker:
         global_checker2 = get_health_checker()
         assert global_checker is global_checker2
 
-    def test_is_backend_healthy_function(self):
+    def test_is_backend_healthy_function(self) -> None:
         """Test convenience function for checking backend health."""
 
-        def healthy_check():
+        def healthy_check() -> HealthCheckResult:
             from ariadne.backends.health_checker import HealthCheckResult, HealthStatus
 
             return HealthCheckResult(
@@ -166,7 +173,7 @@ class TestBackendHealthChecker:
 class TestBackendPool:
     """Test the backend pooling system."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.mock_backend_class = Mock()
         self.mock_backend_instance = Mock()
@@ -179,16 +186,16 @@ class TestBackendPool:
             max_instances=3,
         )
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """Clean up after tests."""
         self.pool.shutdown()
 
-    def test_pool_initialization(self):
+    def test_pool_initialization(self) -> None:
         """Test pool initialization."""
         assert self.pool.get_status() == PoolStatus.READY
         assert self.pool._stats.total_instances >= 1
 
-    def test_get_backend_from_pool(self):
+    def test_get_backend_from_pool(self) -> None:
         """Test getting backend from pool."""
         backend = self.pool.get_backend()
         assert backend is self.mock_backend_instance
@@ -198,7 +205,7 @@ class TestBackendPool:
         assert stats.total_requests == 1
         assert stats.successful_requests == 1
 
-    def test_return_backend_to_pool(self):
+    def test_return_backend_to_pool(self) -> None:
         """Test returning backend to pool."""
         backend = self.pool.get_backend()
         self.pool.return_backend(backend)
@@ -207,7 +214,7 @@ class TestBackendPool:
         stats = self.pool.get_statistics()
         assert stats.available_instances >= 1
 
-    def test_pool_exhaustion(self):
+    def test_pool_exhaustion(self) -> None:
         """Test pool exhaustion behavior."""
         # Get all available backends
         backends = []
@@ -219,14 +226,14 @@ class TestBackendPool:
                 break
 
         # Try to get one more (should fail)
-        with pytest.raises(Exception):
+        with pytest.raises(BackendPoolExhaustedError):
             self.pool.get_backend(timeout=0.1)
 
         # Return backends
         for backend in backends:
             self.pool.return_backend(backend)
 
-    def test_pool_statistics(self):
+    def test_pool_statistics(self) -> None:
         """Test pool statistics."""
         # Perform some operations
         backend = self.pool.get_backend()
@@ -238,7 +245,7 @@ class TestBackendPool:
         assert stats.successful_requests >= 1
         assert stats.utilization_rate >= 0
 
-    def test_global_pool_manager(self):
+    def test_global_pool_manager(self) -> None:
         """Test global pool manager."""
         manager = get_pool_manager()
         assert isinstance(manager, BackendPoolManager)
@@ -247,7 +254,7 @@ class TestBackendPool:
         manager2 = get_pool_manager()
         assert manager is manager2
 
-    def test_create_backend_pool_function(self):
+    def test_create_backend_pool_function(self) -> None:
         """Test convenience function for creating backend pools."""
         pool = create_backend_pool(
             backend_name="test_pool",
@@ -265,7 +272,7 @@ class TestBackendPool:
 class TestEnhancedBackendInterface:
     """Test the enhanced backend interface."""
 
-    def test_enhanced_backend_wrapper_creation(self):
+    def test_enhanced_backend_wrapper_creation(self) -> None:
         """Test creation of enhanced backend wrapper."""
         mock_backend = Mock()
         mock_backend.simulate.return_value = {"00": 500, "11": 500}
@@ -288,7 +295,7 @@ class TestEnhancedBackendInterface:
         assert isinstance(enhanced, EnhancedBackendWrapper)
         assert enhanced.backend_name == "test_backend"
 
-    def test_enhanced_backend_simulation(self):
+    def test_enhanced_backend_simulation(self) -> None:
         """Test simulation with enhanced backend."""
         mock_backend = Mock()
         mock_backend.simulate.return_value = {"00": 500, "11": 500}
@@ -307,7 +314,7 @@ class TestEnhancedBackendInterface:
         assert metrics.total_simulations == 1
         assert metrics.successful_simulations == 1
 
-    def test_capability_support_check(self):
+    def test_capability_support_check(self) -> None:
         """Test capability support checking."""
         capabilities = BackendCapabilities(
             supported_capabilities=[
@@ -332,7 +339,7 @@ class TestEnhancedBackendInterface:
         assert enhanced.supports_capability(BackendCapability.NOISE_MODELING)
         assert not enhanced.supports_capability(BackendCapability.GPU_ACCELERATION)
 
-    def test_optimization_recommendations(self):
+    def test_optimization_recommendations(self) -> None:
         """Test optimization recommendations."""
         capabilities = BackendCapabilities(
             supported_capabilities=[BackendCapability.STATE_VECTOR_SIMULATION],
@@ -367,7 +374,7 @@ class TestEnhancedBackendInterface:
 class TestBackendFallbackStrategy:
     """Test the backend fallback strategy system."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         # Use the global fallback manager to ensure tests work with global functions
         self.fallback_manager = get_fallback_manager()
@@ -376,16 +383,16 @@ class TestBackendFallbackStrategy:
         self.fallback_manager._fallback_history.clear()
 
         # Register mock fallback functions
-        def qiskit_fallback(circuit, shots):
+        def qiskit_fallback(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
             return {"0": shots // 2, "1": shots // 2}
 
-        def stim_fallback(circuit, shots):
+        def stim_fallback(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
             return {"00": shots, "11": 0}
 
         self.fallback_manager.register_fallback_function(BackendType.QISKIT, qiskit_fallback)
         self.fallback_manager.register_fallback_function(BackendType.STIM, stim_fallback)
 
-    def test_fallback_chain_selection(self):
+    def test_fallback_chain_selection(self) -> None:
         """Test fallback chain selection."""
         # Clifford circuit
         clifford_circuit = QuantumCircuit(2)
@@ -396,7 +403,7 @@ class TestBackendFallbackStrategy:
         assert BackendType.STIM in chain
         assert BackendType.QISKIT in chain
 
-    def test_large_circuit_fallback_chain(self):
+    def test_large_circuit_fallback_chain(self) -> None:
         """Test fallback chain for large circuits."""
         large_circuit = QuantumCircuit(30)
         for i in range(29):
@@ -410,7 +417,7 @@ class TestBackendFallbackStrategy:
         # Should prioritize memory-efficient backends
         assert any(backend in chain for backend in [BackendType.TENSOR_NETWORK, BackendType.MPS])
 
-    def test_successful_fallback_execution(self):
+    def test_successful_fallback_execution(self) -> None:
         """Test successful fallback execution."""
         circuit = QuantumCircuit(1)
         circuit.h(0)
@@ -425,13 +432,13 @@ class TestBackendFallbackStrategy:
         assert result.backend_used == BackendType.QISKIT
         assert result.num_attempts == 1
 
-    def test_fallback_after_failure(self):
+    def test_fallback_after_failure(self) -> None:
         """Test fallback after primary backend failure."""
         circuit = QuantumCircuit(1)
         circuit.h(0)
 
         # Register a failing function
-        def failing_fallback(circuit, shots):
+        def failing_fallback(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
             raise BackendUnavailableError("test", "Test failure")
 
         self.fallback_manager.register_fallback_function(BackendType.CUDA, failing_fallback)
@@ -445,7 +452,7 @@ class TestBackendFallbackStrategy:
         assert result.num_attempts == 2
         assert any(not attempt.success for attempt in result.attempts)
 
-    def test_fallback_statistics(self):
+    def test_fallback_statistics(self) -> None:
         """Test fallback statistics."""
         circuit = QuantumCircuit(1)
         circuit.h(0)
@@ -463,7 +470,7 @@ class TestBackendFallbackStrategy:
         assert stats["total_fallbacks"] == 2
         assert stats["success_rate"] == 1.0
 
-    def test_global_fallback_manager(self):
+    def test_global_fallback_manager(self) -> None:
         """Test global fallback manager."""
         manager = get_fallback_manager()
         assert isinstance(manager, BackendFallbackManager)
@@ -472,7 +479,7 @@ class TestBackendFallbackStrategy:
         manager2 = get_fallback_manager()
         assert manager is manager2
 
-    def test_execute_with_fallback_function(self):
+    def test_execute_with_fallback_function(self) -> None:
         """Test convenience function for fallback execution."""
         circuit = QuantumCircuit(1)
         circuit.h(0)
@@ -488,11 +495,11 @@ class TestBackendFallbackStrategy:
 class TestBackendPerformanceMonitor:
     """Test the backend performance monitoring system."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.performance_monitor = BackendPerformanceMonitor()
 
-    def test_metric_recording(self):
+    def test_metric_recording(self) -> None:
         """Test recording of performance metrics."""
         self.performance_monitor.record_metric(
             backend=BackendType.QISKIT,
@@ -509,7 +516,7 @@ class TestBackendPerformanceMonitor:
         assert metrics[0].value == 0.5
         assert metrics[0].unit == "seconds"
 
-    def test_simulation_performance_recording(self):
+    def test_simulation_performance_recording(self) -> None:
         """Test recording of simulation performance."""
         circuit = QuantumCircuit(2)
         circuit.h(0)
@@ -542,7 +549,7 @@ class TestBackendPerformanceMonitor:
         assert len(throughput_metrics) >= 1
         assert throughput_metrics[-1].value == 2000.0  # 1000 / 0.5
 
-    def test_performance_alerts(self):
+    def test_performance_alerts(self) -> None:
         """Test performance alert generation."""
         # Record a metric that should trigger an alert
         self.performance_monitor.record_metric(
@@ -560,7 +567,7 @@ class TestBackendPerformanceMonitor:
         assert profile.alerts[-1].metric_type == PerformanceMetricType.EXECUTION_TIME
         assert profile.alerts[-1].severity.value in ["error", "critical"]
 
-    def test_backend_performance_summary(self):
+    def test_backend_performance_summary(self) -> None:
         """Test backend performance summary."""
         circuit = QuantumCircuit(2)
         circuit.h(0)
@@ -582,7 +589,7 @@ class TestBackendPerformanceMonitor:
         assert "alerts" in summary
         assert PerformanceMetricType.EXECUTION_TIME.value in summary["metrics"]
 
-    def test_performance_recommendations(self):
+    def test_performance_recommendations(self) -> None:
         """Test performance recommendations."""
         # Record some poor performance metrics
         self.performance_monitor.record_metric(
@@ -605,7 +612,7 @@ class TestBackendPerformanceMonitor:
         assert len(recommendations) > 0
         assert any("optimizing" in rec for rec in recommendations)
 
-    def test_global_performance_monitor(self):
+    def test_global_performance_monitor(self) -> None:
         """Test global performance monitor."""
         monitor = get_performance_monitor()
         assert isinstance(monitor, BackendPerformanceMonitor)
@@ -614,7 +621,7 @@ class TestBackendPerformanceMonitor:
         monitor2 = get_performance_monitor()
         assert monitor is monitor2
 
-    def test_record_simulation_performance_function(self):
+    def test_record_simulation_performance_function(self) -> None:
         """Test convenience function for recording performance."""
         circuit = QuantumCircuit(2)
         circuit.h(0)
@@ -637,19 +644,19 @@ class TestBackendPerformanceMonitor:
 class TestIntegratedBackendSystems:
     """Test integration of all backend systems."""
 
-    def test_health_checking_with_pooling(self):
+    def test_health_checking_with_pooling(self) -> None:
         """Test integration of health checking with pooling."""
         # This would test that unhealthy backends are removed from pools
         # Implementation would depend on specific integration points
         pass
 
-    def test_fallback_with_performance_monitoring(self):
+    def test_fallback_with_performance_monitoring(self) -> None:
         """Test integration of fallback with performance monitoring."""
         # This would test that fallback attempts are recorded in performance metrics
         # Implementation would depend on specific integration points
         pass
 
-    def test_enhanced_interface_with_all_systems(self):
+    def test_enhanced_interface_with_all_systems(self) -> None:
         """Test integration of enhanced interface with all systems."""
         # This would test that enhanced backends work with health checking,
         # pooling, fallback, and performance monitoring

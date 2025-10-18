@@ -326,11 +326,11 @@ def calculate_overall_advantage_score(components: dict[str, dict[str, Any]]) -> 
     """
 
     # Extract scores from each component
-    classical_score = components["classical_intractability"].get("intractability_score", 0)
-    volume_score = components["quantum_volume_advantage"].get("advantage_score", 0)
-    entanglement_score = components["entanglement_advantage"].get("advantage_score", 0)
-    error_score = components["error_threshold"].get("noise_tolerance", 0)
-    sampling_score = components["sampling_advantage"].get("sampling_score", 0)
+    classical_score = float(components["classical_intractability"].get("intractability_score", 0))
+    volume_score = float(components["quantum_volume_advantage"].get("advantage_score", 0))
+    entanglement_score = float(components["entanglement_advantage"].get("advantage_score", 0))
+    error_score = float(components["error_threshold"].get("noise_tolerance", 0))
+    sampling_score = float(components["sampling_advantage"].get("sampling_score", 0))
 
     # Weighted combination
     overall_score = (

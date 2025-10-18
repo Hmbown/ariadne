@@ -11,12 +11,19 @@ from qiskit import QuantumCircuit
 from qiskit.circuit import Instruction
 
 try:
-    import cupy as cp  # type: ignore[import]
+    import cupy as cp  # type: ignore[import-not-found]
 
     CUDA_AVAILABLE = True
 except ImportError:  # pragma: no cover - exercised when CuPy is missing
-    cp = None  # type: ignore[assignment]
+    cp = None
     CUDA_AVAILABLE = False
+
+
+# Conditional imports for type checking only
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # For type checking only
+    pass
 
 
 def is_cuda_available() -> bool:
@@ -26,7 +33,8 @@ def is_cuda_available() -> bool:
         return False
 
     try:  # pragma: no cover - requires CUDA runtime
-        return cp.cuda.runtime.getDeviceCount() > 0
+        device_count = cp.cuda.runtime.getDeviceCount()
+        return bool(device_count > 0)
     except Exception:
         return False
 
@@ -74,6 +82,8 @@ class SimulationSummary:
 
 class CUDABackend:
     """Enhanced statevector simulator with multi-GPU support and memory optimization."""
+
+    custom_kernels: Any
 
     def __init__(
         self,
@@ -229,7 +239,6 @@ class CUDABackend:
     ) -> tuple[Any, Sequence[int], float]:
         """Simulate using multiple GPUs for large circuits."""
         num_qubits = circuit.num_qubits
-        len(self._device_pool)
 
         # Determine optimal partitioning strategy
         if num_qubits <= 20:
@@ -237,7 +246,7 @@ class CUDABackend:
             return self._simulate_data_parallel(circuit)
         else:
             # For large circuits, use model parallelism
-            return self._simulate_model_parallel(circuit)
+            return self._simulate_model_parallel_circuit(circuit)
 
     def _simulate_data_parallel(self, circuit: QuantumCircuit) -> tuple[Any, Sequence[int], float]:
         """Data parallel simulation across multiple GPUs."""
@@ -297,7 +306,7 @@ class CUDABackend:
             return self._simulate_with_chunking(operations, measured_qubits, num_qubits)
 
     def _simulate_with_streaming(
-        self, operations, measured_qubits, num_qubits
+        self, operations: list[tuple], measured_qubits: Sequence[int], num_qubits: int
     ) -> tuple[Any, Sequence[int], float]:
         """Simulate using CUDA streams for memory-efficient processing."""
         start = time.perf_counter()
@@ -363,7 +372,7 @@ class CUDABackend:
             return full_state, measured_qubits, execution_time
 
     def _simulate_with_chunking(
-        self, operations, measured_qubits, num_qubits
+        self, operations: list[tuple], measured_qubits: Sequence[int], num_qubits: int
     ) -> tuple[Any, Sequence[int], float]:
         """Simulate using memory-efficient chunking without streams."""
         start = time.perf_counter()
@@ -407,7 +416,7 @@ class CUDABackend:
 
         try:
             meminfo = cp.cuda.runtime.memGetInfo()
-            return meminfo[0]  # Available memory
+            return int(meminfo[0])  # Available memory
         except Exception:
             return 4 * 1024**3  # 4GB fallback
 
@@ -416,7 +425,7 @@ class CUDABackend:
         # Complex128 uses 16 bytes per amplitude
         bytes_per_amplitude = 16
         max_amplitudes = available_memory // (2 * bytes_per_amplitude)  # Factor of 2 for safety
-        max_qubits = int(math.log2(max_amplitudes))
+        max_qubits = int(math.log2(float(max_amplitudes)))
         return min(max_qubits, 30)  # Cap at 30 qubits for safety
 
     def _calculate_launch_config(self, state_size: int) -> tuple[int, int]:
@@ -458,7 +467,7 @@ class CUDABackend:
             return sparse.csr_matrix((1, size), dtype=np.complex128)
 
     def _process_chunk(
-        self, operations, chunk_idx: int, chunk_qubits: int, total_qubits: int
+        self, operations: Sequence[tuple], chunk_idx: int, chunk_qubits: int, total_qubits: int
     ) -> Any:
         """Process a single chunk of the quantum state."""
         xp = self._xp
@@ -486,7 +495,7 @@ class CUDABackend:
         return chunk_state
 
     def _operation_affects_chunk(
-        self, targets, chunk_offset: int, chunk_qubits: int, total_qubits: int
+        self, targets: Sequence[int], chunk_offset: int, chunk_qubits: int, total_qubits: int
     ) -> bool:
         """Check if an operation affects a specific chunk."""
         chunk_offset + (2**chunk_qubits) - 1
@@ -499,7 +508,9 @@ class CUDABackend:
 
         return False
 
-    def _map_to_local_qubits(self, targets, chunk_offset: int, chunk_qubits: int) -> list[int]:
+    def _map_to_local_qubits(
+        self, targets: Sequence[int], chunk_offset: int, chunk_qubits: int
+    ) -> list[int]:
         """Map global qubit indices to local chunk indices."""
         local_targets = []
         for qubit in targets:
@@ -519,13 +530,11 @@ class CUDABackend:
             grid, block = self._calculate_launch_config(state_size)
 
             if len(qubits) == 1:
-                result = self.custom_kernels.apply_single_qubit_gate(
-                    grid, block, state, matrix, qubits[0]
-                )
+                result = self.custom_kernels.apply_single_qubit_gate(state, matrix, qubits[0])
                 state[:] = result
             elif len(qubits) == 2:
                 result = self.custom_kernels.apply_two_qubit_gate(
-                    grid, block, state, matrix, qubits[0], qubits[1]
+                    state, matrix, qubits[0], qubits[1]
                 )
                 state[:] = result
             else:
@@ -618,7 +627,7 @@ class CUDABackend:
         if self._xp is np:
             return state, measured_qubits
 
-        return cp.asnumpy(state), measured_qubits  # type: ignore[arg-type]
+        return cp.asnumpy(state), measured_qubits
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -651,7 +660,7 @@ class CUDABackend:
                 qubits = list(item.qubits)
                 clbits = list(item.clbits)
             else:  # Legacy tuple form
-                operation, qubits, clbits = item  # type: ignore[misc]
+                operation, qubits, clbits = item
 
             name = operation.name
             qubit_indices = [circuit.find_bit(qubit).index for qubit in qubits]
@@ -680,7 +689,7 @@ class CUDABackend:
         xp = self._xp
 
         if hasattr(instruction, "to_matrix"):
-            matrix = instruction.to_matrix()  # type: ignore[no-untyped-call]
+            matrix = instruction.to_matrix()
         else:
             matrix = np.eye(2**arity, dtype=np.complex128)
 
@@ -715,7 +724,7 @@ class CUDABackend:
             probabilities = np.abs(state) ** 2
         else:  # pragma: no cover - requires CuPy
             probabilities = xp.abs(state) ** 2
-            probabilities = cp.asnumpy(probabilities)  # type: ignore[arg-type]
+            probabilities = cp.asnumpy(probabilities)
 
         total = probabilities.sum()
         if not np.isfinite(total) or total == 0:

@@ -1,7 +1,7 @@
 import argparse
 
 
-def main():
+def main() -> None:
     """Main command-line interface for Ariadne."""
     parser = argparse.ArgumentParser(
         prog="ariadne", description="Ariadne: The Intelligent Quantum Router."

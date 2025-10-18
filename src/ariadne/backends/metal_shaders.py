@@ -12,6 +12,7 @@ import math
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 # Metal framework imports (would require actual Metal framework on macOS)
 try:
@@ -33,18 +34,18 @@ class MetalShaderLibrary:
     including single/two-qubit gates and measurement operations.
     """
 
-    def __init__(self):
-        self.device = None
-        self.command_queue = None
-        self.shader_library = None
-        self.compute_pipelines = {}
+    def __init__(self) -> None:
+        self.device: Any | None = None
+        self.command_queue: Any | None = None
+        self.shader_library: Any | None = None
+        self.compute_pipelines: dict[str, Any] = {}
 
         if METAL_AVAILABLE:
             self._initialize_metal()
         else:
             self._initialize_fallback()
 
-    def _initialize_metal(self):
+    def _initialize_metal(self) -> None:
         """Initialize Metal device and shader library."""
         # Placeholder for actual Metal initialization
         # In real implementation:
@@ -53,12 +54,12 @@ class MetalShaderLibrary:
         # self._compile_shaders()
         pass
 
-    def _initialize_fallback(self):
+    def _initialize_fallback(self) -> None:
         """Initialize fallback CPU implementation."""
         self.device = "cpu_fallback"
         self.command_queue = None
 
-    def _compile_shaders(self):
+    def _compile_shaders(self) -> None:
         """Compile Metal compute shaders for quantum operations."""
         # Define Metal shading language source for quantum operations
         self._get_quantum_shader_source()
@@ -200,11 +201,13 @@ class MetalQuantumAccelerator:
 
     def __init__(self, enable_metal: bool = True):
         self.enable_metal = enable_metal and METAL_AVAILABLE
-        self.shader_library = MetalShaderLibrary() if self.enable_metal else None
+        self.shader_library: MetalShaderLibrary | None = (
+            MetalShaderLibrary() if self.enable_metal else None
+        )
 
     def apply_single_qubit_gate_metal(
-        self, state: np.ndarray, gate_matrix: np.ndarray, qubit: int
-    ) -> np.ndarray:
+        self, state: NDArray[Any], gate_matrix: NDArray[Any], qubit: int
+    ) -> NDArray[Any]:
         """Apply single qubit gate using Metal compute shader."""
 
         if not self.enable_metal:
@@ -222,8 +225,8 @@ class MetalQuantumAccelerator:
             return self._apply_single_qubit_gate_cpu(state, gate_matrix, qubit)
 
     def apply_two_qubit_gate_metal(
-        self, state: np.ndarray, gate_matrix: np.ndarray, qubits: tuple[int, int]
-    ) -> np.ndarray:
+        self, state: NDArray[Any], gate_matrix: NDArray[Any], qubits: tuple[int, int]
+    ) -> NDArray[Any]:
         """Apply two qubit gate using Metal compute shader."""
 
         if not self.enable_metal:
@@ -238,24 +241,24 @@ class MetalQuantumAccelerator:
         except Exception:
             return self._apply_two_qubit_gate_cpu(state, gate_matrix, qubits)
 
-    def calculate_probabilities_metal(self, state: np.ndarray) -> np.ndarray:
+    def calculate_probabilities_metal(self, state: NDArray[np.complex128]) -> NDArray[np.float64]:
         """Calculate measurement probabilities using Metal parallel reduction."""
 
         if not self.enable_metal:
-            return np.abs(state) ** 2
+            return np.real(np.abs(state) ** 2).astype(np.float64)
 
         try:
             # Metal implementation would use parallel GPU computation
-            probabilities = np.abs(state) ** 2
+            probabilities = np.real(np.abs(state) ** 2).astype(np.float64)
 
             return probabilities
 
         except Exception:
-            return np.abs(state) ** 2
+            return np.real(np.abs(state) ** 2).astype(np.float64)
 
     def _apply_single_qubit_gate_cpu(
-        self, state: np.ndarray, gate_matrix: np.ndarray, qubit: int
-    ) -> np.ndarray:
+        self, state: NDArray[Any], gate_matrix: NDArray[Any], qubit: int
+    ) -> NDArray[Any]:
         """CPU fallback for single qubit gate."""
         int(math.log2(len(state)))
         new_state = np.zeros_like(state)
@@ -272,8 +275,8 @@ class MetalQuantumAccelerator:
         return new_state
 
     def _apply_two_qubit_gate_cpu(
-        self, state: np.ndarray, gate_matrix: np.ndarray, qubits: tuple[int, int]
-    ) -> np.ndarray:
+        self, state: NDArray[Any], gate_matrix: NDArray[Any], qubits: tuple[int, int]
+    ) -> NDArray[Any]:
         """CPU fallback for two qubit gate."""
         qubit1, qubit2 = qubits
         new_state = np.zeros_like(state)

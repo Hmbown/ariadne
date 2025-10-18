@@ -240,6 +240,22 @@ def main():
                 f"{res['speedup']:.2f}x | {res['segments']} |\n"
             )
 
+        f.write("\n## Boundary Adapter Summary\n\n")
+        segments = adapter_results.get("segments", []) if adapter_results else []
+        if segments:
+            f.write("| Segment | Cut Rank | Adapter | Active Width |\n")
+            f.write("|---------|----------|---------|--------------|\n")
+            for seg in segments:
+                adapter = seg.get("boundary_adapter", {})
+                f.write(
+                    f"| {seg.get('segment_id', 'N/A')} | "
+                    f"{adapter.get('cut_rank', 'N/A')} | "
+                    f"{adapter.get('adapter', 'N/A')} | "
+                    f"{adapter.get('active_width', 'N/A')} |\n"
+                )
+        else:
+            f.write("No adapter details were returned by the segmentation run.\n")
+
         f.write("\n## Key Observations\n\n")
 
         # Find best speedup

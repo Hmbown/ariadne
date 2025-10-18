@@ -11,7 +11,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
+from typing import Any, cast
 
 from qiskit import QuantumCircuit
 
@@ -115,7 +115,7 @@ class EnhancedBackendInterface(ABC):
     """
 
     @abstractmethod
-    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs) -> dict[str, int]:
+    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs: Any) -> dict[str, int]:
         """
         Simulate quantum circuit and return measurement counts.
 
@@ -140,7 +140,7 @@ class EnhancedBackendInterface(ABC):
         pass
 
     @abstractmethod
-    def can_simulate(self, circuit: QuantumCircuit, **kwargs) -> tuple[bool, str]:
+    def can_simulate(self, circuit: QuantumCircuit, **kwargs: Any) -> tuple[bool, str]:
         """
         Check if backend can simulate the given circuit.
 
@@ -347,7 +347,7 @@ class EnhancedBackendWrapper:
             estimated_cost_factor=1.0,
         )
 
-    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs) -> dict[str, int]:
+    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs: Any) -> dict[str, int]:
         """Simulate quantum circuit with performance tracking."""
         start_time = time.time()
         start_memory = self._get_memory_usage()
@@ -376,7 +376,7 @@ class EnhancedBackendWrapper:
 
             self.logger.debug(f"Simulation completed in {execution_time:.4f}s")
 
-            return result
+            return cast(dict[str, int], result)
 
         except Exception as e:
             # Update failure statistics
@@ -392,13 +392,14 @@ class EnhancedBackendWrapper:
             import psutil
 
             process = psutil.Process()
-            return process.memory_info().rss / (1024 * 1024)
+            memory_bytes = process.memory_info().rss
+            return float(memory_bytes / (1024 * 1024))
         except ImportError:
             return 0.0
 
     def get_backend_info(self) -> dict[str, Any]:
         """Get comprehensive backend information."""
-        info = {
+        info: dict[str, Any] = {
             "name": self.backend_name,
             "type": type(self.backend).__name__,
             "enhanced": True,
@@ -418,7 +419,7 @@ class EnhancedBackendWrapper:
         """Get backend capabilities."""
         return self._capabilities
 
-    def can_simulate(self, circuit: QuantumCircuit, **kwargs) -> tuple[bool, str]:
+    def can_simulate(self, circuit: QuantumCircuit, **kwargs: Any) -> tuple[bool, str]:
         """Check if backend can simulate the given circuit."""
         # Basic checks
         if circuit.num_qubits > self._capabilities.max_qubits:
@@ -429,7 +430,10 @@ class EnhancedBackendWrapper:
 
         # Check if original backend has can_simulate method
         if hasattr(self.backend, "can_simulate"):
-            return self.backend.can_simulate(circuit, **kwargs)
+            return cast(
+                tuple[bool, str],
+                self.backend.can_simulate(circuit, **kwargs),
+            )
 
         # Default to true if no specific constraints
         return True, "Can simulate"
@@ -475,7 +479,7 @@ class EnhancedBackendWrapper:
     def estimate_resources(self, circuit: QuantumCircuit, shots: int = 1000) -> dict[str, float]:
         """Estimate computational resources needed for simulation."""
         # Get basic estimates
-        estimates = {
+        estimates: dict[str, float] = {
             "memory_mb": (2**circuit.num_qubits) * 16 / (1024 * 1024),
             "time_seconds": circuit.depth() * circuit.num_qubits * 0.001,
             "cost_factor": self._capabilities.estimated_cost_factor,

@@ -51,7 +51,7 @@ class ParallelSimulationRequest:
     request_id: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Post-initialization processing."""
         if self.request_id is None:
             # Generate a unique ID based on circuit hash and timestamp
@@ -89,7 +89,7 @@ class ParallelSimulator:
         execution_mode: ExecutionMode = ExecutionMode.MULTI_PROCESS,
         max_workers: int | None = None,
         chunk_size: int = 1,
-    ):
+    ) -> None:
         """
         Initialize the parallel simulator.
 
@@ -371,7 +371,7 @@ class DistributedSimulator:
 class ParallelBenchmark:
     """Benchmark for parallel performance evaluation."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the parallel benchmark."""
         self.logger = get_logger("parallel_benchmark")
 
@@ -544,7 +544,7 @@ def get_parallel_simulator(
 
 
 def simulate_parallel(
-    circuits: list[QuantCircuit],
+    circuits: list[QuantumCircuit],
     shots: int = 1024,
     backend: str | None = None,
     execution_mode: ExecutionMode = ExecutionMode.MULTI_PROCESS,

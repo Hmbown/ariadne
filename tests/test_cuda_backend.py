@@ -27,11 +27,14 @@ def test_get_cuda_info_structure() -> None:
     assert "available" in info
     assert "device_count" in info
 
+    device_count = info.get("device_count")
+    assert isinstance(device_count, int)
+
     if info["available"]:
-        assert info["device_count"] >= 0
+        assert device_count >= 0
         assert "devices" in info
     else:
-        assert info["device_count"] == 0
+        assert device_count == 0
 
 
 def test_backend_runs_with_cpu_fallback() -> None:

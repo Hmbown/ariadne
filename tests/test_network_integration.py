@@ -7,6 +7,7 @@ network protocols, and fault tolerance mechanisms.
 """
 
 import asyncio
+import importlib.util
 import time
 from unittest.mock import Mock
 
@@ -31,26 +32,15 @@ try:
 except ImportError:
     NETWORK_COORDINATION_AVAILABLE = False
 
-try:
-    import websockets
-
-    WEBSOCKETS_AVAILABLE = True
-except ImportError:
-    WEBSOCKETS_AVAILABLE = False
-
-try:
-    import zmq
-
-    ZMQ_AVAILABLE = True
-except ImportError:
-    ZMQ_AVAILABLE = False
+WEBSOCKETS_AVAILABLE = importlib.util.find_spec("websockets") is not None
+ZMQ_AVAILABLE = importlib.util.find_spec("zmq") is not None
 
 
 @pytest.mark.skipif(not NETWORK_COORDINATION_AVAILABLE, reason="Network coordination not available")
 class TestTimePrecisionManager:
     """Test suite for timing precision management."""
 
-    def test_precision_timestamp_generation(self):
+    def test_precision_timestamp_generation(self) -> None:
         """Test high-precision timestamp generation."""
         manager = TimePrecisionManager(target_precision_ps=22)
 
@@ -64,7 +54,7 @@ class TestTimePrecisionManager:
         # Verify precision (timestamps should be different)
         assert len(set(timestamps)) > 1
 
-    def test_calibration_with_reference(self):
+    def test_calibration_with_reference(self) -> None:
         """Test clock calibration with reference timestamps."""
         manager = TimePrecisionManager()
 
@@ -78,7 +68,7 @@ class TestTimePrecisionManager:
         # Verify offset was calculated
         assert abs(manager.clock_sync_offset - 0.002) < 0.001
 
-    def test_network_latency_estimation(self):
+    def test_network_latency_estimation(self) -> None:
         """Test network latency estimation."""
         manager = TimePrecisionManager()
 
@@ -95,7 +85,7 @@ class TestTimePrecisionManager:
 class TestNetworkNode:
     """Test suite for network node management."""
 
-    def test_node_creation(self):
+    def test_node_creation(self) -> None:
         """Test network node creation and initialization."""
         node = NetworkNode(
             node_id="test-node-1",
@@ -112,7 +102,7 @@ class TestNetworkNode:
         assert node.capabilities["max_qubits"] == 20
         assert node.status == NetworkStatus.OFFLINE
 
-    def test_node_auto_id_generation(self):
+    def test_node_auto_id_generation(self) -> None:
         """Test automatic node ID generation."""
         node = NetworkNode(node_id="", node_type=NodeType.GATEWAY, address="localhost", port=9000)
 
@@ -124,7 +114,7 @@ class TestNetworkNode:
 class TestQuantumTask:
     """Test suite for quantum task management."""
 
-    def test_task_creation(self):
+    def test_task_creation(self) -> None:
         """Test quantum task creation."""
         circuit = QuantumCircuit(3, 3)
         circuit.h(0)
@@ -146,7 +136,7 @@ class TestQuantumTask:
         assert task.priority == TaskPriority.HIGH
         assert task.backend_requirements["min_qubits"] == 3
 
-    def test_task_auto_id_generation(self):
+    def test_task_auto_id_generation(self) -> None:
         """Test automatic task ID generation."""
         circuit = QuantumCircuit(2)
         task = QuantumTask(task_id="", circuit=circuit, shots=100)
@@ -160,7 +150,7 @@ class TestQuantumTask:
 class TestNetworkCoordinator:
     """Test suite for network coordinator functionality."""
 
-    async def test_coordinator_initialization(self):
+    async def test_coordinator_initialization(self) -> None:
         """Test network coordinator initialization."""
         coordinator = NetworkCoordinator(
             coordinator_id="test-coordinator",
@@ -174,7 +164,7 @@ class TestNetworkCoordinator:
         assert len(coordinator.nodes) == 0
         assert len(coordinator.task_queue) == 0
 
-    async def test_node_registration_handling(self):
+    async def test_node_registration_handling(self) -> None:
         """Test node registration message handling."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
 
@@ -192,13 +182,13 @@ class TestNetworkCoordinator:
         }
 
         response = await coordinator._process_message(registration_data, mock_connection)
-
+        assert response is not None
         assert response["type"] == "registration_success"
         assert response["node_id"] == "test-node-123"
         assert "test-node-123" in coordinator.nodes
         assert coordinator.nodes["test-node-123"].node_type == NodeType.COMPUTE_NODE
 
-    async def test_heartbeat_handling(self):
+    async def test_heartbeat_handling(self) -> None:
         """Test heartbeat message handling."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
 
@@ -221,13 +211,13 @@ class TestNetworkCoordinator:
         }
 
         response = await coordinator._process_message(heartbeat_data, Mock())
-
+        assert response is not None
         assert response["type"] == "heartbeat_ack"
         assert "timestamp" in response
         assert coordinator.nodes["heartbeat-test-node"].load == 0.3
         assert coordinator.nodes["heartbeat-test-node"].status == NetworkStatus.ONLINE
 
-    async def test_task_submission_and_result_handling(self):
+    async def test_task_submission_and_result_handling(self) -> None:
         """Test task submission and result processing."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
 
@@ -260,7 +250,7 @@ class TestNetworkCoordinator:
         }
 
         response = await coordinator._process_message(result_data, Mock())
-
+        assert response is not None
         assert response["type"] == "result_ack"
         assert task_id not in coordinator.active_tasks
         assert task_id in coordinator.completed_tasks
@@ -270,7 +260,7 @@ class TestNetworkCoordinator:
         assert result.node_id == "test-executor-node"
         assert result.execution_time == 1.23
 
-    async def test_time_synchronization(self):
+    async def test_time_synchronization(self) -> None:
         """Test time synchronization protocol."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
 
@@ -278,13 +268,13 @@ class TestNetworkCoordinator:
         sync_data = {"type": "sync_time", "timestamp": client_timestamp}
 
         response = await coordinator._process_message(sync_data, Mock())
-
+        assert response is not None
         assert response["type"] == "time_sync_response"
         assert "coordinator_timestamp" in response
         assert response["client_timestamp"] == client_timestamp
         assert "round_trip_estimate" in response
 
-    def test_task_scheduling_logic(self):
+    def test_task_scheduling_logic(self) -> None:
         """Test task scheduling and node selection."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
 
@@ -344,7 +334,7 @@ class TestNetworkCoordinator:
         # node2 should be better for GPU task
         assert score2_task2 > score1_task2
 
-    def test_network_status_reporting(self):
+    def test_network_status_reporting(self) -> None:
         """Test network status and statistics reporting."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
 
@@ -389,7 +379,7 @@ class TestNetworkCoordinator:
 class TestNetworkIntegration:
     """Integration tests for full network scenarios."""
 
-    async def test_full_network_simulation(self):
+    async def test_full_network_simulation(self) -> None:
         """Test a complete network scenario with multiple nodes."""
         # This test simulates a realistic distributed quantum computing scenario
 
@@ -480,7 +470,7 @@ class TestNetworkIntegration:
         for node_id in status["nodes"]:
             assert status["nodes"][node_id]["status"] == "online"
 
-    async def test_fault_tolerance_node_failure(self):
+    async def test_fault_tolerance_node_failure(self) -> None:
         """Test network behavior when nodes fail."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
 
@@ -531,7 +521,7 @@ class TestNetworkIntegration:
         assert len(coordinator.task_queue) > 0
         assert "failing-task" not in coordinator.active_tasks
 
-    async def test_load_balancing(self):
+    async def test_load_balancing(self) -> None:
         """Test load balancing across multiple nodes."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
 
@@ -565,6 +555,7 @@ class TestNetworkIntegration:
         available_nodes = [high_load_node, low_load_node]
         best_node = coordinator._select_best_node(task, available_nodes)
 
+        assert best_node is not None
         assert best_node.node_id == "low-load"
 
         # Test load balancing detection
@@ -578,7 +569,7 @@ class TestNetworkIntegration:
 class TestNetworkSerialization:
     """Test network message serialization and deserialization."""
 
-    def test_circuit_serialization(self):
+    def test_circuit_serialization(self) -> None:
         """Test quantum circuit serialization for network transmission."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
 
@@ -602,15 +593,16 @@ class TestNetworkSerialization:
         assert "cx" in operation_names
         assert "measure" in operation_names
 
-    def test_message_processing_error_handling(self):
+    def test_message_processing_error_handling(self) -> None:
         """Test error handling in message processing."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
 
         # Test invalid message type
         invalid_msg = {"type": "invalid_message_type", "data": "test"}
 
-        async def test_invalid_message():
+        async def test_invalid_message() -> None:
             response = await coordinator._process_message(invalid_msg, Mock())
+            assert response is not None
             assert response["type"] == "error"
             assert "Unknown message type" in response["message"]
 
@@ -626,8 +618,9 @@ class TestNetworkSerialization:
             # Missing required fields
         }
 
-        async def test_malformed_registration():
+        async def test_malformed_registration() -> None:
             response = await coordinator._process_message(malformed_registration, Mock())
+            assert response is not None
             assert response["type"] == "error"
 
         asyncio.run(test_malformed_registration())
@@ -642,7 +635,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     # Run basic functionality tests
-    async def run_basic_tests():
+    async def run_basic_tests() -> None:
         print("Running basic network coordination tests...")
 
         # Test timing manager
@@ -665,6 +658,7 @@ if __name__ == "__main__":
         }
 
         response = await coordinator._process_message(registration_data, Mock())
+        assert response is not None
         print(f"Registration response: {response}")
 
         # Test task submission

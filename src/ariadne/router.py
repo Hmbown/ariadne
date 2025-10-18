@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import warnings
 from time import perf_counter
+from typing import Any
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -22,22 +23,46 @@ from .core import (
 from .route.enhanced_router import EnhancedQuantumRouter, RouterType
 from .types import BackendType, RoutingDecision, SimulationResult
 
-try:  # pragma: no cover - import guard for optional CUDA support
-    from .backends.cuda_backend import CUDABackend, is_cuda_available
-except ImportError:  # pragma: no cover - executed when dependencies missing
-    CUDABackend = None  # type: ignore[assignment]
+CUDABackend: type[Any] | None = None
 
-    def is_cuda_available() -> bool:  # type: ignore[override]
-        return False
+
+def is_cuda_available() -> bool:
+    return False
+
+
+try:  # pragma: no cover - import guard for optional CUDA support
+    from .backends.cuda_backend import (
+        CUDABackend as _RuntimeCUDABackend,
+    )
+    from .backends.cuda_backend import (
+        is_cuda_available as _is_cuda_available,
+    )
+
+    CUDABackend = _RuntimeCUDABackend
+    is_cuda_available = _is_cuda_available
+except ImportError:  # pragma: no cover - executed when dependencies missing
+    pass
+
+
+MetalBackend: type[Any] | None = None
+
+
+def is_metal_available() -> bool:
+    return False
 
 
 try:  # pragma: no cover - import guard for optional Metal support
-    from .backends.metal_backend import MetalBackend, is_metal_available
-except ImportError:  # pragma: no cover - executed when dependencies missing
-    MetalBackend = None  # type: ignore[assignment]
+    from .backends.metal_backend import (
+        MetalBackend as _RuntimeMetalBackend,
+    )
+    from .backends.metal_backend import (
+        is_metal_available as _is_metal_available,
+    )
 
-    def is_metal_available() -> bool:  # type: ignore[override]
-        return False
+    MetalBackend = _RuntimeMetalBackend
+    is_metal_available = _is_metal_available
+except ImportError:  # pragma: no cover - executed when dependencies missing
+    pass
 
 
 # Global state for Tensor Network Backend instance
@@ -295,8 +320,11 @@ def _simulate_cuda(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
         raise BackendUnavailableError("cuda", "CUDA runtime not available")
 
     try:
+        assert CUDABackend is not None
         backend = CUDABackend()
-        return backend.simulate(circuit, shots)
+        result = backend.simulate(circuit, shots)
+        # Ensure result is of correct type
+        return dict(result)
     except Exception as exc:
         logger.log_simulation_error(exc, backend="cuda")
         raise SimulationError(f"CUDA simulation failed: {exc}", backend="cuda") from exc
@@ -326,8 +354,11 @@ def _simulate_metal(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
         raise BackendUnavailableError("metal", "JAX with Metal support not available")
 
     try:
+        assert MetalBackend is not None
         backend = MetalBackend()
-        return backend.simulate(circuit, shots)
+        result = backend.simulate(circuit, shots)
+        # Ensure result is of correct type
+        return dict(result)
     except Exception as exc:
         logger.log_simulation_error(exc, backend="metal")
         raise SimulationError(f"Metal simulation failed: {exc}", backend="metal") from exc
@@ -503,7 +534,14 @@ def simulate(
             counts={"": shots} if shots > 0 else {},
             backend_used=BackendType.QISKIT,  # Mock backend
             execution_time=0.0,
-            routing_decision=None,
+            routing_decision=RoutingDecision(
+                circuit_entropy=0.0,
+                recommended_backend=BackendType.QISKIT,
+                confidence_score=1.0,
+                expected_speedup=1.0,
+                channel_capacity_match=1.0,
+                alternatives=[],
+            ),
             metadata={"shots": shots},
         )
 
