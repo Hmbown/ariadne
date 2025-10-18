@@ -55,7 +55,7 @@ def _describe_config_keys(config: object) -> str:
 
 
 try:
-    from ariadne import simulate
+    from ariadne import __version__, simulate
     from ariadne.backends import (
         get_health_checker,
         get_pool_manager,
@@ -74,7 +74,7 @@ except ImportError:
     import sys
 
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from ariadne import simulate
+    from ariadne import __version__, simulate
     from ariadne.backends import (
         get_health_checker,
         get_pool_manager,
@@ -177,7 +177,9 @@ Examples:
         )
 
         # Add global arguments
-        parser.add_argument("--version", action="version", version="%(prog)s 1.0.0")
+        parser.add_argument(
+            "--version", action="version", version=f"%(prog)s {__version__}"
+        )
 
         parser.add_argument(
             "--log-level",
