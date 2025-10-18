@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import pytest
 from qiskit import QuantumCircuit
@@ -14,11 +16,11 @@ class TestMPSBackendRigor:
     """
 
     @pytest.fixture(scope="class")
-    def backend(self):
+    def backend(self: TestMPSBackendRigor) -> MPSBackend:
         """Fixture to provide a fresh MPSBackend instance."""
         return MPSBackend()
 
-    def test_mps_simulates_bell_state_phi_plus(self, backend):
+    def test_mps_simulates_bell_state_phi_plus(self, backend: MPSBackend) -> None:
         """
         Test 1: Verifies correct simulation of the maximally entangled Bell state |Φ+⟩.
         Circuit: H(0), CNOT(0, 1). Expected state: (|00⟩ + |11⟩) / √2.
@@ -51,11 +53,11 @@ class TestMPSBackendRigor:
         count_11 = counts.get("11", 0)
         total = count_00 + count_11
         assert total == 1000, f"Expected total shots of 1000, got {total}"
-        assert abs(count_00 - count_11) < 200, (
-            f"Counts imbalance too large: |00⟩={count_00}, |11⟩={count_11}"
-        )
+        assert (
+            abs(count_00 - count_11) < 200
+        ), f"Counts imbalance too large: |00⟩={count_00}, |11⟩={count_11}"
 
-    def test_mps_simulates_low_entanglement_product_state(self, backend):
+    def test_mps_simulates_low_entanglement_product_state(self, backend: MPSBackend) -> None:
         """
         Test 2: Verifies correct simulation of a low-entanglement product state (separable state).
         Circuit: RZ(π/2) on 0, X on 1, H on 2 (3 qubits).
@@ -87,11 +89,11 @@ class TestMPSBackendRigor:
             zip(empirical_probs, reference_probs, strict=False)
         ):
             if ref_prob > 0.1:  # Only check significant probabilities
-                assert abs(emp_prob - ref_prob) < 0.1, (
-                    f"Probability mismatch for state {i:03b}: empirical={emp_prob:.4f}, reference={ref_prob:.4f}"
-                )
+                assert (
+                    abs(emp_prob - ref_prob) < 0.1
+                ), f"Probability mismatch for state {i:03b}: empirical={emp_prob:.4f}, reference={ref_prob:.4f}"
 
-    def test_mps_handles_high_entanglement_with_truncation(self):
+    def test_mps_handles_high_entanglement_with_truncation(self) -> None:
         """
         Test 3: Checks robustness when simulating a highly entangled circuit (e.g., deep GHZ-like)
         with a severely restricted maximum bond dimension (D=2).

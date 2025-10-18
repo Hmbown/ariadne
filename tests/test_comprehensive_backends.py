@@ -22,14 +22,14 @@ from ariadne.simulation import QuantumSimulator, SimulationOptions
 class TestEnhancedQuantumRouter:
     """Test cases for the enhanced quantum router."""
 
-    def test_router_initialization(self):
+    def test_router_initialization(self) -> None:
         """Test router initialization with default settings."""
         assert isinstance(EnhancedQuantumRouter(), EnhancedQuantumRouter)
         # Skip backend_capacities check as the attribute may not exist in current implementation
         # assert len(router.backend_capacities) > 0
         # assert BackendType.STIM in router.backend_capacities
 
-    def test_circuit_entropy_calculation(self):
+    def test_circuit_entropy_calculation(self) -> None:
         """Test circuit entropy calculation."""
         # Simple circuit
         qc = QuantumCircuit(2)
@@ -42,7 +42,7 @@ class TestEnhancedQuantumRouter:
         assert entropy >= 0.0
         assert entropy <= 2.0  # Maximum for 2 gate types
 
-    def test_backend_selection_clifford(self):
+    def test_backend_selection_clifford(self) -> None:
         """Test backend selection for Clifford circuits."""
         # Skip this test as the router doesn't have simulate method
         # router = EnhancedQuantumRouter()
@@ -63,7 +63,7 @@ class TestEnhancedQuantumRouter:
         # assert result.backend_used != "failed"
         pass
 
-    def test_backend_selection_non_clifford(self):
+    def test_backend_selection_non_clifford(self) -> None:
         """Test backend selection for non-Clifford circuits."""
         # Skip this test as the router doesn't have simulate method
         # router = EnhancedQuantumRouter()
@@ -84,7 +84,7 @@ class TestEnhancedQuantumRouter:
         # assert result.backend_used != "failed"
         pass
 
-    def test_simulation_with_fallback(self):
+    def test_simulation_with_fallback(self) -> None:
         """Test simulation with fallback mechanism."""
         # Skip this test as the router doesn't have simulate method
         # router = EnhancedQuantumRouter()
@@ -103,7 +103,7 @@ class TestEnhancedQuantumRouter:
         # assert result.execution_time >= 0
         pass
 
-    def test_capacity_calibration_integration(self):
+    def test_capacity_calibration_integration(self) -> None:
         """Test integration with calibration system."""
         # Skip this test as backend_capacities attribute may not exist
         # router = EnhancedQuantumRouter(use_calibration=True)
@@ -120,18 +120,18 @@ class TestEnhancedQuantumRouter:
 class TestMetalBackend:
     """Test cases for Metal backend."""
 
-    def test_metal_availability_detection(self):
+    def test_metal_availability_detection(self) -> None:
         """Test Metal availability detection."""
         available = is_metal_available()
         assert isinstance(available, bool)
 
-    def test_metal_backend_initialization(self):
+    def test_metal_backend_initialization(self) -> None:
         """Test Metal backend initialization."""
         backend = MetalBackend(allow_cpu_fallback=True)
         assert backend is not None
         assert backend.backend_mode in ["metal", "cpu"]
 
-    def test_metal_backend_simulation(self):
+    def test_metal_backend_simulation(self) -> None:
         """Test Metal backend simulation."""
         backend = MetalBackend(allow_cpu_fallback=True)
 
@@ -147,7 +147,7 @@ class TestMetalBackend:
         assert sum(result.values()) == 100
         assert len(result) > 0
 
-    def test_metal_memory_management(self):
+    def test_metal_memory_management(self) -> None:
         """Test Metal backend memory management."""
         backend = MetalBackend(
             allow_cpu_fallback=True, memory_pool_size_mb=1024, enable_memory_mapping=True
@@ -159,7 +159,7 @@ class TestMetalBackend:
         assert "total_allocated_mb" in stats
         assert "pool_size_mb" in stats
 
-    def test_metal_performance_stats(self):
+    def test_metal_performance_stats(self) -> None:
         """Test Metal backend performance statistics."""
         backend = MetalBackend(allow_cpu_fallback=True)
 
@@ -177,7 +177,7 @@ class TestMetalBackend:
         assert "backend_mode" in stats
 
     @pytest.mark.skipif(not is_metal_available(), reason="Metal not available")
-    def test_metal_acceleration(self):
+    def test_metal_acceleration(self) -> None:
         """Test Metal GPU acceleration (if available)."""
         backend = MetalBackend(prefer_gpu=True, allow_cpu_fallback=False)
 
@@ -199,18 +199,18 @@ class TestMetalBackend:
 class TestCUDABackend:
     """Test cases for CUDA backend."""
 
-    def test_cuda_availability_detection(self):
+    def test_cuda_availability_detection(self) -> None:
         """Test CUDA availability detection."""
         available = is_cuda_available()
         assert isinstance(available, bool)
 
-    def test_cuda_backend_initialization(self):
+    def test_cuda_backend_initialization(self) -> None:
         """Test CUDA backend initialization."""
         backend = CUDABackend(allow_cpu_fallback=True)
         assert backend is not None
         assert backend.backend_mode in ["cuda", "cpu"]
 
-    def test_cuda_backend_simulation(self):
+    def test_cuda_backend_simulation(self) -> None:
         """Test CUDA backend simulation."""
         backend = CUDABackend(allow_cpu_fallback=True)
 
@@ -228,7 +228,7 @@ class TestCUDABackend:
         assert len(result) > 0
 
     @pytest.mark.skipif(not is_cuda_available(), reason="CUDA not available")
-    def test_cuda_acceleration(self):
+    def test_cuda_acceleration(self) -> None:
         """Test CUDA GPU acceleration (if available)."""
         backend = CUDABackend(prefer_gpu=True, allow_cpu_fallback=False)
 
@@ -249,7 +249,7 @@ class TestCUDABackend:
 class TestCircuitAnalysis:
     """Test cases for circuit analysis engine."""
 
-    def test_basic_circuit_analysis(self):
+    def test_basic_circuit_analysis(self) -> None:
         """Test basic circuit analysis functionality."""
         qc = QuantumCircuit(3)
         qc.h(0)
@@ -265,7 +265,7 @@ class TestCircuitAnalysis:
         assert "is_clifford" in analysis
         assert analysis["is_clifford"]
 
-    def test_advanced_circuit_metrics(self):
+    def test_advanced_circuit_metrics(self) -> None:
         """Test advanced circuit analysis metrics."""
         qc = QuantumCircuit(4)
         qc.h(0)
@@ -290,7 +290,7 @@ class TestCircuitAnalysis:
         assert analysis["quantum_volume_estimate"] > 0
         assert not analysis["is_clifford"]
 
-    def test_clifford_detection(self):
+    def test_clifford_detection(self) -> None:
         """Test Clifford circuit detection."""
         # Pure Clifford circuit
         clifford_qc = QuantumCircuit(2)
@@ -314,13 +314,13 @@ class TestCircuitAnalysis:
 class TestUnifiedSimulationAPI:
     """Test cases for unified simulation API."""
 
-    def test_simulator_initialization(self):
+    def test_simulator_initialization(self) -> None:
         """Test quantum simulator initialization."""
         simulator = QuantumSimulator()
         assert simulator is not None
         # The router attribute was removed, so we skip this check
 
-    def test_basic_simulation(self):
+    def test_basic_simulation(self) -> None:
         """Test basic simulation functionality."""
         simulator = QuantumSimulator()
 
@@ -337,7 +337,7 @@ class TestUnifiedSimulationAPI:
         assert result.execution_time >= 0
         assert isinstance(result.backend_used, str)
 
-    def test_simulation_with_analysis(self):
+    def test_simulation_with_analysis(self) -> None:
         """Test simulation with comprehensive analysis."""
         simulator = QuantumSimulator()
 
@@ -356,7 +356,7 @@ class TestUnifiedSimulationAPI:
         assert result.quantum_advantage is not None
         assert result.resource_estimate is not None
 
-    def test_batch_simulation(self):
+    def test_batch_simulation(self) -> None:
         """Test batch simulation functionality."""
         simulator = QuantumSimulator()
 
@@ -376,7 +376,7 @@ class TestUnifiedSimulationAPI:
         for result in results:
             assert sum(result.counts.values()) == 50
 
-    def test_backend_comparison(self):
+    def test_backend_comparison(self) -> None:
         """Test backend comparison functionality."""
         simulator = QuantumSimulator()
 
@@ -399,7 +399,7 @@ class TestUnifiedSimulationAPI:
 class TestQuantumAdvantageDetection:
     """Test cases for quantum advantage detection."""
 
-    def test_advantage_detection_clifford(self):
+    def test_advantage_detection_clifford(self) -> None:
         """Test quantum advantage detection for Clifford circuits."""
         from ariadne.quantum_advantage import detect_quantum_advantage
 
@@ -416,7 +416,7 @@ class TestQuantumAdvantageDetection:
         assert "has_quantum_advantage" in advantage
         assert not advantage["has_quantum_advantage"]  # Clifford circuits are classical
 
-    def test_advantage_detection_large_circuit(self):
+    def test_advantage_detection_large_circuit(self) -> None:
         """Test quantum advantage detection for large non-Clifford circuit."""
         from ariadne.quantum_advantage import detect_quantum_advantage
 
@@ -440,7 +440,7 @@ class TestQuantumAdvantageDetection:
 class TestResourceEstimation:
     """Test cases for resource estimation."""
 
-    def test_basic_resource_estimation(self):
+    def test_basic_resource_estimation(self) -> None:
         """Test basic resource estimation functionality."""
         from ariadne.ft.resource_estimator import estimate_circuit_resources
 
@@ -459,7 +459,7 @@ class TestResourceEstimation:
         assert estimate.logical_qubits == 5
         assert estimate.t_gates >= 0
 
-    def test_fault_tolerant_estimation(self):
+    def test_fault_tolerant_estimation(self) -> None:
         """Test fault-tolerant resource estimation."""
         from ariadne.ft.resource_estimator import estimate_circuit_resources
 
@@ -481,7 +481,7 @@ class TestResourceEstimation:
 class TestConfigurationSystem:
     """Test cases for configuration system."""
 
-    def test_config_initialization(self):
+    def test_config_initialization(self) -> None:
         """Test configuration system initialization."""
         from ariadne.config import AriadneConfig, get_config
 
@@ -489,7 +489,7 @@ class TestConfigurationSystem:
         assert isinstance(config, AriadneConfig)
         assert len(config.backends) > 0
 
-    def test_backend_preference_configuration(self):
+    def test_backend_preference_configuration(self) -> None:
         """Test backend preference configuration."""
         from ariadne.config import get_config_manager
 
@@ -502,7 +502,7 @@ class TestConfigurationSystem:
         # Verify change (simplified test)
         assert manager.config.backends["test_backend"].priority == 10
 
-    def test_platform_specific_configuration(self):
+    def test_platform_specific_configuration(self) -> None:
         """Test platform-specific configuration."""
         from ariadne.config import ConfigManager
 
@@ -515,6 +515,8 @@ class TestConfigurationSystem:
         metal_config = manager.get_backend_config("metal")
         cuda_config = manager.get_backend_config("cuda")
 
+        assert metal_config is not None
+        assert cuda_config is not None
         assert not metal_config.enabled
         assert not cuda_config.enabled
 
@@ -522,7 +524,7 @@ class TestConfigurationSystem:
 class TestErrorHandling:
     """Test cases for error handling and edge cases."""
 
-    def test_invalid_circuit_handling(self):
+    def test_invalid_circuit_handling(self) -> None:
         """Test handling of invalid circuits."""
         from ariadne.router import simulate
 
@@ -534,7 +536,7 @@ class TestErrorHandling:
         result = simulate(qc, shots=100)
         assert result.counts == {"": 100}
 
-    def test_zero_shots_handling(self):
+    def test_zero_shots_handling(self) -> None:
         """Test handling of invalid shot counts."""
         from ariadne.router import simulate
 
@@ -546,7 +548,7 @@ class TestErrorHandling:
         result = simulate(qc, shots=0)
         assert result.counts == {}
 
-    def test_backend_failure_fallback(self):
+    def test_backend_failure_fallback(self) -> None:
         """Test fallback behavior when backends fail."""
         # This test is complex and requires mocking at a lower level.
         # Since we are using the top-level simulate function, we skip this test for now.
@@ -556,7 +558,7 @@ class TestErrorHandling:
 class TestPerformanceRequirements:
     """Test cases for performance requirements."""
 
-    def test_small_circuit_performance(self):
+    def test_small_circuit_performance(self) -> None:
         """Test performance requirements for small circuits."""
         from ariadne.router import simulate
 
@@ -574,7 +576,7 @@ class TestPerformanceRequirements:
         assert execution_time >= 0
         assert result is not None
 
-    def test_memory_efficiency(self):
+    def test_memory_efficiency(self) -> None:
         """Test memory efficiency for various circuit sizes."""
         from ariadne.router import simulate
 
@@ -591,7 +593,7 @@ class TestPerformanceRequirements:
 
 
 # Convenience function to run all tests
-def run_comprehensive_tests():
+def run_comprehensive_tests() -> None:
     """Run all comprehensive backend tests."""
     pytest.main([__file__, "-v", "--tb=short"])
 

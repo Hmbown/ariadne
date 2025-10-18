@@ -17,7 +17,7 @@ from ariadne.router import BackendType, EnhancedQuantumRouter, simulate
 class TestErrorHandling:
     """Test error handling and fallback behavior."""
 
-    def test_backend_fallback_on_failure(self):
+    def test_backend_fallback_on_failure(self) -> None:
         """Test that router falls back to Qiskit when preferred backend fails."""
         qc = QuantumCircuit(2, 2)
         qc.h(0)
@@ -26,7 +26,7 @@ class TestErrorHandling:
 
         pytest.skip("Backend fallback mechanism needs refinement - skipping for now")
 
-    def test_metal_backend_cpu_fallback(self):
+    def test_metal_backend_cpu_fallback(self) -> None:
         """Test Metal backend CPU fallback behavior."""
         qc = QuantumCircuit(3, 3)
         qc.h(0)
@@ -49,7 +49,7 @@ class TestErrorHandling:
         except ImportError:
             pytest.skip("JAX not available for testing")
 
-    def test_routing_with_unavailable_backends(self):
+    def test_routing_with_unavailable_backends(self) -> None:
         """Test routing behavior when preferred backends are unavailable."""
         qc = QuantumCircuit(4, 4)
         qc.h(range(4))
@@ -57,9 +57,9 @@ class TestErrorHandling:
 
         router = EnhancedQuantumRouter()
 
-        # Mock CUDA and Metal as unavailable
-        router._cuda_available = False
-        router._metal_available = False
+        # Mock CUDA and Metal as unavailable via hardware profile
+        router.user_context.hardware_profile.cuda_capable = False
+        router.user_context.hardware_profile.apple_silicon = False
 
         # Update capacities
         router.backend_capacities[BackendType.CUDA].clifford_capacity = 0.0
@@ -79,7 +79,7 @@ class TestErrorHandling:
         ]
         assert len(result.counts) > 0
 
-    def test_simulate_function_error_handling(self):
+    def test_simulate_function_error_handling(self) -> None:
         """Test the high-level simulate function error handling."""
         qc = QuantumCircuit(2, 2)
         qc.h(0)
@@ -94,7 +94,7 @@ class TestErrorHandling:
         assert result.execution_time >= 0
         assert result.routing_decision is not None
 
-    def test_forced_backend_error_handling(self):
+    def test_forced_backend_error_handling(self) -> None:
         """Test error handling when forcing a specific backend."""
         qc = QuantumCircuit(2, 2)
         qc.h(0)
@@ -106,7 +106,7 @@ class TestErrorHandling:
         assert result.backend_used == BackendType.QISKIT
         assert len(result.counts) > 0
 
-    def test_invalid_backend_specification(self):
+    def test_invalid_backend_specification(self) -> None:
         """Test error handling for invalid backend names."""
         qc = QuantumCircuit(2, 2)
         qc.h(0)
@@ -116,7 +116,7 @@ class TestErrorHandling:
         with pytest.raises(ValueError, match="Unknown backend"):
             simulate(qc, shots=100, backend="invalid_backend")
 
-    def test_comprehensive_fallback_chain(self):
+    def test_comprehensive_fallback_chain(self) -> None:
         """Test the complete fallback chain when multiple backends fail."""
         qc = QuantumCircuit(2, 2)
         qc.h(0)
@@ -125,7 +125,7 @@ class TestErrorHandling:
 
         pytest.skip("Comprehensive fallback chain needs refinement - skipping for now")
 
-    def test_warning_collection(self):
+    def test_warning_collection(self) -> None:
         """Test that warnings are properly collected and reported."""
         qc = QuantumCircuit(2, 2)
         qc.h(0)

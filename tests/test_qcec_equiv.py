@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 
 from ariadne.passes.zx_opt import trivial_cancel
 from ariadne.verify.qcec import assert_equiv, statevector_equiv
 
+if TYPE_CHECKING:
+    from qiskit import QuantumCircuit
 
-def build_cancellable():
+
+def build_cancellable() -> QuantumCircuit:
     from qiskit import QuantumCircuit
 
     qc = QuantumCircuit(2)

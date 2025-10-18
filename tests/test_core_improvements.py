@@ -20,21 +20,21 @@ from ariadne.core import (
 class TestErrorHandling:
     """Test the new error handling system."""
 
-    def test_error_hierarchy(self):
+    def test_error_hierarchy(self) -> None:
         """Test that error hierarchy is properly structured."""
         assert issubclass(BackendUnavailableError, AriadneError)
         assert issubclass(CircuitTooLargeError, AriadneError)
         assert issubclass(ResourceExhaustionError, AriadneError)
         assert issubclass(SimulationError, AriadneError)
 
-    def test_error_details(self):
+    def test_error_details(self) -> None:
         """Test error details are properly stored."""
         error = BackendUnavailableError("stim", "Not installed", {"version": "1.0"})
         assert error.backend_name == "stim"
         assert error.reason == "Not installed"
         assert error.details["version"] == "1.0"
 
-    def test_error_string_representation(self):
+    def test_error_string_representation(self) -> None:
         """Test error string representation."""
         error = CircuitTooLargeError(30, 100, "stim")
         error_str = str(error)
@@ -46,7 +46,7 @@ class TestErrorHandling:
 class TestCircuitAnalysisCache:
     """Test the circuit analysis caching system."""
 
-    def test_cache_basic_operations(self):
+    def test_cache_basic_operations(self) -> None:
         """Test basic cache operations."""
         cache = CircuitAnalysisCache(max_size=10)
 
@@ -62,7 +62,7 @@ class TestCircuitAnalysisCache:
         retrieved = cache.get_analysis(circuit)
         assert retrieved == analysis
 
-    def test_cache_miss(self):
+    def test_cache_miss(self) -> None:
         """Test cache miss behavior."""
         cache = CircuitAnalysisCache()
 
@@ -73,7 +73,7 @@ class TestCircuitAnalysisCache:
         result = cache.get_analysis(circuit)
         assert result is None
 
-    def test_cache_stats(self):
+    def test_cache_stats(self) -> None:
         """Test cache statistics."""
         cache = CircuitAnalysisCache()
 
@@ -91,7 +91,7 @@ class TestCircuitAnalysisCache:
         assert stats["misses"] == 1
         assert stats["size"] == 1
 
-    def test_circuit_hash_determinism(self):
+    def test_circuit_hash_determinism(self) -> None:
         """Test that circuit hash generation is deterministic."""
         cache = CircuitAnalysisCache()
 
@@ -118,7 +118,7 @@ class TestCircuitAnalysisCache:
         retrieved = cache.get_analysis(circuit2)
         assert retrieved == analysis
 
-    def test_circuit_hash_with_parameters(self):
+    def test_circuit_hash_with_parameters(self) -> None:
         """Test circuit hash generation with parameterized gates."""
         cache = CircuitAnalysisCache()
 
@@ -139,13 +139,13 @@ class TestCircuitAnalysisCache:
 class TestResourceManager:
     """Test the resource management system."""
 
-    def test_resource_manager_singleton(self):
+    def test_resource_manager_singleton(self) -> None:
         """Test that ResourceManager is a singleton."""
         manager1 = get_resource_manager()
         manager2 = get_resource_manager()
         assert manager1 is manager2
 
-    def test_circuit_feasibility_check(self):
+    def test_circuit_feasibility_check(self) -> None:
         """Test circuit feasibility checking."""
         circuit = QuantumCircuit(5)
         circuit.h(range(5))
@@ -155,7 +155,7 @@ class TestResourceManager:
         assert can_handle
         assert "sufficient" in reason.lower()
 
-    def test_resource_requirements_estimation(self):
+    def test_resource_requirements_estimation(self) -> None:
         """Test resource requirements estimation."""
         manager = get_resource_manager()
 
@@ -172,12 +172,12 @@ class TestResourceManager:
 class TestLoggingSystem:
     """Test the enhanced logging system."""
 
-    def test_logger_creation(self):
+    def test_logger_creation(self) -> None:
         """Test logger creation."""
         logger = get_logger("test")
         assert logger is not None
 
-    def test_logger_context_setting(self):
+    def test_logger_context_setting(self) -> None:
         """Test logger context setting."""
         logger = get_logger("test")
 
@@ -194,7 +194,7 @@ class TestLoggingSystem:
 class TestIntegratedSimulation:
     """Test the integrated simulation with new core systems."""
 
-    def test_basic_simulation_with_new_systems(self):
+    def test_basic_simulation_with_new_systems(self) -> None:
         """Test basic simulation works with new core systems."""
         circuit = QuantumCircuit(2)
         circuit.h(0)
@@ -208,7 +208,7 @@ class TestIntegratedSimulation:
         assert result.execution_time > 0
         assert sum(result.counts.values()) == 100
 
-    def test_simulation_error_handling(self):
+    def test_simulation_error_handling(self) -> None:
         """Test simulation error handling."""
         # Create a circuit that might cause issues
         circuit = QuantumCircuit(1)
@@ -219,7 +219,7 @@ class TestIntegratedSimulation:
         result = simulate(circuit, shots=10)
         assert result.counts == {"1": 10}
 
-    def test_input_validation(self):
+    def test_input_validation(self) -> None:
         """Test input validation in simulate function."""
         circuit = QuantumCircuit(2)
         circuit.h(0)

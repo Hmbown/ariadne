@@ -19,12 +19,20 @@ from ariadne.router import BackendType, EnhancedQuantumRouter
 class TestQuantumAlgorithms:
     """Test suite for validating quantum algorithm implementations."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Setup for each test method."""
         self.router = EnhancedQuantumRouter()
         self.tolerance = 1e-10  # Tolerance for numerical comparisons
 
-    def test_ghz_state_preparation(self):
+    def _backend_name(self, backend: BackendType | str | None) -> str:
+        """Return backend name as a plain string for assertions."""
+        if isinstance(backend, BackendType):
+            return backend.value
+        if backend is None:
+            return "unknown"
+        return str(backend)
+
+    def test_ghz_state_preparation(self) -> None:
         """Test GHZ state preparation across backends."""
         for n_qubits in [3, 5, 8, 12]:
             qc = self._create_ghz_circuit(n_qubits)
@@ -37,9 +45,9 @@ class TestQuantumAlgorithms:
             # Handle case where result has extra padding (spaces)
             actual_states = {state.replace(" ", "")[:n_qubits] for state in result.counts.keys()}
 
-            assert actual_states.issubset(expected_states), (
-                f"GHZ state for {n_qubits} qubits produced unexpected states: {actual_states - expected_states}"
-            )
+            assert actual_states.issubset(
+                expected_states
+            ), f"GHZ state for {n_qubits} qubits produced unexpected states: {actual_states - expected_states}"
 
             # Check that both states appear with roughly equal probability
             if len(actual_states) == 2:
@@ -47,7 +55,7 @@ class TestQuantumAlgorithms:
                 ratio = max(counts) / min(counts)
                 assert ratio < 2.0, f"GHZ state imbalance too large: {ratio}"
 
-    def test_quantum_fourier_transform(self):
+    def test_quantum_fourier_transform(self) -> None:
         """Test Quantum Fourier Transform implementation."""
         for n_qubits in [3, 4, 5]:
             qc = self._create_qft_circuit(n_qubits)
@@ -61,14 +69,14 @@ class TestQuantumAlgorithms:
             result = simulate(qc_test, shots=1000)
 
             # Verify execution success
-            assert result.backend_used != "failed"
+            assert self._backend_name(result.backend_used) != "failed"
             assert len(result.counts) > 0
             assert sum(result.counts.values()) == 1000
 
     @pytest.mark.skip(
         reason="Grover's algorithm uses multi-controlled phase gates not supported by current backends"
     )
-    def test_grover_algorithm(self):
+    def test_grover_algorithm(self) -> None:
         """Test Grover's algorithm for 2 and 3 qubits."""
         for n_qubits in [2, 3]:
             # Test with target state |11...1⟩
@@ -78,7 +86,7 @@ class TestQuantumAlgorithms:
             result = simulate(qc, shots=1000)
 
             # Verify execution
-            assert result.backend_used != "failed"
+            assert self._backend_name(result.backend_used) != "failed"
             assert len(result.counts) > 0
 
             # Grover should amplify the target state
@@ -87,11 +95,11 @@ class TestQuantumAlgorithms:
                 target_prob = result.counts[target_bitstring] / 1000
                 # Should have higher probability than uniform distribution
                 uniform_prob = 1.0 / (2**n_qubits)
-                assert target_prob > uniform_prob, (
-                    f"Grover's algorithm didn't amplify target state: {target_prob} <= {uniform_prob}"
-                )
+                assert (
+                    target_prob > uniform_prob
+                ), f"Grover's algorithm didn't amplify target state: {target_prob} <= {uniform_prob}"
 
-    def test_variational_quantum_eigensolver(self):
+    def test_variational_quantum_eigensolver(self) -> None:
         """Test VQE ansatz circuits."""
         for n_qubits in [2, 4, 6]:
             # Create simple VQE ansatz
@@ -100,7 +108,7 @@ class TestQuantumAlgorithms:
             result = simulate(qc, shots=1000)
 
             # Verify execution
-            assert result.backend_used != "failed"
+            assert self._backend_name(result.backend_used) != "failed"
             assert len(result.counts) > 0
             assert sum(result.counts.values()) == 1000
 
@@ -108,11 +116,11 @@ class TestQuantumAlgorithms:
             # For now, just verify the circuit executes successfully
             # Skip superposition check for MPS backend due to current limitations
             if result.backend_used != BackendType.MPS:
-                assert len(result.counts) > 1, (
-                    f"VQE ansatz should create superposition, got {result.counts} with backend {result.backend_used}"
-                )
+                assert (
+                    len(result.counts) > 1
+                ), f"VQE ansatz should create superposition, got {result.counts} with backend {result.backend_used}"
 
-    def test_quantum_approximate_optimization(self):
+    def test_quantum_approximate_optimization(self) -> None:
         """Test QAOA circuits."""
         for n_qubits in [3, 4]:
             qc = self._create_qaoa_circuit(n_qubits, layers=2)
@@ -120,11 +128,11 @@ class TestQuantumAlgorithms:
             result = simulate(qc, shots=1000)
 
             # Verify execution
-            assert result.backend_used != "failed"
+            assert self._backend_name(result.backend_used) != "failed"
             assert len(result.counts) > 0
             assert sum(result.counts.values()) == 1000
 
-    def test_quantum_phase_estimation(self):
+    def test_quantum_phase_estimation(self) -> None:
         """Test simplified quantum phase estimation."""
         # Test with 2 counting qubits + 1 eigenstate qubit
         n_counting = 2
@@ -135,23 +143,23 @@ class TestQuantumAlgorithms:
         result = simulate(qc, shots=1000)
 
         # Verify execution
-        assert result.backend_used != "failed"
+        assert self._backend_name(result.backend_used) != "failed"
         assert len(result.counts) > 0
 
-    def test_quantum_teleportation(self):
+    def test_quantum_teleportation(self) -> None:
         """Test quantum teleportation protocol."""
         qc = self._create_teleportation_circuit()
 
         result = simulate(qc, shots=1000)
 
         # Verify execution
-        assert result.backend_used != "failed"
+        assert self._backend_name(result.backend_used) != "failed"
         assert len(result.counts) > 0
 
         # Should use Stim backend for Clifford operations
         assert result.backend_used == BackendType.STIM or str(result.backend_used) == "stim"
 
-    def test_bell_state_preparation(self):
+    def test_bell_state_preparation(self) -> None:
         """Test Bell state preparation and measurement."""
         bell_circuits = [
             self._create_bell_state(0, 0),  # |Φ+⟩
@@ -164,7 +172,7 @@ class TestQuantumAlgorithms:
             result = simulate(qc, shots=1000)
 
             # Verify execution
-            assert result.backend_used != "failed"
+            assert self._backend_name(result.backend_used) != "failed"
             assert len(result.counts) > 0
 
             # Bell states should have only 2 outcomes with equal probability
@@ -175,7 +183,7 @@ class TestQuantumAlgorithms:
                 ratio = max(counts) / min(counts)
                 assert ratio < 2.0, f"Bell state {i} imbalance too large: {ratio}"
 
-    def test_surface_code_stabilizers(self):
+    def test_surface_code_stabilizers(self) -> None:
         """Test surface code stabilizer measurements."""
         # Create a simple 3x3 surface code stabilizer circuit
         qc = self._create_surface_code_circuit(3, 3)
@@ -186,7 +194,7 @@ class TestQuantumAlgorithms:
         assert result.backend_used == BackendType.STIM or str(result.backend_used) == "stim"
         assert len(result.counts) > 0
 
-    def test_random_circuit_validation(self):
+    def test_random_circuit_validation(self) -> None:
         """Test random circuits of various sizes and depths."""
         test_cases = [
             (3, 5),  # Small circuit
@@ -201,11 +209,11 @@ class TestQuantumAlgorithms:
             result = simulate(qc, shots=1000)
 
             # Verify execution
-            assert result.backend_used != "failed"
+            assert self._backend_name(result.backend_used) != "failed"
             assert len(result.counts) > 0
             assert sum(result.counts.values()) == 1000
 
-    def test_algorithm_backend_routing(self):
+    def test_algorithm_backend_routing(self) -> None:
         """Test that algorithms are routed to appropriate backends."""
         test_cases = [
             # (circuit_function, expected_backend_type)
@@ -224,9 +232,9 @@ class TestQuantumAlgorithms:
             if expected_backend:
                 # Backend should match expected type (handle both enum and string)
                 if isinstance(result.backend_used, str):
-                    assert result.backend_used == expected_backend.value, (
-                        f"Circuit routed to {result.backend_used}, expected {expected_backend.value}"
-                    )
+                    assert (
+                        result.backend_used == expected_backend.value
+                    ), f"Circuit routed to {result.backend_used}, expected {expected_backend.value}"
                 else:
                     assert (
                         result.backend_used == expected_backend
@@ -234,7 +242,7 @@ class TestQuantumAlgorithms:
                     ), f"Circuit routed to {result.backend_used}, expected {expected_backend}"
 
             # All circuits should execute successfully
-            assert result.backend_used != "failed"
+            assert self._backend_name(result.backend_used) != "failed"
             assert len(result.counts) > 0
 
     # Helper methods for creating quantum circuits
@@ -498,7 +506,7 @@ class TestQuantumAlgorithms:
 class TestAlgorithmCorrectness:
     """Test correctness of algorithm implementations using statevector simulation."""
 
-    def test_bell_state_fidelity(self):
+    def test_bell_state_fidelity(self) -> None:
         """Test Bell state fidelity using statevector simulation."""
         # Test |Φ+⟩ = (|00⟩ + |11⟩)/√2
         qc = QuantumCircuit(2)
@@ -515,7 +523,7 @@ class TestAlgorithmCorrectness:
         fidelity = state_fidelity(expected, actual)
         assert fidelity > 0.99, f"Bell state fidelity too low: {fidelity}"
 
-    def test_ghz_state_fidelity(self):
+    def test_ghz_state_fidelity(self) -> None:
         """Test GHZ state fidelity."""
         n_qubits = 3
         qc = QuantumCircuit(n_qubits)
@@ -539,7 +547,7 @@ class TestAlgorithmCorrectness:
 class TestLargeScaleAlgorithms:
     """Test large-scale algorithm implementations."""
 
-    def test_large_clifford_circuits(self):
+    def test_large_clifford_circuits(self) -> None:
         """Test large Clifford circuits that should use Stim."""
         for n_qubits in [20, 30, 40]:
             qc = self._create_large_clifford_circuit(n_qubits)
@@ -550,7 +558,7 @@ class TestLargeScaleAlgorithms:
             assert result.backend_used == BackendType.STIM or str(result.backend_used) == "stim"
             assert len(result.counts) > 0
 
-    def test_large_surface_codes(self):
+    def test_large_surface_codes(self) -> None:
         """Test large surface code circuits."""
         for size in [(5, 5), (7, 7)]:
             width, height = size

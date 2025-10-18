@@ -11,7 +11,7 @@ def _has_module(name: str) -> bool:
 
 
 @pytest.mark.skipif(not _has_module("cirq"), reason="Cirq not installed")
-def test_cirq_backend_simulation():
+def test_cirq_backend_simulation() -> None:
     qc = QuantumCircuit(2)
     qc.h(0)
     qc.cx(0, 1)
@@ -22,7 +22,7 @@ def test_cirq_backend_simulation():
 
 
 @pytest.mark.skipif(not _has_module("pennylane"), reason="PennyLane not installed")
-def test_pennylane_backend_simulation():
+def test_pennylane_backend_simulation() -> None:
     qc = QuantumCircuit(2)
     qc.ry(0.3, 0)
     qc.cx(0, 1)
@@ -33,7 +33,7 @@ def test_pennylane_backend_simulation():
 
 
 @pytest.mark.skipif(not _has_module("qulacs"), reason="Qulacs not installed")
-def test_qulacs_backend_simulation():
+def test_qulacs_backend_simulation() -> None:
     qc = QuantumCircuit(2)
     qc.h(0)
     qc.cx(0, 1)
@@ -44,7 +44,7 @@ def test_qulacs_backend_simulation():
 
 
 @pytest.mark.skipif(not _has_module("pyquil"), reason="PyQuil not installed")
-def test_pyquil_backend_simulation():
+def test_pyquil_backend_simulation() -> None:
     qc = QuantumCircuit(2)
     qc.h(0)
     qc.cx(0, 1)
@@ -55,7 +55,7 @@ def test_pyquil_backend_simulation():
 
 
 @pytest.mark.skipif(not _has_module("braket"), reason="Braket SDK not installed")
-def test_braket_backend_simulation():
+def test_braket_backend_simulation() -> None:
     qc = QuantumCircuit(2)
     qc.h(0)
     qc.cx(0, 1)
@@ -66,7 +66,7 @@ def test_braket_backend_simulation():
 
 
 @pytest.mark.skipif(not _has_module("qsharp"), reason="Q# bridge not installed")
-def test_qsharp_backend_simulation():
+def test_qsharp_backend_simulation() -> None:
     qc = QuantumCircuit(1)
     qc.h(0)
     qc.measure_all()

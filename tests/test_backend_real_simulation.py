@@ -2,6 +2,7 @@ import platform
 
 import numpy as np
 import pytest
+from pytest import MonkeyPatch
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
@@ -32,13 +33,13 @@ def test_tensor_network_backend_matches_statevector_distribution() -> None:
 
 
 @pytest.mark.skipif(platform.system() == "Windows", reason="JAX Metal not supported on Windows")
-def test_jax_metal_backend_matches_statevector(monkeypatch) -> None:
+def test_jax_metal_backend_matches_statevector(monkeypatch: MonkeyPatch) -> None:
     pytest.importorskip("jax")
 
     monkeypatch.setattr(platform, "system", lambda: "Darwin")
     monkeypatch.setattr(platform, "machine", lambda: "arm64")
 
-    def _seeded_default_rng(_seed=None):
+    def _seeded_default_rng(_seed: int | None = None) -> np.random.Generator:
         # Return a generator with a fixed seed so sampling is reproducible.
         return np.random.Generator(np.random.PCG64(321))
 

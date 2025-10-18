@@ -12,6 +12,7 @@ import json
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from statistics import fmean
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -207,13 +208,13 @@ class BackendCalibrator:
             return CLIFFORD_DEFAULT_CAPACITY  # Default capacity
 
         # Higher capacity = lower execution time (better performance)
-        avg_time = np.mean(clifford_times)
+        avg_time = float(np.mean(clifford_times))
         baseline_time = CLIFFORD_BASELINE_TIME_S  # Baseline time for Clifford circuits
 
         # Scale capacity: faster execution = higher capacity
-        capacity = max(CLIFFORD_MIN_CAPACITY, baseline_time / avg_time * CLIFFORD_SCALING_FACTOR)
-        result = min(CLIFFORD_MAX_CAPACITY, capacity)  # Cap at reasonable maximum
-        return result  # type: ignore[return-value]
+        raw_capacity = baseline_time / avg_time * CLIFFORD_SCALING_FACTOR
+        capacity = max(CLIFFORD_MIN_CAPACITY, raw_capacity)
+        return min(CLIFFORD_MAX_CAPACITY, capacity)  # Cap at reasonable maximum
 
     def _calculate_general_capacity(self, measurements: list[PerformanceMeasurement]) -> float:
         """Calculate calibrated general circuit capacity."""
@@ -226,12 +227,12 @@ class BackendCalibrator:
         if not general_times:
             return GENERAL_DEFAULT_CAPACITY  # Default capacity
 
-        avg_time = np.mean(general_times)
+        avg_time = float(np.mean(general_times))
         baseline_time = GENERAL_BASELINE_TIME_S  # Baseline time for general circuits
 
-        capacity = max(GENERAL_MIN_CAPACITY, baseline_time / avg_time * GENERAL_SCALING_FACTOR)
-        result = min(GENERAL_MAX_CAPACITY, capacity)
-        return result  # type: ignore[return-value]
+        raw_capacity = baseline_time / avg_time * GENERAL_SCALING_FACTOR
+        capacity = max(GENERAL_MIN_CAPACITY, raw_capacity)
+        return min(GENERAL_MAX_CAPACITY, capacity)
 
     def _calculate_memory_efficiency(self, measurements: list[PerformanceMeasurement]) -> float:
         """Calculate memory efficiency score."""
@@ -265,8 +266,7 @@ class BackendCalibrator:
                     efficiency_scores.append(min(MEMORY_MAX_EFFICIENCY, efficiency))
 
             if efficiency_scores:
-                result = float(np.mean(efficiency_scores))
-                return result
+                return fmean(efficiency_scores)
         except Exception:
             pass
 
@@ -283,15 +283,18 @@ class BackendCalibrator:
             return PLATFORM_BOOST_MIN  # No boost if insufficient data
 
         # Lower variance suggests more consistent (optimized) performance
-        time_std = np.std(times)
-        time_mean = np.mean(times)
+        time_std = float(np.std(times))
+        time_mean = float(np.mean(times))
 
         if time_mean > 0:
             cv = time_std / time_mean  # Coefficient of variation
             # Lower CV = more consistent = better optimization
-            boost = max(PLATFORM_BOOST_MIN, PLATFORM_BOOST_SCALING_FACTOR - cv)
-            result = float(min(PLATFORM_BOOST_MAX, boost))
-            return result
+            candidate: float = PLATFORM_BOOST_SCALING_FACTOR - cv
+            if candidate < PLATFORM_BOOST_MIN:
+                candidate = PLATFORM_BOOST_MIN
+
+            boost = candidate if candidate <= PLATFORM_BOOST_MAX else PLATFORM_BOOST_MAX
+            return boost
 
         return PLATFORM_BOOST_MIN
 

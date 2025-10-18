@@ -7,10 +7,11 @@ with proper mocking for external dependencies.
 
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import numpy as np
 import pytest
+from pytest import CaptureFixture
 
 from ariadne.types import BackendType, SimulationResult
 from ariadne.visualization import (
@@ -27,7 +28,7 @@ from ariadne.visualization import (
 class TestVisualizationConfig:
     """Test VisualizationConfig dataclass functionality."""
 
-    def test_config_default_initialization(self):
+    def test_config_default_initialization(self) -> None:
         """Test default configuration initialization."""
         config = VisualizationConfig()
 
@@ -44,7 +45,7 @@ class TestVisualizationConfig:
         assert config.include_circuit_analysis is True
         assert config.include_statistical_analysis is True
 
-    def test_config_custom_initialization(self):
+    def test_config_custom_initialization(self) -> None:
         """Test custom configuration initialization."""
         custom_dir = Path("/custom/path")
         config = VisualizationConfig(
@@ -79,7 +80,7 @@ class TestVisualizationConfig:
 class TestResultAnalyzer:
     """Test ResultAnalyzer class functionality."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.config = VisualizationConfig()
         self.analyzer = ResultAnalyzer(self.config)
@@ -102,13 +103,13 @@ class TestResultAnalyzer:
         resource_mock.qubit_requirement = 10
         self.mock_result.resource_estimate = resource_mock
 
-    def test_analyzer_initialization(self):
+    def test_analyzer_initialization(self) -> None:
         """Test ResultAnalyzer initialization."""
         analyzer = ResultAnalyzer()
         assert analyzer.config is not None
         assert analyzer.config.output_dir.exists()
 
-    def test_analyze_single_result_basic(self):
+    def test_analyze_single_result_basic(self) -> None:
         """Test basic single result analysis."""
         analysis = self.analyzer.analyze_single_result(self.mock_result)
 
@@ -120,7 +121,7 @@ class TestResultAnalyzer:
         assert "probability_distribution" in analysis
         assert "statistical_metrics" in analysis
 
-    def test_analyze_single_result_with_quantum_advantage(self):
+    def test_analyze_single_result_with_quantum_advantage(self) -> None:
         """Test analysis with quantum advantage data."""
         analysis = self.analyzer.analyze_single_result(self.mock_result)
 
@@ -128,7 +129,7 @@ class TestResultAnalyzer:
         assert analysis["quantum_advantage"]["overall_advantage_score"] == 0.8
         assert analysis["quantum_advantage"]["has_quantum_advantage"] is True
 
-    def test_analyze_single_result_with_resource_estimate(self):
+    def test_analyze_single_result_with_resource_estimate(self) -> None:
         """Test analysis with resource estimate data."""
         analysis = self.analyzer.analyze_single_result(self.mock_result)
 
@@ -138,7 +139,7 @@ class TestResultAnalyzer:
         assert resource_data["memory_requirement_mb"] == 128.0
         assert resource_data["qubit_requirement"] == 10
 
-    def test_analyze_single_result_empty_counts(self):
+    def test_analyze_single_result_empty_counts(self) -> None:
         """Test analysis with empty measurement counts."""
         empty_result = Mock(spec=SimulationResult)
         empty_result.backend_used = BackendType.QISKIT
@@ -152,12 +153,12 @@ class TestResultAnalyzer:
         assert analysis["entropy"] == 0.0
         assert analysis["probability_distribution"] == {}
 
-    def test_analyze_batch_results_empty(self):
+    def test_analyze_batch_results_empty(self) -> None:
         """Test batch analysis with empty results list."""
         analysis = self.analyzer.analyze_batch_results([])
         assert analysis == {}
 
-    def test_analyze_batch_results_multiple(self):
+    def test_analyze_batch_results_multiple(self) -> None:
         """Test batch analysis with multiple results."""
         results = [self.mock_result, self.mock_result]
         analysis = self.analyzer.analyze_batch_results(results)
@@ -168,7 +169,7 @@ class TestResultAnalyzer:
         assert "backend_usage" in analysis
         assert analysis["backend_usage"][BackendType.STIM] == 2
 
-    def test_calculate_measurement_entropy(self):
+    def test_calculate_measurement_entropy(self) -> None:
         """Test entropy calculation for various distributions."""
         # Uniform distribution (max entropy)
         uniform_counts = {"00": 250, "01": 250, "10": 250, "11": 250}
@@ -184,7 +185,7 @@ class TestResultAnalyzer:
         empty_entropy = self.analyzer._calculate_measurement_entropy({})
         assert empty_entropy == 0.0
 
-    def test_get_probability_distribution(self):
+    def test_get_probability_distribution(self) -> None:
         """Test probability distribution calculation."""
         counts = {"00": 300, "11": 700}
         distribution = self.analyzer._get_probability_distribution(counts)
@@ -193,7 +194,7 @@ class TestResultAnalyzer:
         assert distribution["11"] == 0.7
         assert sum(distribution.values()) == 1.0
 
-    def test_calculate_statistical_metrics(self):
+    def test_calculate_statistical_metrics(self) -> None:
         """Test statistical metrics calculation."""
         counts = {"00": 400, "01": 300, "10": 200, "11": 100}
         metrics = self.analyzer._calculate_statistical_metrics(counts)
@@ -207,7 +208,7 @@ class TestResultAnalyzer:
         # All probabilities should sum to 1
         assert abs(metrics["mean_probability"] * 4 - 1.0) < 0.01
 
-    def test_compare_backends(self):
+    def test_compare_backends(self) -> None:
         """Test backend comparison functionality."""
         backend_results = {"stim": self.mock_result, "qiskit": self.mock_result}
 
@@ -223,7 +224,7 @@ class TestResultAnalyzer:
 class TestResultVisualizer:
     """Test ResultVisualizer class functionality with proper mocking."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures with mocked dependencies."""
         self.config = VisualizationConfig()
         self.config.output_dir = Path(tempfile.mkdtemp())
@@ -240,7 +241,7 @@ class TestResultVisualizer:
 
     @patch("ariadne.visualization.plt")
     @patch("ariadne.visualization.sns")
-    def test_visualizer_initialization(self, mock_sns, mock_plt):
+    def test_visualizer_initialization(self, mock_sns: MagicMock, mock_plt: MagicMock) -> None:
         """Test ResultVisualizer initialization."""
         visualizer = ResultVisualizer(self.config)
         assert visualizer.config == self.config
@@ -248,7 +249,9 @@ class TestResultVisualizer:
 
     @patch("ariadne.visualization.plt.subplots")
     @patch("ariadne.visualization.plt.tight_layout")
-    def test_create_single_result_plots(self, mock_tight, mock_subplots):
+    def test_create_single_result_plots(
+        self, mock_tight: MagicMock, mock_subplots: MagicMock
+    ) -> None:
         """Test single result plot creation."""
         # Mock for different subplot calls
         mock_fig = Mock()
@@ -271,17 +274,18 @@ class TestResultVisualizer:
             (mock_fig, axes_2d),  # Second call for performance metrics
         ]
 
-        # Mock save_figure to return a path
-        self.visualizer._save_figure = Mock(return_value=Path("/test/path.png"))
-
-        saved_files = self.visualizer.create_single_result_plots(self.mock_result)
+        with patch.object(
+            self.visualizer, "_save_figure", return_value=Path("/test/path.png")
+        ) as mock_save:
+            saved_files = self.visualizer.create_single_result_plots(self.mock_result)
+            mock_save.assert_called()
 
         assert len(saved_files) > 0
         assert mock_subplots.call_count == 2
 
     @patch("ariadne.visualization.plt.subplots")
     @patch("ariadne.visualization.plt.tight_layout")
-    def test_create_comparison_plots(self, mock_tight, mock_subplots):
+    def test_create_comparison_plots(self, mock_tight: MagicMock, mock_subplots: MagicMock) -> None:
         """Test comparison plot creation."""
         backend_results = {"stim": self.mock_result, "qiskit": self.mock_result}
 
@@ -309,15 +313,16 @@ class TestResultVisualizer:
             (mock_fig, mock_ax_single),  # Second call for accuracy comparison
         ]
 
-        # Mock save_figure
-        self.visualizer._save_figure = Mock(return_value=Path("/test/path.png"))
-
-        saved_files = self.visualizer.create_comparison_plots(backend_results)
+        with patch.object(
+            self.visualizer, "_save_figure", return_value=Path("/test/path.png")
+        ) as mock_save:
+            saved_files = self.visualizer.create_comparison_plots(backend_results)
+            mock_save.assert_called()
 
         assert len(saved_files) == 2
         assert mock_subplots.call_count == 2
 
-    def test_calculate_distribution_similarity(self):
+    def test_calculate_distribution_similarity(self) -> None:
         """Test distribution similarity calculation."""
         counts1 = {"00": 500, "11": 500}
         counts2 = {"00": 500, "11": 500}  # Same distribution
@@ -332,7 +337,7 @@ class TestResultVisualizer:
 
     @patch("ariadne.visualization.plt.show")
     @patch("ariadne.visualization.plt.close")
-    def test_save_figure(self, mock_close, mock_show):
+    def test_save_figure(self, mock_close: MagicMock, mock_show: MagicMock) -> None:
         """Test figure saving functionality."""
         mock_fig = Mock()
 
@@ -355,7 +360,7 @@ class TestResultVisualizer:
 class TestConvenienceFunctions:
     """Test the convenience wrapper functions."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.mock_result = Mock(spec=SimulationResult)
         self.mock_result.backend_used = BackendType.STIM
@@ -363,7 +368,7 @@ class TestConvenienceFunctions:
         self.mock_result.counts = {"00": 500, "11": 500}
 
     @patch("ariadne.visualization.ResultVisualizer")
-    def test_visualize_result(self, mock_visualizer_class):
+    def test_visualize_result(self, mock_visualizer_class: MagicMock) -> None:
         """Test visualize_result convenience function."""
         mock_visualizer = Mock()
         mock_visualizer.create_single_result_plots.return_value = [Path("/test/path.png")]
@@ -378,7 +383,7 @@ class TestConvenienceFunctions:
         assert len(saved_files) == 1
 
     @patch("ariadne.visualization.ResultVisualizer")
-    def test_compare_backend_results(self, mock_visualizer_class):
+    def test_compare_backend_results(self, mock_visualizer_class: MagicMock) -> None:
         """Test compare_backend_results convenience function."""
         backend_results = {"stim": self.mock_result, "qiskit": self.mock_result}
 
@@ -396,7 +401,9 @@ class TestConvenienceFunctions:
 
     @patch("ariadne.visualization.ResultVisualizer")
     @patch("ariadne.visualization.ResultAnalyzer")
-    def test_analyze_batch_results(self, mock_analyzer_class, mock_visualizer_class):
+    def test_analyze_batch_results(
+        self, mock_analyzer_class: MagicMock, mock_visualizer_class: MagicMock
+    ) -> None:
         """Test analyze_batch_results convenience function."""
         results = [self.mock_result, self.mock_result]
 
@@ -420,10 +427,10 @@ class TestConvenienceFunctions:
 class TestVisualizeDecision:
     """Test the visualize_decision text-based visualization function."""
 
-    def test_visualize_decision_basic(self, capsys):
+    def test_visualize_decision_basic(self, capsys: CaptureFixture[str]) -> None:
         """Test basic decision visualization."""
         circuit_name = "test_circuit"
-        decision_path = [
+        decision_path: list[tuple[str, str]] = [
             ("CliffordAnalyzer", "Circuit is Clifford - ROUTE IMMEDIATELY to Stim"),
             ("EntanglementAnalyzer", "Low entanglement - PASS to next analyzer"),
         ]
@@ -441,10 +448,10 @@ class TestVisualizeDecision:
         assert "CliffordAnalyzer" in output
         assert "ROUTE IMMEDIATELY" in output
 
-    def test_visualize_decision_empty_path(self, capsys):
+    def test_visualize_decision_empty_path(self, capsys: CaptureFixture[str]) -> None:
         """Test decision visualization with empty path."""
         circuit_name = "empty_circuit"
-        decision_path = []
+        decision_path: list[tuple[str, str]] = []
         final_backend = "qiskit"
         performance_gain = "No gain"
 

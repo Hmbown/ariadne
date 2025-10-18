@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 try:
-    import yaml
+    import yaml  # type: ignore[import-untyped]
 
     YAML_AVAILABLE = True
 except ImportError:
@@ -326,7 +326,7 @@ class ProgressiveConfigLoader:
                             return cast(dict[str, Any], data)
                     except ImportError:
                         try:
-                            import toml
+                            import toml  # type: ignore[import-untyped]
 
                             data = toml.load(f)
                             if not isinstance(data, dict):
@@ -445,7 +445,7 @@ class ConfigTemplate:
                     "yaml",
                     "YAML support not available. Install PyYAML.",
                 )
-            return yaml.dump(config_data, default_flow_style=False, sort_keys=False)
+            return cast(str, yaml.dump(config_data, default_flow_style=False, sort_keys=False))
         elif format == ConfigFormat.TOML:
             try:
                 import tomli_w
@@ -455,7 +455,7 @@ class ConfigTemplate:
                 try:
                     import toml
 
-                    return toml.dumps(config_data)
+                    return cast(str, toml.dumps(config_data))
                 except ImportError as exc:
                     raise ConfigLoadError(
                         "format",

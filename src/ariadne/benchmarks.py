@@ -12,6 +12,7 @@ import gc
 import json
 import platform
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -125,9 +126,12 @@ class CircuitGenerator:
     """Generator for benchmark test circuits."""
 
     @staticmethod
-    def generate_random_clifford(num_qubits: int, depth: int) -> QuantumCircuit:
+    def generate_random_clifford(num_qubits: int, depth: int | None) -> QuantumCircuit:
         """Generate random Clifford circuit."""
         qc = QuantumCircuit(num_qubits, num_qubits)
+
+        if depth is None:
+            depth = num_qubits * 2  # Default depth
 
         clifford_gates = ["h", "x", "y", "z", "s", "cx"]
 
@@ -147,9 +151,12 @@ class CircuitGenerator:
         return qc
 
     @staticmethod
-    def generate_random_general(num_qubits: int, depth: int) -> QuantumCircuit:
+    def generate_random_general(num_qubits: int, depth: int | None) -> QuantumCircuit:
         """Generate random general circuit with non-Clifford gates."""
         qc = QuantumCircuit(num_qubits, num_qubits)
+
+        if depth is None:
+            depth = num_qubits * 3  # Default depth for general circuits
 
         gates = ["h", "x", "y", "z", "rx", "ry", "rz", "t", "cx"]
 
@@ -173,7 +180,7 @@ class CircuitGenerator:
         return qc
 
     @staticmethod
-    def generate_ghz_state(num_qubits: int, depth: int = None) -> QuantumCircuit:
+    def generate_ghz_state(num_qubits: int, depth: int | None = None) -> QuantumCircuit:
         """Generate GHZ state circuit."""
         qc = QuantumCircuit(num_qubits, num_qubits)
 
@@ -185,7 +192,7 @@ class CircuitGenerator:
         return qc
 
     @staticmethod
-    def generate_qft(num_qubits: int, depth: int = None) -> QuantumCircuit:
+    def generate_qft(num_qubits: int, depth: int | None = None) -> QuantumCircuit:
         """Generate Quantum Fourier Transform circuit."""
         qc = QuantumCircuit(num_qubits, num_qubits)
 
@@ -203,9 +210,12 @@ class CircuitGenerator:
         return qc
 
     @staticmethod
-    def generate_vqe_ansatz(num_qubits: int, depth: int) -> QuantumCircuit:
+    def generate_vqe_ansatz(num_qubits: int, depth: int | None) -> QuantumCircuit:
         """Generate VQE ansatz circuit."""
         qc = QuantumCircuit(num_qubits, num_qubits)
+
+        if depth is None:
+            depth = num_qubits  # Default depth
 
         # Initialize with Hadamards
         for i in range(num_qubits):
@@ -225,9 +235,12 @@ class CircuitGenerator:
         return qc
 
     @staticmethod
-    def generate_qaoa_maxcut(num_qubits: int, depth: int) -> QuantumCircuit:
+    def generate_qaoa_maxcut(num_qubits: int, depth: int | None) -> QuantumCircuit:
         """Generate QAOA MaxCut circuit."""
         qc = QuantumCircuit(num_qubits, num_qubits)
+
+        if depth is None:
+            depth = max(4, num_qubits)  # Default depth for QAOA
 
         # Initial superposition
         for i in range(num_qubits):
@@ -401,7 +414,7 @@ class PerformanceBenchmarker:
     def _generate_circuit(self, circuit_type: str, num_qubits: int, depth: int) -> QuantumCircuit:
         """Generate circuit of specified type."""
 
-        generator_map = {
+        generator_map: dict[str, Callable[[int, int | None], QuantumCircuit]] = {
             "random_clifford": self.circuit_generator.generate_random_clifford,
             "random_general": self.circuit_generator.generate_random_general,
             "ghz_state": self.circuit_generator.generate_ghz_state,
@@ -528,7 +541,7 @@ class PerformanceBenchmarker:
         memory_usages = [r.memory_usage_mb for r in successful_results]
 
         # Backend performance
-        backend_stats = {}
+        backend_stats: dict[str, list[float]] = {}
         for result in successful_results:
             backend = result.backend_used
             if backend not in backend_stats:

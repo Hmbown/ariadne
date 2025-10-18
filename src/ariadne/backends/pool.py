@@ -323,21 +323,11 @@ class BackendPool:
         elif self._stats.available_instances == 0:
             self._status = PoolStatus.EXHAUSTED
             self.logger.debug("Pool status set to EXHAUSTED: available_instances=0")
-        elif self._stats.total_instances == self.min_instances:
-            self._status = PoolStatus.READY
-            print(
-                f"DEBUG: Pool status set to READY: total_instances={self._stats.total_instances} == min_instances={self.min_instances}"
-            )
-            self.logger.debug(
-                f"Pool status set to READY: total_instances={self._stats.total_instances} == min_instances={self.min_instances}"
-            )
         else:
             self._status = PoolStatus.READY
-            print(
-                f"DEBUG: Pool status set to READY: total_instances={self._stats.total_instances}, min_instances={self.min_instances}"
-            )
             self.logger.debug(
-                f"Pool status set to READY: total_instances={self._stats.total_instances}, min_instances={self.min_instances}"
+                f"Pool status set to READY: total_instances={self._stats.total_instances}, "
+                f"min_instances={self.min_instances}"
             )
 
     def get_backend(self, timeout: float = 10.0) -> Any:
@@ -403,12 +393,18 @@ class BackendPool:
 
             return pooled_backend.instance
 
-        except Exception as e:
+        except BackendPoolExhaustedError as exc:
             with self._lock:
                 self._stats.failed_requests += 1
 
-            self.logger.error(f"Failed to get {self.backend_name} instance: {e}")
-            raise BackendPoolError(f"Failed to get backend instance: {e}") from e
+            self.logger.error(f"Failed to get {self.backend_name} instance: {exc}")
+            raise
+        except Exception as exc:
+            with self._lock:
+                self._stats.failed_requests += 1
+
+            self.logger.error(f"Failed to get {self.backend_name} instance: {exc}")
+            raise BackendPoolError(f"Failed to get backend instance: {exc}") from exc
 
     def return_backend(self, backend_instance: Any) -> None:
         """
