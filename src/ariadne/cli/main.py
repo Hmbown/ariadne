@@ -16,11 +16,37 @@ from typing import TYPE_CHECKING, Any
 
 from qiskit import QuantumCircuit
 
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+try:
+    from ariadne.types import BackendType
+except ImportError:  # pragma: no cover - fallback for script execution
+    if PROJECT_ROOT not in sys.path:
+        sys.path.append(PROJECT_ROOT)
+    from ariadne.types import BackendType
+
 if TYPE_CHECKING:
     from ariadne.backends.health_check import HealthMetrics
     from ariadne.core.logging import AriadneLogger
     from ariadne.results import SimulationResult
-    from ariadne.types import BackendType
+
+
+BACKEND_ALIASES: dict[str, str] = {"metal": BackendType.JAX_METAL.value}
+
+CLI_BACKEND_CHOICES = sorted(
+    {
+        BackendType.QISKIT.value,
+        BackendType.STIM.value,
+        BackendType.CUDA.value,
+        BackendType.JAX_METAL.value,
+        BackendType.TENSOR_NETWORK.value,
+        BackendType.MPS.value,
+        BackendType.DDSIM.value,
+    }
+    | set(BACKEND_ALIASES.keys())
+    | set(BACKEND_ALIASES.values())
+)
 
 # Check if YAML is available
 yaml: Any | None
@@ -70,10 +96,8 @@ try:
     from ariadne.core import configure_logging, get_logger
 except ImportError:
     # Fallback for when running as a script
-    import os
-    import sys
-
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if PROJECT_ROOT not in sys.path:
+        sys.path.append(PROJECT_ROOT)
     from ariadne import __version__, simulate
     from ariadne.backends import (
         get_health_checker,
@@ -171,7 +195,7 @@ class AriadneCLI:
 Examples:
   ariadne simulate circuit.qc --shots 1000 --backend qiskit
   ariadne config create --template production --output config.yaml
-  ariadne status --backend qiskit
+  ariadne status --backend metal
   ariadne benchmark --circuit circuit.qc --shots 1000
             """,
         )
@@ -223,7 +247,7 @@ Examples:
 
         parser.add_argument(
             "--backend",
-            choices=["qiskit", "stim", "cuda", "metal", "tensor_network", "mps", "ddsim"],
+            choices=CLI_BACKEND_CHOICES,
             help="Backend to use for simulation",
         )
 
@@ -306,7 +330,7 @@ Examples:
 
         parser.add_argument(
             "--backend",
-            choices=["qiskit", "stim", "cuda", "metal", "tensor_network", "mps", "ddsim"],
+            choices=CLI_BACKEND_CHOICES,
             help="Backend to benchmark (default: all available)",
         )
 
@@ -353,7 +377,7 @@ Examples:
         try:
             kwargs = {"shots": args.shots}
             if args.backend:
-                kwargs["backend"] = args.backend
+                kwargs["backend"] = self._resolve_backend_name(args.backend)
 
             result = simulate(circuit, **kwargs)
             progress.finish("complete")
@@ -711,12 +735,18 @@ Examples:
         with open(output_path, "w") as f:
             json.dump(benchmark_results, f, indent=2)
 
+    def _resolve_backend_name(self, backend_name: str) -> str:
+        """Resolve a backend name to its canonical value if an alias is provided."""
+
+        return BACKEND_ALIASES.get(backend_name, backend_name)
+
     def _parse_backend_type(self, backend_name: str) -> "BackendType | None":
         """Parse backend name to BackendType enum."""
-        from ariadne.types import BackendType
+
+        resolved_name = self._resolve_backend_name(backend_name)
 
         try:
-            return BackendType(backend_name)
+            return BackendType(resolved_name)
         except ValueError:
             return None
 
