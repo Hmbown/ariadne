@@ -33,7 +33,6 @@ dependencies = [
   "scipy>=1.7",
   "networkx>=3.0",
   "matplotlib>=3.5.0",
-  "pytest>=7.0.0",
   "PyYAML>=6.0",
 ]
 
