@@ -25,6 +25,8 @@
 
 ## Overview
 
+> **In plain language:** Ariadne is a smart helper that looks at your quantum project and picks the machine that fits best, so you do not have to guess. You load a circuit, ask Ariadne to run it, and it quietly checks what hardware or simulator you have, chooses the match, runs the job, and keeps notes so you can repeat it later. This matters because it saves teams from trial-and-error testing, keeps results consistent, and lets newcomers focus on ideas instead of setup. Ready for the deeper dive? Jump to [Getting Started](#-getting-started), [Core API](#-core-api), or [Performance](#-performance).
+
 Quantum development teams must balance diverse hardware constraints, simulator capabilities, and performance profiles. Ariadne automates that decision-making loop by analyzing each circuit and routing it to the most appropriate backend while preserving reproducibility and auditability. The platform eliminates manual benchmarking across numerous simulators and keeps workflows consistent across environments.
 
 **Designed for**
