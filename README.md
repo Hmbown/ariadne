@@ -172,7 +172,7 @@ Ariadne's core innovation is its comprehensive routing tree that analyzes circui
 Ariadne provides complete transparency into why a circuit was routed to a specific backend. You can inspect the entire decision path through the routing tree.
 
 ```python
-from ariadne.route.routing_tree import explain_routing, show_routing_tree
+from ariadne import explain_routing, show_routing_tree
 from qiskit import QuantumCircuit
 
 # Create a circuit
@@ -345,6 +345,13 @@ For users who need fine-grained control over the routing process:
 
 ```python
 from ariadne import ComprehensiveRoutingTree, RoutingStrategy
+from qiskit import QuantumCircuit
+
+# Create a circuit
+circuit = QuantumCircuit(2, 2)
+circuit.h(0)
+circuit.cx(0, 1)
+circuit.measure_all()
 
 # Initialize routing system
 router = ComprehensiveRoutingTree()
@@ -384,7 +391,7 @@ Available routing strategies:
 ## 🛡️ Project Maturity
 
 ### Test Coverage
-- **Unit Tests**: 85%+ coverage across core modules.
+- **Unit Tests**: 38%+ coverage across core modules.
 - **Integration Tests**: The test suite is run continuously and is expected to pass, with the exception of one known flaky performance test.
 - **Backend Tests**: All major backends are tested.
 
