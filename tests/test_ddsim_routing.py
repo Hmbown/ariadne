@@ -7,7 +7,9 @@ from qiskit import QuantumCircuit
 from ariadne.route.enhanced_router import EnhancedQuantumRouter
 from ariadne.types import BackendType
 
+# Skip entire module if mqt.ddsim is not available
 dds_spec = importlib.util.find_spec("mqt.ddsim")
+pytestmark = pytest.mark.skipif(dds_spec is None, reason="mqt.ddsim not available")
 
 ddsim_installed = dds_spec is not None
 
