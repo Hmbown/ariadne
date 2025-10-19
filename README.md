@@ -10,6 +10,7 @@
 [![codecov](https://img.shields.io/codecov/c/github/Hmbown/ariadne/main?style=for-the-badge)](https://codecov.io/gh/Hmbown/ariadne)
 [![Code Style](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![PyPI version](https://badge.fury.io/py/ariadne-router.svg)](https://badge.fury.io/py/ariadne-router)
+[![Pytest](https://img.shields.io/badge/tested%20with-pytest-0-9.svg?logo=pytest)](https://pytest.org)
 
 </div>
 
@@ -351,7 +352,7 @@ pip install -e .[dev]
 pre-commit install
 
 # Run unit tests
-make test
+pytest tests/ -v
 ```
 
 📖 **For detailed development setup instructions, see the [Comprehensive Installation Guide](docs/comprehensive_installation.md#development-setup)**

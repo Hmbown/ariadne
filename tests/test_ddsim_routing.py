@@ -29,6 +29,4 @@ def test_router_prefers_ddsim_when_requested_and_available(monkeypatch: MonkeyPa
     router = EnhancedQuantumRouter()
     decision = router.select_optimal_backend(qc)
 
-    assert (
-        decision.recommended_backend == BackendType.DDSIM
-    ), f"Expected DDSIM, got {decision.recommended_backend}"
+    assert decision.recommended_backend == BackendType.DDSIM, f"Expected DDSIM, got {decision.recommended_backend}"

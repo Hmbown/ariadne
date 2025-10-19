@@ -442,9 +442,7 @@ class TestNetworkIntegration:
             # Move to active (would happen in real scheduling)
             if task.task_id in [t.task_id for t in coordinator.task_queue]:
                 coordinator.active_tasks[task.task_id] = task
-                coordinator.task_queue = [
-                    t for t in coordinator.task_queue if t.task_id != task.task_id
-                ]
+                coordinator.task_queue = [t for t in coordinator.task_queue if t.task_id != task.task_id]
 
             # Simulate result
             result_data = {

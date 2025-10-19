@@ -17,7 +17,7 @@ dev-install:
 	pip install -e ".[dev,apple,viz]"
 
 test:
-	pytest tests/ -v
+	pytest tests/ -v -n auto
 
 lint:
 	@echo "Running ruff..."
@@ -31,9 +31,6 @@ lint:
 format:
 	@echo "Formatting with ruff..."
 	ruff format src/ tests/
-	@echo ""
-	@echo "Sorting imports with isort..."
-	isort src/ tests/
 	@echo ""
 	@echo "Formatting complete!"
 

@@ -249,9 +249,7 @@ class TestResultVisualizer:
 
     @patch("ariadne.visualization.plt.subplots")
     @patch("ariadne.visualization.plt.tight_layout")
-    def test_create_single_result_plots(
-        self, mock_tight: MagicMock, mock_subplots: MagicMock
-    ) -> None:
+    def test_create_single_result_plots(self, mock_tight: MagicMock, mock_subplots: MagicMock) -> None:
         """Test single result plot creation."""
         # Mock for different subplot calls
         mock_fig = Mock()
@@ -274,9 +272,7 @@ class TestResultVisualizer:
             (mock_fig, axes_2d),  # Second call for performance metrics
         ]
 
-        with patch.object(
-            self.visualizer, "_save_figure", return_value=Path("/test/path.png")
-        ) as mock_save:
+        with patch.object(self.visualizer, "_save_figure", return_value=Path("/test/path.png")) as mock_save:
             saved_files = self.visualizer.create_single_result_plots(self.mock_result)
             mock_save.assert_called()
 
@@ -313,9 +309,7 @@ class TestResultVisualizer:
             (mock_fig, mock_ax_single),  # Second call for accuracy comparison
         ]
 
-        with patch.object(
-            self.visualizer, "_save_figure", return_value=Path("/test/path.png")
-        ) as mock_save:
+        with patch.object(self.visualizer, "_save_figure", return_value=Path("/test/path.png")) as mock_save:
             saved_files = self.visualizer.create_comparison_plots(backend_results)
             mock_save.assert_called()
 
@@ -377,9 +371,7 @@ class TestConvenienceFunctions:
         saved_files = visualize_result(self.mock_result)
 
         mock_visualizer_class.assert_called_once()
-        mock_visualizer.create_single_result_plots.assert_called_once_with(
-            self.mock_result, "result"
-        )
+        mock_visualizer.create_single_result_plots.assert_called_once_with(self.mock_result, "result")
         assert len(saved_files) == 1
 
     @patch("ariadne.visualization.ResultVisualizer")
@@ -394,16 +386,12 @@ class TestConvenienceFunctions:
         saved_files = compare_backend_results(backend_results)
 
         mock_visualizer_class.assert_called_once()
-        mock_visualizer.create_comparison_plots.assert_called_once_with(
-            backend_results, "comparison"
-        )
+        mock_visualizer.create_comparison_plots.assert_called_once_with(backend_results, "comparison")
         assert len(saved_files) == 1
 
     @patch("ariadne.visualization.ResultVisualizer")
     @patch("ariadne.visualization.ResultAnalyzer")
-    def test_analyze_batch_results(
-        self, mock_analyzer_class: MagicMock, mock_visualizer_class: MagicMock
-    ) -> None:
+    def test_analyze_batch_results(self, mock_analyzer_class: MagicMock, mock_visualizer_class: MagicMock) -> None:
         """Test analyze_batch_results convenience function."""
         results = [self.mock_result, self.mock_result]
 

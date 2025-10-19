@@ -149,9 +149,7 @@ class TestMetalBackend:
 
     def test_metal_memory_management(self) -> None:
         """Test Metal backend memory management."""
-        backend = MetalBackend(
-            allow_cpu_fallback=True, memory_pool_size_mb=1024, enable_memory_mapping=True
-        )
+        backend = MetalBackend(allow_cpu_fallback=True, memory_pool_size_mb=1024, enable_memory_mapping=True)
 
         # Test memory statistics
         stats = backend.memory_stats
@@ -346,9 +344,7 @@ class TestUnifiedSimulationAPI:
         qc.cx(0, 1)
         qc.cx(1, 2)
 
-        options = SimulationOptions(
-            shots=100, analyze_quantum_advantage=True, estimate_resources=True
-        )
+        options = SimulationOptions(shots=100, analyze_quantum_advantage=True, estimate_resources=True)
 
         result = simulator.simulate(qc, options)
 
