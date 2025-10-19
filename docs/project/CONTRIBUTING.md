@@ -36,7 +36,7 @@ Ariadne aims to democratize quantum computing by automatically routing circuits 
 ## 📝 What Can You Contribute?
 
 ### 🐛 Bug Fixes
-- Found a bug? Check if it's already reported in [Issues](https://github.com/Shannon-Labs/ariadne/issues)
+- Found a bug? Check if it's already reported in [Issues](https://github.com/Hmbown/ariadne/issues)
 - Not reported? Create a new issue with a minimal reproduction example
 - Want to fix it? Comment on the issue and submit a PR!
 
@@ -238,7 +238,7 @@ def test_routing_performance(benchmark):
 ## 🔒 Security
 
 - Never commit credentials or API keys
-- Report security vulnerabilities to security@shannonlabs.ai
+- Report security vulnerabilities through [GitHub Security Advisories](https://github.com/Hmbown/ariadne/security/advisories)
 - Use environment variables for sensitive configuration
 
 ## 📈 Performance Contributions
@@ -251,9 +251,8 @@ When claiming performance improvements:
 
 ## 🌐 Community
 
-- **Discord**: [Join our Discord](https://discord.gg/shannonlabs)
-- **Forum**: [Discussions](https://github.com/Shannon-Labs/ariadne/discussions)
-- **Twitter**: [@ShannonLabs](https://twitter.com/shannonlabs)
+- **GitHub Discussions:** [Ask questions and share ideas](https://github.com/Hmbown/ariadne/discussions)
+- **Issue Tracker:** [Report bugs and request features](https://github.com/Hmbown/ariadne/issues)
 
 ## 📜 License
 
@@ -268,9 +267,8 @@ Contributors are recognized in:
 
 ## 📮 Getting Help
 
-- 💬 Discord: Real-time help
-- 📧 Email: dev@shannonlabs.ai
-- 🐛 Issues: Bug reports and features
+- 💬 [GitHub Discussions](https://github.com/Hmbown/ariadne/discussions): Ask questions and get help
+- 🐛 [GitHub Issues](https://github.com/Hmbown/ariadne/issues): Bug reports and feature requests
 
 ---
 

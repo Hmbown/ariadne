@@ -19,7 +19,7 @@
 
 - **PyPI package name**: `ariadne-router`
 - **Publishing method**: Trusted Publisher (GitHub Actions OIDC)
-- **Status**: Pending publisher configured. Next step is to push a tag (e.g., `v0.2.0`) to publish.
+- **Status**: Ready for release! Push a tag to publish to PyPI.
 
 ---
 
@@ -362,7 +362,6 @@ make test
 
 - **GitHub Discussions:** [Ask questions and share ideas](https://github.com/Hmbown/ariadne/discussions)
 - **Issue Tracker:** [Report bugs and request features](https://github.com/Hmbown/ariadne/issues)
-- **Twitter:** [Follow @Hmbown for updates](https://twitter.com/Hmbown)
 
 ---
 
