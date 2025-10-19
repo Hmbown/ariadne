@@ -181,3 +181,5 @@ ariadne = ["*.txt", "*.md", "*.yml", "*.yaml"]
 
 [tool.setuptools_scm]
 write_to = "src/ariadne/_version.py"
+local_scheme = "no-local-version"
+version_scheme = "release-branch-semver"
