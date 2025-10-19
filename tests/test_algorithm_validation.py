@@ -45,9 +45,9 @@ class TestQuantumAlgorithms:
             # Handle case where result has extra padding (spaces)
             actual_states = {state.replace(" ", "")[:n_qubits] for state in result.counts.keys()}
 
-            assert actual_states.issubset(
-                expected_states
-            ), f"GHZ state for {n_qubits} qubits produced unexpected states: {actual_states - expected_states}"
+            assert actual_states.issubset(expected_states), (
+                f"GHZ state for {n_qubits} qubits produced unexpected states: {actual_states - expected_states}"
+            )
 
             # Check that both states appear with roughly equal probability
             if len(actual_states) == 2:
@@ -73,9 +73,7 @@ class TestQuantumAlgorithms:
             assert len(result.counts) > 0
             assert sum(result.counts.values()) == 1000
 
-    @pytest.mark.skip(
-        reason="Grover's algorithm uses multi-controlled phase gates not supported by current backends"
-    )
+    @pytest.mark.skip(reason="Grover's algorithm uses multi-controlled phase gates not supported by current backends")
     def test_grover_algorithm(self) -> None:
         """Test Grover's algorithm for 2 and 3 qubits."""
         for n_qubits in [2, 3]:
@@ -95,9 +93,9 @@ class TestQuantumAlgorithms:
                 target_prob = result.counts[target_bitstring] / 1000
                 # Should have higher probability than uniform distribution
                 uniform_prob = 1.0 / (2**n_qubits)
-                assert (
-                    target_prob > uniform_prob
-                ), f"Grover's algorithm didn't amplify target state: {target_prob} <= {uniform_prob}"
+                assert target_prob > uniform_prob, (
+                    f"Grover's algorithm didn't amplify target state: {target_prob} <= {uniform_prob}"
+                )
 
     def test_variational_quantum_eigensolver(self) -> None:
         """Test VQE ansatz circuits."""
@@ -116,9 +114,9 @@ class TestQuantumAlgorithms:
             # For now, just verify the circuit executes successfully
             # Skip superposition check for MPS backend due to current limitations
             if result.backend_used != BackendType.MPS:
-                assert (
-                    len(result.counts) > 1
-                ), f"VQE ansatz should create superposition, got {result.counts} with backend {result.backend_used}"
+                assert len(result.counts) > 1, (
+                    f"VQE ansatz should create superposition, got {result.counts} with backend {result.backend_used}"
+                )
 
     def test_quantum_approximate_optimization(self) -> None:
         """Test QAOA circuits."""
@@ -232,13 +230,12 @@ class TestQuantumAlgorithms:
             if expected_backend:
                 # Backend should match expected type (handle both enum and string)
                 if isinstance(result.backend_used, str):
-                    assert (
-                        result.backend_used == expected_backend.value
-                    ), f"Circuit routed to {result.backend_used}, expected {expected_backend.value}"
+                    assert result.backend_used == expected_backend.value, (
+                        f"Circuit routed to {result.backend_used}, expected {expected_backend.value}"
+                    )
                 else:
                     assert (
-                        result.backend_used == expected_backend
-                        or str(result.backend_used) == expected_backend.value
+                        result.backend_used == expected_backend or str(result.backend_used) == expected_backend.value
                     ), f"Circuit routed to {result.backend_used}, expected {expected_backend}"
 
             # All circuits should execute successfully

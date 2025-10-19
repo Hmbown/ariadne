@@ -288,9 +288,7 @@ class TestEnhancedBackendInterface:
             stability_rating=0.85,
         )
 
-        enhanced = create_enhanced_backend(
-            backend=mock_backend, backend_name="test_backend", capabilities=capabilities
-        )
+        enhanced = create_enhanced_backend(backend=mock_backend, backend_name="test_backend", capabilities=capabilities)
 
         assert isinstance(enhanced, EnhancedBackendWrapper)
         assert enhanced.backend_name == "test_backend"
@@ -331,9 +329,7 @@ class TestEnhancedBackendInterface:
         )
 
         mock_backend = Mock()
-        enhanced = create_enhanced_backend(
-            backend=mock_backend, backend_name="test_backend", capabilities=capabilities
-        )
+        enhanced = create_enhanced_backend(backend=mock_backend, backend_name="test_backend", capabilities=capabilities)
 
         assert enhanced.supports_capability(BackendCapability.STATE_VECTOR_SIMULATION)
         assert enhanced.supports_capability(BackendCapability.NOISE_MODELING)
@@ -356,9 +352,7 @@ class TestEnhancedBackendInterface:
         )
 
         mock_backend = Mock()
-        enhanced = create_enhanced_backend(
-            backend=mock_backend, backend_name="test_backend", capabilities=capabilities
-        )
+        enhanced = create_enhanced_backend(backend=mock_backend, backend_name="test_backend", capabilities=capabilities)
 
         # Large circuit
         large_circuit = QuantumCircuit(25)
@@ -458,13 +452,9 @@ class TestBackendFallbackStrategy:
         circuit.h(0)
 
         # Execute some fallbacks
-        self.fallback_manager.execute_with_fallback(
-            circuit=circuit, shots=100, fallback_chain=[BackendType.QISKIT]
-        )
+        self.fallback_manager.execute_with_fallback(circuit=circuit, shots=100, fallback_chain=[BackendType.QISKIT])
 
-        self.fallback_manager.execute_with_fallback(
-            circuit=circuit, shots=100, fallback_chain=[BackendType.STIM]
-        )
+        self.fallback_manager.execute_with_fallback(circuit=circuit, shots=100, fallback_chain=[BackendType.STIM])
 
         stats = self.fallback_manager.get_fallback_statistics()
         assert stats["total_fallbacks"] == 2
@@ -484,9 +474,7 @@ class TestBackendFallbackStrategy:
         circuit = QuantumCircuit(1)
         circuit.h(0)
 
-        result = execute_with_fallback(
-            circuit=circuit, shots=100, fallback_chain=[BackendType.QISKIT]
-        )
+        result = execute_with_fallback(circuit=circuit, shots=100, fallback_chain=[BackendType.QISKIT])
 
         assert isinstance(result, FallbackResult)
         assert result.success
@@ -606,9 +594,7 @@ class TestBackendPerformanceMonitor:
             unit="percent",
         )
 
-        recommendations = self.performance_monitor.get_performance_recommendations(
-            BackendType.QISKIT
-        )
+        recommendations = self.performance_monitor.get_performance_recommendations(BackendType.QISKIT)
         assert len(recommendations) > 0
         assert any("optimizing" in rec for rec in recommendations)
 

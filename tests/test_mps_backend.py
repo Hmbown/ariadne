@@ -53,9 +53,7 @@ class TestMPSBackendRigor:
         count_11 = counts.get("11", 0)
         total = count_00 + count_11
         assert total == 1000, f"Expected total shots of 1000, got {total}"
-        assert (
-            abs(count_00 - count_11) < 200
-        ), f"Counts imbalance too large: |00⟩={count_00}, |11⟩={count_11}"
+        assert abs(count_00 - count_11) < 200, f"Counts imbalance too large: |00⟩={count_00}, |11⟩={count_11}"
 
     def test_mps_simulates_low_entanglement_product_state(self, backend: MPSBackend) -> None:
         """
@@ -85,13 +83,11 @@ class TestMPSBackendRigor:
             empirical_probs[idx] = count / total_shots
 
         # Check that empirical probabilities match reference within reasonable tolerance
-        for i, (emp_prob, ref_prob) in enumerate(
-            zip(empirical_probs, reference_probs, strict=False)
-        ):
+        for i, (emp_prob, ref_prob) in enumerate(zip(empirical_probs, reference_probs, strict=False)):
             if ref_prob > 0.1:  # Only check significant probabilities
-                assert (
-                    abs(emp_prob - ref_prob) < 0.1
-                ), f"Probability mismatch for state {i:03b}: empirical={emp_prob:.4f}, reference={ref_prob:.4f}"
+                assert abs(emp_prob - ref_prob) < 0.1, (
+                    f"Probability mismatch for state {i:03b}: empirical={emp_prob:.4f}, reference={ref_prob:.4f}"
+                )
 
     def test_mps_handles_high_entanglement_with_truncation(self) -> None:
         """

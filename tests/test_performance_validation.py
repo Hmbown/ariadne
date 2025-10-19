@@ -63,9 +63,7 @@ class PerformanceValidator:
             },
         }
 
-    def validate_backend_performance(
-        self, backend_name: str, results: list[dict]
-    ) -> dict[str, Any]:
+    def validate_backend_performance(self, backend_name: str, results: list[dict]) -> dict[str, Any]:
         """Validate backend performance against requirements."""
         if backend_name not in self.requirements:
             return {"status": "skipped", "reason": "No requirements defined"}
@@ -128,9 +126,7 @@ class TestPerformanceBenchmarks:
             backend.simulate(circuit, shots=shots)
             execution_time = time.perf_counter() - start_time
 
-            results.append(
-                {"qubits": qubits, "depth": depth, "shots": shots, "execution_time": execution_time}
-            )
+            results.append({"qubits": qubits, "depth": depth, "shots": shots, "execution_time": execution_time})
 
         validation = validator.validate_backend_performance("cpu_backend", results)
 
@@ -211,9 +207,7 @@ class TestPerformanceBenchmarks:
         assert memory_increase < 1024 * 1024 * 1024, "Memory increase should be reasonable"
 
 
-@pytest.mark.skipif(
-    not REGRESSION_DETECTION_AVAILABLE, reason="Regression detection module not available"
-)
+@pytest.mark.skipif(not REGRESSION_DETECTION_AVAILABLE, reason="Regression detection module not available")
 class TestRegressionDetection:
     """Test suite for performance regression detection."""
 
@@ -300,9 +294,7 @@ class TestPerformanceStability:
 
         # Execution times should be reasonably consistent (CV < 65%)
         # Further relaxed threshold due to system variability and measurement noise
-        assert (
-            coefficient_of_variation < 0.65
-        ), f"Execution times too variable: CV={coefficient_of_variation}"
+        assert coefficient_of_variation < 0.65, f"Execution times too variable: CV={coefficient_of_variation}"
 
     def test_memory_stability(self) -> None:
         """Test that memory usage is stable across multiple runs."""
