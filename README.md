@@ -168,14 +168,23 @@ print(show_routing_tree())
 
 ### Installation
 
-**Quick Install:**
+**Typical install (PyPI):**
+```bash
+pip install ariadne-router
+```
+
+#### Developer or power-user setup
+
+Clone the repository if you plan to contribute, run the examples from source, or enable hardware acceleration extras.
+
 ```bash
 git clone https://github.com/Hmbown/ariadne.git
 cd ariadne
 pip install -e .
 ```
 
-**With Hardware Acceleration:**
+To enable optional hardware acceleration backends, install the extras that match your environment:
+
 ```bash
 # Apple Silicon (M1/M2/M3/M4)
 pip install -e .[apple]
@@ -187,7 +196,7 @@ pip install -e .[cuda]
 pip install -e .[apple,cuda,viz]
 ```
 
-📖 **For detailed installation instructions, see the [Comprehensive Installation Guide](docs/comprehensive_installation.md)**
+📖 **For detailed installation instructions, including dependency notes, see the [Comprehensive Installation Guide](docs/comprehensive_installation.md)**
 
 ### Your First Simulation
 
