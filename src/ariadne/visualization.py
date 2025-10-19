@@ -8,7 +8,6 @@ visualization, and comparative studies.
 
 from __future__ import annotations
 
-import importlib.util
 import math
 import time
 from dataclasses import dataclass
@@ -19,9 +18,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from matplotlib.figure import Figure
-
-PLOTLY_AVAILABLE = importlib.util.find_spec("plotly") is not None
-PANDAS_AVAILABLE = importlib.util.find_spec("pandas") is not None
 
 
 @dataclass
