@@ -22,21 +22,20 @@
 - **Publishing method**: Trusted Publisher (GitHub Actions OIDC)
 - **Status**: Ready for release! Push a tag to publish to PyPI.
 
----
 
-**Quantum computing is still in its early days.** As the ecosystem evolves rapidly with new simulators, hardware platforms, and optimization techniques, developers face an increasingly complex landscape of choices. Each quantum circuit might run best on a different backend, but who has time to manually benchmark across 15+ simulators?
+## Overview
 
-Ariadne attempts to solve this by automatically analyzing your quantum circuits and routing them to optimal backends. Instead of wrestling with import statements and performance tuning, you can focus on your algorithms.
+Quantum development teams must balance diverse hardware constraints, simulator capabilities, and performance profiles. Ariadne automates that decision-making loop by analyzing each circuit and routing it to the most appropriate backend while preserving reproducibility and auditability. The platform eliminates manual benchmarking across numerous simulators and keeps workflows consistent across environments.
 
-This is an experiment in simplifying quantum development workflows. **Feedback, contributions, and real-world testing are very welcome** - I'm genuinely curious whether this approach helps or just adds another layer of complexity.
+**Designed for**
+- **Researchers** who need to iterate on algorithms quickly with deterministic, explainable routing decisions.
+- **Developers** who integrate quantum workloads into larger systems and require predictable fallbacks.
+- **Students** who want a single entry point for exploring multiple simulators without vendor-specific setup.
+- **Enterprise teams** that demand governed execution paths, configurable policies, and transparent performance trade-offs.
 
----
+Routing logic is deterministic and driven by measurable circuit characteristics, ensuring that every decision can be reproduced and audited when requirements evolve.
 
-Ariadne is an intelligent quantum circuit routing system that automatically analyzes circuit properties and selects the optimal simulator backend. Like the mythological thread that guided Theseus through the labyrinth, Ariadne guides developers through the complex landscape of quantum simulators to find optimal performance paths.
-
-The routing system prioritizes transparency and determinism - every routing decision is based on measurable circuit characteristics and can be audited for correctness.
-
-[📖 Local Docs](docs/README.md) • [💡 Examples](examples/README.md) • [🚀 Getting Started](#-getting-started) • [📊 Performance](#-performance) • [🤝 Contributing](#-contributing)
+[📖 Local Docs](docs/README.md) • [💡 Examples](examples/README.md) • [🚀 Getting Started](#-getting-started) • [🧠 Core API](#-core-api) • [📊 Performance](#-performance) • [🤝 Contributing](#-contributing)
 
 ---
 
@@ -240,15 +239,64 @@ python examples/generate_quickstart_gif.py --output docs/source/_static/quicksta
 
 ---
 
+## 🧠 Core API
+
+- **`simulate`** – High-level helper that inspects a circuit, selects the best backend, and returns a `SimulationResult`.
+
+  ```python
+  from ariadne import simulate
+
+  result = simulate(circuit, shots=1000)
+  print(result.backend_used)
+  print(result.execution_time)
+  ```
+
+- **`EnhancedQuantumRouter`** – Object-oriented interface for configuring routing policies and evaluating decisions programmatically.
+
+  ```python
+  from ariadne import EnhancedQuantumRouter
+
+  router = EnhancedQuantumRouter()
+  decision = router.select_optimal_backend(circuit)
+  print(decision.recommended_backend)
+  print(decision.confidence_score)
+  ```
+
+- **`ComprehensiveRoutingTree` / `explain_routing`** – Deterministic, auditable explanation tools for governance and debugging.
+
+  ```python
+from ariadne import ComprehensiveRoutingTree
+
+tree = ComprehensiveRoutingTree()
+decision = tree.route_circuit(circuit)
+print(decision.recommended_backend)
+print(decision.confidence_score)
+  ```
+
+Complementary helpers such as `get_config_manager()` and `configure_ariadne()` enable centrally managed policies, while the `ariadne` CLI mirrors these workflows for scripted environments.
+
+---
+
 ## 📊 Performance
 
-Ariadne's primary value is not raw speed, but **intelligent routing** and **developer productivity**. By automatically selecting the best backend for a given circuit, Ariadne saves developers from having to manually manage different simulation environments.
+Ariadne emphasizes **capability extension** and **consistent execution**. Automated routing ensures that circuits land on the most suitable simulator, even when that involves specialized tooling such as Stim or tensor-network engines. Benchmarks focus on demonstrating routing correctness, fallbacks, and platform-specific acceleration rather than raw single-backend speed.
 
-While Ariadne can provide significant speedups in certain scenarios (e.g., using the Stim backend for large Clifford circuits), the overhead of circuit analysis means that for small circuits, direct simulation with a specific backend may be faster.
+### Representative routing results
 
-The true advantage of Ariadne is its ability to **extend your capabilities** by seamlessly routing circuits to backends that can handle them, such as simulating very large Clifford circuits with Stim, which would be impossible with a standard statevector simulator.
+| Circuit | Selected backend | Router runtime (ms) | Direct Qiskit (ms) | Notes |
+|---------|------------------|---------------------|--------------------|-------|
+| `ghz_chain_10` | Stim | 17.9 | 1.47 | Router overhead exceeds direct Qiskit, but Stim unlocks scaling beyond 24 qubits. |
+| `random_clifford_12` | Stim | 339 | 13.2 | Conversion cost dominates at moderate size; routing remains correct for stabilizer workloads. |
+| `random_nonclifford_8` | Tensor network | 111 | 1.65 | Tensor contraction adds cost yet preserves accuracy for non-Clifford structure. |
+| `qaoa_maxcut_8_p3` | Tensor network | 67.6 | 1.34 | Demonstrates automatic selection of tensor-network backend even without immediate speedup. |
 
-For detailed, up-to-date performance data, please refer to the benchmark reports in the `benchmarks/results` directory.
+### Platform-specific highlights
+
+- **Apple Silicon** – JAX-Metal delivered 1.16×–1.51× speedups across sampled circuits, with minor regressions on a small subset when GPU transfer costs dominate.
+- **CUDA** – Benchmarks executed without GPU hardware; CPU baselines are recorded for reference and CUDA routing falls back safely when accelerators are unavailable.
+- **Operational insights** – Routing consistently selects specialized simulators for Clifford families, maintains deterministic fallbacks, and extends feasible circuit sizes beyond statevector limits.
+
+Full benchmark outputs, reproducibility scripts, and raw JSON data are available under `benchmarks/results` for compliance reviews and custom analysis.
 
 ---
 
