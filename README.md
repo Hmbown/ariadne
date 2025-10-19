@@ -257,7 +257,7 @@ python examples/generate_quickstart_gif.py --output docs/source/_static/quicksta
   from ariadne import EnhancedQuantumRouter
 
   router = EnhancedQuantumRouter()
-  decision = router.route(circuit)
+  decision = router.select_optimal_backend(circuit)
   print(decision.recommended_backend)
   print(decision.confidence_score)
   ```
