@@ -47,9 +47,7 @@ plt.plot(N_qubits, D_low_entanglement, "bs-", label=r"Scenario B: Low Entangleme
 
 # Add a practical limit for D (e.g., D=1000 is often a practical limit for fast simulation)
 D_limit = 1000
-plt.axhline(
-    y=D_limit, color="k", linestyle="--", alpha=0.6, label=f"Practical MPS Limit (D={D_limit})"
-)
+plt.axhline(y=D_limit, color="k", linestyle="--", alpha=0.6, label=f"Practical MPS Limit (D={D_limit})")
 
 plt.yscale("log")  # Use a logarithmic scale for the y-axis to clearly show the exponential growth
 plt.title("Required MPS Bond Dimension (D) vs. Number of Qubits (N)")
@@ -72,27 +70,15 @@ print("=" * 80)
 print("Observe the graph, my friends. It is a picture of computational reality.")
 print("\nScenario A (High Entanglement):")
 print("The required bond dimension D explodes exponentially with the number of qubits N.")
-print(
-    "This means that even a modest increase in N quickly pushes D past any practical limit (D=1000)."
-)
+print("This means that even a modest increase in N quickly pushes D past any practical limit (D=1000).")
 print("The computational cost of MPS, which scales as poly(N) * poly(D), becomes dominated by D,")
 print("making the simulation impossible, just like a full state vector simulation.")
 
 print("\nScenario B (Low Entanglement):")
-print(
-    "The required bond dimension D grows only linearly with N. It stays far below the practical limit."
-)
-print(
-    "In this regime, the MPS simulation cost remains polynomial in N and constant/polynomial in D."
-)
-print(
-    "This is the 'sweet spot' where MPS provides an exponential speedup over full state vector methods."
-)
-print(
-    "Our heuristic 'should_use_mps' is designed to detect circuits that fall into this Scenario B."
-)
-print(
-    "It's not magic; it's physics: low entanglement means low information redundancy, which MPS exploits."
-)
+print("The required bond dimension D grows only linearly with N. It stays far below the practical limit.")
+print("In this regime, the MPS simulation cost remains polynomial in N and constant/polynomial in D.")
+print("This is the 'sweet spot' where MPS provides an exponential speedup over full state vector methods.")
+print("Our heuristic 'should_use_mps' is designed to detect circuits that fall into this Scenario B.")
+print("It's not magic; it's physics: low entanglement means low information redundancy, which MPS exploits.")
 print("The universe is not always maximally entangled, and that's our computational opportunity!")
 print("=" * 80)

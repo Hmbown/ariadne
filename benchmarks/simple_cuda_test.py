@@ -255,9 +255,7 @@ def main():
 
         print("\nBy Circuit Size:")
         for qubits, data in analysis["by_circuit_size"].items():
-            print(
-                f"  {qubits} qubits: {data['average_speedup']:.2f}x average ({data['test_count']} tests)"
-            )
+            print(f"  {qubits} qubits: {data['average_speedup']:.2f}x average ({data['test_count']} tests)")
 
     # Save results
     results_dir = Path("results")

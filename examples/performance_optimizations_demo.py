@@ -253,9 +253,7 @@ def demo_parallel_processing():
     print("\nTesting parallel simulation...")
     start_time = time.time()
 
-    parallel_results = simulate_parallel(
-        circuits, shots=100, execution_mode=ExecutionMode.MULTI_PROCESS
-    )
+    parallel_results = simulate_parallel(circuits, shots=100, execution_mode=ExecutionMode.MULTI_PROCESS)
 
     parallel_time = time.time() - start_time
 
@@ -278,9 +276,7 @@ def demo_parallel_processing():
 
     # Check results
     success_count = sum(1 for r in parallel_results if r.success)
-    print(
-        f"  Success rate: {success_count}/{len(parallel_results)} ({success_count / len(parallel_results):.2%})"
-    )
+    print(f"  Success rate: {success_count}/{len(parallel_results)} ({success_count / len(parallel_results):.2%})")
 
 
 def demo_intelligent_caching():
@@ -479,9 +475,7 @@ def main():
     print("✓ Memory management for efficient resource utilization")
     print("✓ Parallel processing for high-throughput simulation")
     print("✓ Intelligent caching for avoiding redundant computations")
-    print(
-        "\nThese optimizations make Ariadne significantly faster and more efficient for production workloads."
-    )
+    print("\nThese optimizations make Ariadne significantly faster and more efficient for production workloads.")
 
     # Clean up resources
     get_memory_manager().shutdown()

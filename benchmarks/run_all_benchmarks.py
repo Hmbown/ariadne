@@ -121,9 +121,7 @@ def _summarise_metal(path: Path) -> str:
         cpu_time = _safe_float(cpu_entry.get("execution_time"))
 
         if not metal_entry:
-            lines.append(
-                f"| {circuit} | {shots} | {_format_seconds(cpu_time)} | — | Metal backend results missing |"
-            )
+            lines.append(f"| {circuit} | {shots} | {_format_seconds(cpu_time)} | — | Metal backend results missing |")
             continue
 
         if not metal_entry.get("success", True):
@@ -178,9 +176,7 @@ def _summarise_cuda(path: Path, execution: BenchmarkExecution) -> str:
         qiskit_time = _safe_float(qiskit_entry.get("mean_time"))
 
         if not cuda_entry:
-            lines.append(
-                f"| {circuit} | {shots} | {_format_seconds(qiskit_time)} | — | CUDA data missing |"
-            )
+            lines.append(f"| {circuit} | {shots} | {_format_seconds(qiskit_time)} | — | CUDA data missing |")
             continue
 
         cuda_time = _safe_float(cuda_entry.get("mean_time"))
@@ -235,9 +231,7 @@ def _summarise_vs_qiskit(
         qiskit_time = _safe_float(qiskit_entry.get("mean_time"))
 
         if backend_entry is None:
-            lines.append(
-                f"| {circuit} | {shots} | {_format_seconds(qiskit_time)} | — | {backend_label} data missing |"
-            )
+            lines.append(f"| {circuit} | {shots} | {_format_seconds(qiskit_time)} | — | {backend_label} data missing |")
             continue
 
         if not backend_entry.get("success", True):
@@ -322,9 +316,7 @@ def generate_summary_report(results_dir: Path, executions: list[BenchmarkExecuti
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run all Ariadne benchmarks")
     parser.add_argument("--shots", type=int, default=1000, help="Number of shots per circuit")
-    parser.add_argument(
-        "--output-dir", type=str, default="results", help="Output directory for results"
-    )
+    parser.add_argument("--output-dir", type=str, default="results", help="Output directory for results")
     parser.add_argument("--skip-metal", action="store_true", help="Skip Metal benchmarks")
     parser.add_argument("--skip-cuda", action="store_true", help="Skip CUDA benchmarks")
     parser.add_argument("--skip-stim", action="store_true", help="Skip Stim benchmarks")

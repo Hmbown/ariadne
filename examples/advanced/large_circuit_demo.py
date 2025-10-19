@@ -153,9 +153,7 @@ def main():
 
     # 1. Quantum Fourier Transform (important for many algorithms)
     results.append(
-        benchmark_algorithm(
-            create_quantum_fourier_transform, "Quantum Fourier Transform (8 qubits)", n_qubits=8
-        )
+        benchmark_algorithm(create_quantum_fourier_transform, "Quantum Fourier Transform (8 qubits)", n_qubits=8)
     )
 
     # 2. Grover's Algorithm (quantum search)
@@ -180,9 +178,7 @@ def main():
 
     # 4. Error Correction (quantum fault tolerance)
     results.append(
-        benchmark_algorithm(
-            create_error_correction_demo, "Quantum Error Correction Demo (5 qubits)", n_qubits=5
-        )
+        benchmark_algorithm(create_error_correction_demo, "Quantum Error Correction Demo (5 qubits)", n_qubits=5)
     )
 
     print(f"\n{'=' * 60}")

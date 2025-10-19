@@ -85,9 +85,7 @@ def make_animation(results: list[tuple[str, str, str]], output_path: str) -> Non
         line_actual.set_text(f"Actual: {actual}")
         return [title, subtitle, line_expected, line_actual]
 
-    anim = FuncAnimation(
-        fig, update, frames=len(results), init_func=init, blit=True, repeat=True, interval=1600
-    )
+    anim = FuncAnimation(fig, update, frames=len(results), init_func=init, blit=True, repeat=True, interval=1600)
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     try:

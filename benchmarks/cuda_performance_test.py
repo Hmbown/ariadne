@@ -191,13 +191,11 @@ def analyze_results(results: list[BenchmarkResult]) -> dict:
     qiskit_results = [r for r in results if r.backend == "qiskit" and r.success]
 
     analysis["cuda_results"] = [
-        {"circuit_size": r.circuit_size, "shots": r.shots, "execution_time": r.execution_time}
-        for r in cuda_results
+        {"circuit_size": r.circuit_size, "shots": r.shots, "execution_time": r.execution_time} for r in cuda_results
     ]
 
     analysis["qiskit_results"] = [
-        {"circuit_size": r.circuit_size, "shots": r.shots, "execution_time": r.execution_time}
-        for r in qiskit_results
+        {"circuit_size": r.circuit_size, "shots": r.shots, "execution_time": r.execution_time} for r in qiskit_results
     ]
 
     # Compute speedups where both backends succeeded
@@ -237,9 +235,7 @@ def main():
 
         print("\nDetailed Speedups:")
         for speedup in analysis["speedups"]:
-            print(
-                f"  {speedup['circuit_size']} qubits, {speedup['shots']} shots: {speedup['speedup']:.2f}x"
-            )
+            print(f"  {speedup['circuit_size']} qubits, {speedup['shots']} shots: {speedup['speedup']:.2f}x")
 
     # Save results
     with open("benchmarks/cuda_benchmark_results.json", "w") as f:

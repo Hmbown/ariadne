@@ -182,9 +182,7 @@ def build_benchmark_cases() -> list[BenchmarkCase]:
     ]
 
 
-def time_function(
-    fn: Callable[[], object], repetitions: int
-) -> tuple[list[float], bool, str | None]:
+def time_function(fn: Callable[[], object], repetitions: int) -> tuple[list[float], bool, str | None]:
     timings: list[float] = []
     for _ in range(repetitions):
         start = time.perf_counter()
@@ -205,9 +203,7 @@ def benchmark_case(
     circuit = case.builder()
     analysis = analyze_circuit(circuit)
     num_qubits = circuit.num_qubits
-    num_gates = len(
-        [item for item in circuit.data if item[0].name not in {"measure", "barrier", "delay"}]
-    )
+    num_gates = len([item for item in circuit.data if item[0].name not in {"measure", "barrier", "delay"}])
 
     timings: list[TimingResult] = []
     router_backend: str | None = None
@@ -388,9 +384,7 @@ def main() -> None:
         default=Path("results/router_benchmark_results.json"),
         help="Path to write JSON results",
     )
-    parser.add_argument(
-        "--no-tensor-network", action="store_true", help="Disable direct tensor network baseline"
-    )
+    parser.add_argument("--no-tensor-network", action="store_true", help="Disable direct tensor network baseline")
     args = parser.parse_args()
 
     cases = build_benchmark_cases()

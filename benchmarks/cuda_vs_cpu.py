@@ -121,9 +121,7 @@ def benchmark_case(
     if is_cuda_available():
         gpu_timings: list[float] = []
         for _ in range(repetitions):
-            gpu_timings.append(
-                time_call(lambda: run_cuda_backend(case.circuit, shots, prefer_gpu=True))
-            )
+            gpu_timings.append(time_call(lambda: run_cuda_backend(case.circuit, shots, prefer_gpu=True)))
         results.append(
             BenchmarkResult(
                 circuit=case.name,
@@ -137,9 +135,7 @@ def benchmark_case(
     if include_cpu:
         cpu_timings: list[float] = []
         for _ in range(repetitions):
-            cpu_timings.append(
-                time_call(lambda: run_cuda_backend(case.circuit, shots, prefer_gpu=False))
-            )
+            cpu_timings.append(time_call(lambda: run_cuda_backend(case.circuit, shots, prefer_gpu=False)))
         results.append(
             BenchmarkResult(
                 circuit=case.name,
@@ -197,9 +193,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Benchmark Ariadne backends")
     parser.add_argument("--shots", type=int, default=1024, help="Number of shots per run")
     parser.add_argument("--repetitions", type=int, default=3, help="Number of repetitions per case")
-    parser.add_argument(
-        "--cpu", action="store_true", help="Include Ariadne CPU fallback measurements"
-    )
+    parser.add_argument("--cpu", action="store_true", help="Include Ariadne CPU fallback measurements")
     parser.add_argument(
         "--json",
         type=str,

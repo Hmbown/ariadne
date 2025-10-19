@@ -119,9 +119,7 @@ def compare_execution_methods():
             if adapter:
                 adapter_type = adapter.get("adapter", "none")
                 cut_rank = adapter.get("cut_rank", 0)
-                print(
-                    f"    - Segment {seg['segment_id']}: {backend} (adapter: {adapter_type}, r={cut_rank})"
-                )
+                print(f"    - Segment {seg['segment_id']}: {backend} (adapter: {adapter_type}, r={cut_rank})")
             else:
                 print(f"    - Segment {seg['segment_id']}: {backend}")
 
@@ -226,12 +224,8 @@ def main():
     with showcase_path.open("w") as f:
         f.write("# Segmented Execution Showcase\n\n")
         f.write("## Performance Comparison\n\n")
-        f.write(
-            "| Qubits | Single Backend | Single Time (s) | Segmented Time (s) | Speedup | Segments |\n"
-        )
-        f.write(
-            "|--------|----------------|-----------------|-------------------|---------|----------|\n"
-        )
+        f.write("| Qubits | Single Backend | Single Time (s) | Segmented Time (s) | Speedup | Segments |\n")
+        f.write("|--------|----------------|-----------------|-------------------|---------|----------|\n")
 
         for res in comparison_results:
             f.write(
@@ -261,9 +255,7 @@ def main():
         # Find best speedup
         best = max(comparison_results, key=lambda x: x["speedup"])
         if best["speedup"] > 1.3:
-            f.write(
-                f"- **Best speedup**: {best['speedup']:.2f}x for {best['n_qubits']}-qubit circuit\n"
-            )
+            f.write(f"- **Best speedup**: {best['speedup']:.2f}x for {best['n_qubits']}-qubit circuit\n")
             f.write(
                 f"- Segmented execution reduced time from {best['single_time']:.3f}s to {best['segmented_time']:.3f}s\n"
             )

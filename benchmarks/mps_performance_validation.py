@@ -22,9 +22,7 @@ from ariadne.backends.mps_backend import MPSBackend
 # --- Utility Functions ---
 
 
-def time_function(
-    fn: Callable[[], object], repetitions: int
-) -> tuple[float, float, bool, str | None]:
+def time_function(fn: Callable[[], object], repetitions: int) -> tuple[float, float, bool, str | None]:
     """Times a function execution over multiple repetitions."""
     timings: list[float] = []
     success = True
@@ -84,9 +82,7 @@ def build_low_entanglement_circuit(num_qubits: int, depth: int) -> QuantumCircui
 # --- Main Benchmark Logic ---
 
 
-def run_mps_validation_benchmark(
-    qubit_range: range, depth: int = 5, repetitions: int = 3, shots: int = 1024
-):
+def run_mps_validation_benchmark(qubit_range: range, depth: int = 5, repetitions: int = 3, shots: int = 1024):
     """
     Compares MPSBackend performance against a standard StateVectorBackend
     for low-entanglement circuits across a range of qubit counts.

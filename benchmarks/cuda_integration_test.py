@@ -143,9 +143,7 @@ def run_integration_tests() -> list[IntegrationTestResult]:
 
     for circuit_name, circuit in circuits.items():
         is_clifford = is_clifford_circuit(circuit)
-        print(
-            f"Testing {circuit_name} ({circuit.num_qubits} qubits, {'Clifford' if is_clifford else 'Non-Clifford'})"
-        )
+        print(f"Testing {circuit_name} ({circuit.num_qubits} qubits, {'Clifford' if is_clifford else 'Non-Clifford'})")
 
         for shots in shot_counts:
             print(f"  Shots: {shots}")
@@ -157,9 +155,7 @@ def run_integration_tests() -> list[IntegrationTestResult]:
 
                 execution_time = end_time - start_time
                 backend_used = (
-                    result.backend_used.value
-                    if hasattr(result.backend_used, "value")
-                    else str(result.backend_used)
+                    result.backend_used.value if hasattr(result.backend_used, "value") else str(result.backend_used)
                 )
 
                 print(f"    Backend: {backend_used}")
@@ -286,9 +282,7 @@ def main():
     large_non_clifford_cuda = analysis["cuda_selections"].get("large_non_clifford", 0) + analysis[
         "cuda_selections"
     ].get("very_large_non_clifford", 0)
-    total_large_non_clifford = sum(
-        1 for r in results if r.success and not r.is_clifford and r.qubits >= 16
-    )
+    total_large_non_clifford = sum(1 for r in results if r.success and not r.is_clifford and r.qubits >= 16)
 
     if large_non_clifford_cuda > 0:
         print(

@@ -196,9 +196,7 @@ def demonstrate_multi_objective_optimization(context):
         ),
         (
             "Balanced",
-            ObjectiveWeight(
-                time_weight=0.3, accuracy_weight=0.3, memory_weight=0.2, energy_weight=0.2
-            ),
+            ObjectiveWeight(time_weight=0.3, accuracy_weight=0.3, memory_weight=0.2, energy_weight=0.2),
         ),
     ]
 
@@ -207,9 +205,7 @@ def demonstrate_multi_objective_optimization(context):
 
         for config_name, weights in weight_configs:
             try:
-                result = optimizer.find_optimal_backend(
-                    circuit, available_backends, context, weights
-                )
+                result = optimizer.find_optimal_backend(circuit, available_backends, context, weights)
 
                 print(
                     f"  {config_name:>15}: {result.backend.value} "
@@ -240,10 +236,7 @@ def demonstrate_routing_explanation():
 
         # Fallback: show basic decision
         decision = router.select_optimal_backend(circuit)
-        print(
-            f"Basic Decision: {decision.recommended_backend.value} "
-            f"(confidence: {decision.confidence_score:.1%})"
-        )
+        print(f"Basic Decision: {decision.recommended_backend.value} (confidence: {decision.confidence_score:.1%})")
 
 
 def run_performance_comparison():
@@ -273,10 +266,7 @@ def run_performance_comparison():
         try:
             basic_decision = basic_router.select_optimal_backend(circuit)
             basic_time = time.time() - start_time
-            print(
-                f"  Basic Router: {basic_decision.recommended_backend.value} "
-                f"({basic_time * 1000:.1f}ms)"
-            )
+            print(f"  Basic Router: {basic_decision.recommended_backend.value} ({basic_time * 1000:.1f}ms)")
         except Exception as e:
             print(f"  Basic Router: Failed - {e}")
 

@@ -208,9 +208,7 @@ def main() -> None:
         default=None,
         help="Optional path to write results as JSON",
     )
-    parser.add_argument(
-        "--skip-qiskit", action="store_true", help="Skip Qiskit baseline measurements"
-    )
+    parser.add_argument("--skip-qiskit", action="store_true", help="Skip Qiskit baseline measurements")
 
     args = parser.parse_args()
 

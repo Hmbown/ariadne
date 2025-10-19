@@ -72,9 +72,7 @@ def demo_configuration_system():
             config_with_env = load_config(config_paths=[config_path])
             print("Configuration with environment overrides loaded")
             print(f"  Logging level: {config_with_env.get('logging', {}).get('level')}")
-            print(
-                f"  Default backend: {config_with_env.get('backends', {}).get('default_backend')}"
-            )
+            print(f"  Default backend: {config_with_env.get('backends', {}).get('default_backend')}")
         except Exception as e:
             logger.error(f"Failed to load configuration with environment overrides: {e}")
 

@@ -371,15 +371,11 @@ class ReproducibleBenchmarks:
                 and result.backend_used != "stim"
                 and importlib.util.find_spec("stim") is not None
             ):
-                issues.append(
-                    f"⚠️  {result.circuit_name}: Expected Stim but used {result.backend_used}"
-                )
+                issues.append(f"⚠️  {result.circuit_name}: Expected Stim but used {result.backend_used}")
 
             # Check for reasonable execution times (< 10 seconds for test circuits)
             if result.execution_time > 10.0:
-                issues.append(
-                    f"🐌 {result.circuit_name}: Slow execution ({result.execution_time:.2f}s)"
-                )
+                issues.append(f"🐌 {result.circuit_name}: Slow execution ({result.execution_time:.2f}s)")
 
             # Check for infinite execution times
             if result.execution_time == float("inf"):
@@ -428,9 +424,7 @@ class ReproducibleBenchmarks:
         for result in suite.results:
             status = "✅ Pass" if result.success else "❌ Fail"
             time_str = f"{result.execution_time:.4f}" if result.success else "∞"
-            report.append(
-                f"| {result.circuit_name} | {result.backend_used} | {time_str} | {status} |"
-            )
+            report.append(f"| {result.circuit_name} | {result.backend_used} | {time_str} | {status} |")
 
         # Validation issues
         issues = self.validate_results(suite)

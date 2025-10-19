@@ -80,13 +80,9 @@ def demo_health_checking():
     # Register health checks
     from ariadne.backends.health_checker import create_circuit_based_health_check
 
-    healthy_check = create_circuit_based_health_check(
-        "healthy", healthy_backend.simulate, simple_circuit
-    )
+    healthy_check = create_circuit_based_health_check("healthy", healthy_backend.simulate, simple_circuit)
 
-    unhealthy_check = create_circuit_based_health_check(
-        "unhealthy", unhealthy_backend.simulate, simple_circuit
-    )
+    unhealthy_check = create_circuit_based_health_check("unhealthy", unhealthy_backend.simulate, simple_circuit)
 
     health_checker.register_health_check(BackendType.QISKIT, healthy_check)
     health_checker.register_health_check(BackendType.CUDA, unhealthy_check)
@@ -214,9 +210,7 @@ def demo_enhanced_interface():
     )
 
     # Create enhanced backend
-    enhanced = create_enhanced_backend(
-        backend=mock_backend, backend_name="enhanced_demo", capabilities=capabilities
-    )
+    enhanced = create_enhanced_backend(backend=mock_backend, backend_name="enhanced_demo", capabilities=capabilities)
 
     print("✓ Enhanced backend created with capabilities")
 
@@ -239,13 +233,9 @@ def demo_enhanced_interface():
 
     # Test capability support
     print("\n--- Capability Support ---")
-    print(
-        f"State vector simulation: {enhanced.supports_capability(BackendCapability.STATE_VECTOR_SIMULATION)}"
-    )
+    print(f"State vector simulation: {enhanced.supports_capability(BackendCapability.STATE_VECTOR_SIMULATION)}")
     print(f"GPU acceleration: {enhanced.supports_capability(BackendCapability.GPU_ACCELERATION)}")
-    print(
-        f"Gate fusion beneficial: {enhanced.has_optimization_hint(OptimizationHint.BENEFITS_FROM_GATE_FUSION)}"
-    )
+    print(f"Gate fusion beneficial: {enhanced.has_optimization_hint(OptimizationHint.BENEFITS_FROM_GATE_FUSION)}")
 
     # Test circuit simulation
     print("\n--- Circuit Simulation ---")
@@ -354,9 +344,7 @@ def demo_fallback_strategy():
 
     result = MockFallbackResult()
 
-    print(
-        f"✓ Fallback successful: {result.backend_used.value} after {len(result.attempts)} attempts"
-    )
+    print(f"✓ Fallback successful: {result.backend_used.value} after {len(result.attempts)} attempts")
     print(f"✓ Total time: {result.total_time:.3f}s")
     print(f"✓ Result: {result.final_result}")
 
@@ -426,9 +414,7 @@ def demo_performance_monitoring():
         )
 
         status = "✓" if scenario["success"] else "✗"
-        print(
-            f"{status} {scenario['backend'].value}: {scenario['time']:.3f}s, {scenario['memory']}MB"
-        )
+        print(f"{status} {scenario['backend'].value}: {scenario['time']:.3f}s, {scenario['memory']}MB")
 
     # Get performance summaries
     print("\n--- Performance Summaries ---")
@@ -437,9 +423,7 @@ def demo_performance_monitoring():
         summary = monitor.get_backend_summary(backend)
         if summary:
             print(f"\n{backend.value} Backend:")
-            print(
-                f"  Last updated: {time.strftime('%H:%M:%S', time.localtime(summary['last_updated']))}"
-            )
+            print(f"  Last updated: {time.strftime('%H:%M:%S', time.localtime(summary['last_updated']))}")
 
             # Show metrics
             if "execution_time" in summary["metrics"]:
@@ -465,9 +449,7 @@ def demo_performance_monitoring():
             # Show alerts
             alerts = summary["alerts"]
             if alerts["total"] > 0:
-                print(
-                    f"  Alerts: {alerts['total']} total ({alerts['error']} errors, {alerts['warning']} warnings)"
-                )
+                print(f"  Alerts: {alerts['total']} total ({alerts['error']} errors, {alerts['warning']} warnings)")
 
     # Get performance recommendations
     print("\n--- Performance Recommendations ---")
@@ -512,9 +494,7 @@ def main():
     print("✓ Enhanced backend interface")
     print("✓ Backend fallback strategy")
     print("✓ Performance monitoring system")
-    print(
-        "\nThese backend improvements make Ariadne more robust, performant, and reliable for production use."
-    )
+    print("\nThese backend improvements make Ariadne more robust, performant, and reliable for production use.")
 
 
 if __name__ == "__main__":

@@ -126,9 +126,7 @@ def demonstrate_routing():
         # Analyze circuit
         analysis = analyze_circuit(circuit)
         entropy = router.circuit_entropy(circuit)
-        console.print(
-            f"  Clifford ratio: {analysis['clifford_ratio']:.2f}, depth {analysis['depth']}"
-        )
+        console.print(f"  Clifford ratio: {analysis['clifford_ratio']:.2f}, depth {analysis['depth']}")
 
         # Get routing decision
         decision = router.select_optimal_backend(circuit)

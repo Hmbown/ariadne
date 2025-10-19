@@ -12,9 +12,7 @@ def main() -> None:
         "(If Azure not configured, showing 'unavailable' records)\n",
     ]
     for code, est in table.items():
-        lines.append(
-            f"- {code}: qubits={est.logical_qubits}, runtime={est.runtime_sec}s, notes={est.notes}"
-        )
+        lines.append(f"- {code}: qubits={est.logical_qubits}, runtime={est.runtime_sec}s, notes={est.notes}")
     path = write_report("05_qualtran_resources", "\n".join(lines))
     print(f"Wrote report to {path}")
 
