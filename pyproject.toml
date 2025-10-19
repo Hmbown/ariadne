@@ -81,6 +81,7 @@ ariadne = "ariadne.cli.main:main"
 [tool.ruff]
 line-length = 120
 target-version = "py311"
+extend-exclude = ["src/ariadne/_version.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "B", "C4", "UP"]
