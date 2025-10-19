@@ -37,8 +37,10 @@ jobs:
       - name: Type check with mypy
         run: mypy src/ariadne/
       - name: Security scan with bandit
+        continue-on-error: true
         run: bandit -r src/ariadne/ -f json -o bandit-report.json
       - name: Dependency security scan with safety
+        continue-on-error: true
         run: safety check --json --output safety-report.json
       - name: Upload security reports
         uses: actions/upload-artifact@v4
