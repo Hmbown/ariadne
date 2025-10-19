@@ -37,6 +37,34 @@ Quantum development teams must balance diverse hardware constraints, simulator c
 
 Routing logic is deterministic and driven by measurable circuit characteristics, ensuring that every decision can be reproduced and audited when requirements evolve.
 
+## 🚦 Start Here
+
+- [Quick Start](#-getting-started)
+- [Examples](#-usage-examples)
+- [Advanced capabilities](#advanced-routing-control)
+
+### Your First Simulation
+
+Ariadne automatically routes your circuit to the optimal simulator without any code changes.
+
+```python
+from ariadne import simulate
+from qiskit import QuantumCircuit
+
+# Create any circuit - let Ariadne handle the rest
+qc = QuantumCircuit(20, 20)
+qc.h(range(10))
+for i in range(9):
+    qc.cx(i, i + 1)
+qc.measure_all()
+
+# One simple call that handles all backend complexity
+result = simulate(qc, shots=1000)
+print(f"Backend used: {result.backend_used}")
+print(f"Execution time: {result.execution_time:.4f}s")
+print(f"Unique outcomes: {len(result.counts)}")
+```
+
 [📖 Local Docs](docs/README.md) • [💡 Examples](examples/README.md) • [🚀 Getting Started](#-getting-started) • [🧠 Core API](#-core-api) • [📊 Performance](#-performance) • [🤝 Contributing](#-contributing)
 
 ---
@@ -199,28 +227,6 @@ pip install -e .[apple,cuda,viz]
 ```
 
 📖 **For detailed installation instructions, including dependency notes, see the [Comprehensive Installation Guide](docs/comprehensive_installation.md)**
-
-### Your First Simulation
-
-Ariadne automatically routes your circuit to the optimal simulator without any code changes.
-
-```python
-from ariadne import simulate
-from qiskit import QuantumCircuit
-
-# Create any circuit - let Ariadne handle the rest
-qc = QuantumCircuit(20, 20)
-qc.h(range(10))
-for i in range(9):
-    qc.cx(i, i + 1)
-qc.measure_all()
-
-# One simple call that handles all backend complexity
-result = simulate(qc, shots=1000)
-print(f"Backend used: {result.backend_used}")
-print(f"Execution time: {result.execution_time:.4f}s")
-print(f"Unique outcomes: {len(result.counts)}")
-```
 
 ### Quickstart Demo
 
