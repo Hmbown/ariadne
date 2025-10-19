@@ -265,11 +265,12 @@ python examples/generate_quickstart_gif.py --output docs/source/_static/quicksta
 - **`ComprehensiveRoutingTree` / `explain_routing`** – Deterministic, auditable explanation tools for governance and debugging.
 
   ```python
-  from ariadne import ComprehensiveRoutingTree, explain_routing
+from ariadne import ComprehensiveRoutingTree
 
-  tree = ComprehensiveRoutingTree()
-  tree.route(circuit)
-  print(explain_routing(circuit))
+tree = ComprehensiveRoutingTree()
+decision = tree.route_circuit(circuit)
+print(decision.recommended_backend)
+print(decision.confidence_score)
   ```
 
 Complementary helpers such as `get_config_manager()` and `configure_ariadne()` enable centrally managed policies, while the `ariadne` CLI mirrors these workflows for scripted environments.
