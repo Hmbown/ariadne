@@ -91,9 +91,7 @@ class CirqBackend:
                 )
                 return cirq.Simulator()
         else:
-            warnings.warn(
-                f"Unknown simulator type {self.simulator_type}, using default", stacklevel=2
-            )
+            warnings.warn(f"Unknown simulator type {self.simulator_type}, using default", stacklevel=2)
             return cirq.Simulator()
 
     def _create_device(self) -> Any | None:
@@ -290,11 +288,7 @@ class CirqBackend:
             # Parameterized single-qubit gates
             elif len(cirq_qubits) == 1 and gate_name in param_gates:
                 if instruction.params:
-                    angle = (
-                        float(instruction.params[0])
-                        if not isinstance(instruction.params[0], Parameter)
-                        else 0.0
-                    )
+                    angle = float(instruction.params[0]) if not isinstance(instruction.params[0], Parameter) else 0.0
                     cirq_operations.append(param_gates[gate_name](cirq_qubits[0], angle))
 
             # Two-qubit gates
@@ -304,21 +298,9 @@ class CirqBackend:
             # U3 gate
             elif gate_name == "u3" and len(cirq_qubits) == 1:
                 if len(instruction.params) >= 3:
-                    theta = (
-                        float(instruction.params[0])
-                        if not isinstance(instruction.params[0], Parameter)
-                        else 0.0
-                    )
-                    phi = (
-                        float(instruction.params[1])
-                        if not isinstance(instruction.params[1], Parameter)
-                        else 0.0
-                    )
-                    lam = (
-                        float(instruction.params[2])
-                        if not isinstance(instruction.params[2], Parameter)
-                        else 0.0
-                    )
+                    theta = float(instruction.params[0]) if not isinstance(instruction.params[0], Parameter) else 0.0
+                    phi = float(instruction.params[1]) if not isinstance(instruction.params[1], Parameter) else 0.0
+                    lam = float(instruction.params[2]) if not isinstance(instruction.params[2], Parameter) else 0.0
 
                     # Decompose U3 into Cirq operations
                     cirq_operations.extend(
@@ -359,9 +341,7 @@ class CirqBackend:
             self.device.validate_circuit(cirq_circuit)
             return cirq_circuit
         except Exception as e:
-            warnings.warn(
-                f"Circuit validation failed: {e}, running without device constraints", stacklevel=2
-            )
+            warnings.warn(f"Circuit validation failed: {e}, running without device constraints", stacklevel=2)
             return cirq_circuit
 
     def _optimize_circuit(self, cirq_circuit: Any) -> Any:
@@ -370,9 +350,7 @@ class CirqBackend:
 
         try:
             # Apply basic optimizations
-            optimized = cirq.optimize_for_target_gateset(
-                cirq_circuit, gateset=cirq.SqrtIswapTargetGateset()
-            )
+            optimized = cirq.optimize_for_target_gateset(cirq_circuit, gateset=cirq.SqrtIswapTargetGateset())
             return optimized
         except Exception:
             # If optimization fails, return original circuit
@@ -481,21 +459,15 @@ class CirqBackend:
 
                 # Device information
                 if self.device:
-                    info["device_qubits"] = (
-                        len(self.device.qubits) if hasattr(self.device, "qubits") else "unknown"
-                    )
-                    info["device_gates"] = (
-                        str(self.device.gateset) if hasattr(self.device, "gateset") else "unknown"
-                    )
+                    info["device_qubits"] = len(self.device.qubits) if hasattr(self.device, "qubits") else "unknown"
+                    info["device_gates"] = str(self.device.gateset) if hasattr(self.device, "gateset") else "unknown"
 
             except Exception:
                 pass
 
         return info
 
-    def estimate_fidelity(
-        self, circuit: QuantumCircuit, ideal_backend: CirqBackend | None = None
-    ) -> float:
+    def estimate_fidelity(self, circuit: QuantumCircuit, ideal_backend: CirqBackend | None = None) -> float:
         """
         Estimate circuit fidelity by comparing with ideal simulation.
 
@@ -512,9 +484,7 @@ class CirqBackend:
         try:
             # Create ideal backend if not provided
             if ideal_backend is None:
-                ideal_backend = CirqBackend(
-                    simulator_type=self.simulator_type, noise_model=None, device_name=None
-                )
+                ideal_backend = CirqBackend(simulator_type=self.simulator_type, noise_model=None, device_name=None)
 
             # Simulate with both backends
             noisy_counts = self.simulate(circuit, shots=10000)
@@ -528,9 +498,7 @@ class CirqBackend:
             warnings.warn(f"Fidelity estimation failed: {e}", stacklevel=2)
             return 0.5  # Conservative estimate
 
-    def _calculate_fidelity(
-        self, ideal_counts: dict[str, int], noisy_counts: dict[str, int]
-    ) -> float:
+    def _calculate_fidelity(self, ideal_counts: dict[str, int], noisy_counts: dict[str, int]) -> float:
         """Calculate fidelity between two count distributions."""
         # Normalize counts to probabilities
         ideal_total = sum(ideal_counts.values())

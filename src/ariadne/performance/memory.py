@@ -198,9 +198,7 @@ class MemoryMonitor:
         self._stop_event = threading.Event()
 
         # Callbacks for memory events
-        self._callbacks: dict[MemoryLevel, list[Callable[[MemoryStats], None]]] = {
-            level: [] for level in MemoryLevel
-        }
+        self._callbacks: dict[MemoryLevel, list[Callable[[MemoryStats], None]]] = {level: [] for level in MemoryLevel}
 
         # Peak memory tracking
         self._peak_memory_mb = 0.0
@@ -361,9 +359,7 @@ class MemoryMonitor:
                     except Exception as e:
                         self.logger.error(f"Memory callback error: {e}")
 
-    def register_callback(
-        self, level: MemoryLevel, callback: Callable[[MemoryStats], None]
-    ) -> None:
+    def register_callback(self, level: MemoryLevel, callback: Callable[[MemoryStats], None]) -> None:
         """
         Register a callback for a memory level.
 
@@ -412,26 +408,18 @@ class MemoryMonitor:
             )
             suggestions.append("Enable garbage collection and memory pooling.")
         elif stats.memory_level == MemoryLevel.HIGH:
-            suggestions.append(
-                "Memory usage is high. Consider using memory-efficient simulation methods."
-            )
+            suggestions.append("Memory usage is high. Consider using memory-efficient simulation methods.")
             suggestions.append("Monitor for memory leaks and optimize data structures.")
         elif stats.memory_level == MemoryLevel.MEDIUM:
-            suggestions.append(
-                "Memory usage is moderate. Consider optimization for large circuits."
-            )
+            suggestions.append("Memory usage is moderate. Consider optimization for large circuits.")
 
         # Check GC stats
         if stats.gc_stats.get("collections", 0) > 10:
-            suggestions.append(
-                "Garbage collection is running frequently. Consider reducing object creation."
-            )
+            suggestions.append("Garbage collection is running frequently. Consider reducing object creation.")
 
         # Check process memory
         if stats.process_memory_mb > 1000:  # 1GB
-            suggestions.append(
-                "Process memory usage is high. Consider using memory-efficient backends."
-            )
+            suggestions.append("Process memory usage is high. Consider using memory-efficient backends.")
 
         return suggestions
 
@@ -571,9 +559,7 @@ class MemoryEfficientSimulator:
 
             return simulate(circuit, shots)
 
-        self.logger.info(
-            f"Simulating large circuit with {circuit.num_qubits} qubits using chunking"
-        )
+        self.logger.info(f"Simulating large circuit with {circuit.num_qubits} qubits using chunking")
 
         # For demonstration, we'll use a simplified approach
         # In a production system, this would implement more sophisticated techniques

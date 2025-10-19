@@ -168,9 +168,7 @@ class WorkflowDetector:
         # Default to research
         return WorkflowType.RESEARCH
 
-    def _is_educational_pattern(
-        self, circuit_patterns: list[CircuitPattern], usage_patterns: UsagePattern
-    ) -> bool:
+    def _is_educational_pattern(self, circuit_patterns: list[CircuitPattern], usage_patterns: UsagePattern) -> bool:
         """Detect educational usage patterns."""
         if not circuit_patterns:
             return False
@@ -187,9 +185,7 @@ class WorkflowDetector:
 
         return sum(indicators) >= 3
 
-    def _is_research_pattern(
-        self, circuit_patterns: list[CircuitPattern], usage_patterns: UsagePattern
-    ) -> bool:
+    def _is_research_pattern(self, circuit_patterns: list[CircuitPattern], usage_patterns: UsagePattern) -> bool:
         """Detect research usage patterns."""
         if not circuit_patterns:
             return True  # Default assumption
@@ -206,9 +202,7 @@ class WorkflowDetector:
 
         return sum(indicators) >= 2
 
-    def _is_production_pattern(
-        self, circuit_patterns: list[CircuitPattern], usage_patterns: UsagePattern
-    ) -> bool:
+    def _is_production_pattern(self, circuit_patterns: list[CircuitPattern], usage_patterns: UsagePattern) -> bool:
         """Detect production usage patterns."""
         if not circuit_patterns:
             return False
@@ -225,9 +219,7 @@ class WorkflowDetector:
 
         return sum(indicators) >= 3
 
-    def _is_benchmarking_pattern(
-        self, circuit_patterns: list[CircuitPattern], usage_patterns: UsagePattern
-    ) -> bool:
+    def _is_benchmarking_pattern(self, circuit_patterns: list[CircuitPattern], usage_patterns: UsagePattern) -> bool:
         """Detect benchmarking usage patterns."""
         if not circuit_patterns:
             return False
@@ -267,13 +259,9 @@ class WorkflowDetector:
         for family in all_families:
             family_counts[family] += 1
 
-        common_gates = [
-            gate
-            for gate, count in sorted(gate_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-        ]
+        common_gates = [gate for gate, count in sorted(gate_counts.items(), key=lambda x: x[1], reverse=True)[:5]]
         circuit_families = [
-            family
-            for family, count in sorted(family_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+            family for family, count in sorted(family_counts.items(), key=lambda x: x[1], reverse=True)[:3]
         ]
 
         return CircuitPattern(
@@ -381,9 +369,7 @@ class ContextDetector:
 
     def __init__(self, cache_file: str | None = None):
         """Initialize context detector with optional caching."""
-        self.cache_file = (
-            Path(cache_file) if cache_file else Path.home() / ".ariadne" / "context_cache.json"
-        )
+        self.cache_file = Path(cache_file) if cache_file else Path.home() / ".ariadne" / "context_cache.json"
         self.cache_file.parent.mkdir(parents=True, exist_ok=True)
 
         self.circuit_family_detector = CircuitFamilyDetector()
@@ -410,17 +396,13 @@ class ContextDetector:
         usage_patterns = self._analyze_usage_patterns(circuit_history, backend_usage or {})
 
         # Detect workflow type
-        workflow_type = self.workflow_detector.detect_workflow_type(
-            circuit_patterns, usage_patterns
-        )
+        workflow_type = self.workflow_detector.detect_workflow_type(circuit_patterns, usage_patterns)
 
         # Get hardware profile
         hardware_profile = self.hardware_profiler.detect_hardware_profile()
 
         # Infer performance preferences from usage history
-        performance_preferences = self._infer_performance_preferences(
-            workflow_type, execution_times or {}
-        )
+        performance_preferences = self._infer_performance_preferences(workflow_type, execution_times or {})
 
         # Determine preferred backends
         preferred_backends = self._determine_preferred_backends(backend_usage or {})
@@ -488,10 +470,7 @@ class ContextDetector:
         for gate in all_gates:
             gate_counts[gate] += 1
 
-        common_gates = [
-            gate
-            for gate, count in sorted(gate_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-        ]
+        common_gates = [gate for gate, count in sorted(gate_counts.items(), key=lambda x: x[1], reverse=True)[:5]]
 
         # Detect circuit families
         all_families: list[str] = []
@@ -504,8 +483,7 @@ class ContextDetector:
             family_counts[family] += 1
 
         circuit_families = [
-            family
-            for family, count in sorted(family_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+            family for family, count in sorted(family_counts.items(), key=lambda x: x[1], reverse=True)[:3]
         ]
 
         # Estimate entanglement complexity (simplified)
@@ -567,9 +545,7 @@ class ContextDetector:
                 speed_priority=0.4, accuracy_priority=0.3, memory_priority=0.2, energy_priority=0.1
             )
 
-    def _determine_preferred_backends(
-        self, backend_usage: dict[BackendType, int]
-    ) -> list[BackendType]:
+    def _determine_preferred_backends(self, backend_usage: dict[BackendType, int]) -> list[BackendType]:
         """Determine preferred backends from usage history."""
         if not backend_usage:
             return []
@@ -616,8 +592,7 @@ class ContextDetector:
                 "context": asdict(context),
                 "timestamp": time.time(),
                 "backend_performance": {
-                    backend.value: times
-                    for backend, times in self.performance_history.backend_performance.items()
+                    backend.value: times for backend, times in self.performance_history.backend_performance.items()
                 },
             }
 
@@ -626,9 +601,7 @@ class ContextDetector:
         except Exception:
             pass  # Don't fail if caching fails
 
-    def update_performance_history(
-        self, backend: BackendType, execution_time: float, success: bool = True
-    ) -> None:
+    def update_performance_history(self, backend: BackendType, execution_time: float, success: bool = True) -> None:
         """Update performance history with new execution data."""
         if backend not in self.performance_history.backend_performance:
             self.performance_history.backend_performance[backend] = []
@@ -637,9 +610,9 @@ class ContextDetector:
 
         # Keep only recent history (last 100 measurements)
         if len(self.performance_history.backend_performance[backend]) > 100:
-            self.performance_history.backend_performance[backend] = (
-                self.performance_history.backend_performance[backend][-100:]
-            )
+            self.performance_history.backend_performance[backend] = self.performance_history.backend_performance[
+                backend
+            ][-100:]
 
 
 # Convenience function for easy integration

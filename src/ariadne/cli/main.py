@@ -16,7 +16,6 @@ from typing import TYPE_CHECKING, Any
 
 from qiskit import QuantumCircuit
 
-
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 try:
@@ -51,7 +50,7 @@ CLI_BACKEND_CHOICES = sorted(
 # Check if YAML is available
 yaml: Any | None
 try:
-    import yaml as _yaml_module  # type: ignore[import-untyped]
+    import yaml as _yaml_module
 except ImportError:
     YAML_AVAILABLE = False
     yaml = None
@@ -130,9 +129,7 @@ class ProgressIndicator:
     def update(self, message: str = "") -> None:
         """Update the progress indicator."""
         current_time = time.time()
-        if (
-            self.start_time is not None and current_time - self.last_update > 0.5
-        ):  # Update every 0.5 seconds
+        if self.start_time is not None and current_time - self.last_update > 0.5:  # Update every 0.5 seconds
             elapsed = current_time - self.start_time
             print(f"\r{self.description}... ({elapsed:.1f}s){message}", end="", flush=True)
             self.last_update = current_time
@@ -201,9 +198,7 @@ Examples:
         )
 
         # Add global arguments
-        parser.add_argument(
-            "--version", action="version", version=f"%(prog)s {__version__}"
-        )
+        parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
         parser.add_argument(
             "--log-level",
@@ -213,9 +208,7 @@ Examples:
         )
 
         # Add subcommands
-        subparsers = parser.add_subparsers(
-            dest="command", help="Available commands", metavar="COMMAND"
-        )
+        subparsers = parser.add_subparsers(dest="command", help="Available commands", metavar="COMMAND")
 
         # Simulate command
         self._add_simulate_command(subparsers)
@@ -241,9 +234,7 @@ Examples:
 
         parser.add_argument("circuit", help="Path to quantum circuit file (QASM or QPY format)")
 
-        parser.add_argument(
-            "--shots", type=int, default=1024, help="Number of measurement shots (default: 1024)"
-        )
+        parser.add_argument("--shots", type=int, default=1024, help="Number of measurement shots (default: 1024)")
 
         parser.add_argument(
             "--backend",
@@ -263,9 +254,7 @@ Examples:
             description="Create, validate, or show configuration",
         )
 
-        config_subparsers = parser.add_subparsers(
-            dest="config_action", help="Configuration actions"
-        )
+        config_subparsers = parser.add_subparsers(dest="config_action", help="Configuration actions")
 
         # Create command
         create_parser = config_subparsers.add_parser("create", help="Create a configuration file")
@@ -287,18 +276,14 @@ Examples:
         create_parser.add_argument("--output", required=True, help="Output file path")
 
         # Validate command
-        validate_parser = config_subparsers.add_parser(
-            "validate", help="Validate a configuration file"
-        )
+        validate_parser = config_subparsers.add_parser("validate", help="Validate a configuration file")
 
         validate_parser.add_argument("config_file", help="Configuration file to validate")
 
         # Show command
         show_parser = config_subparsers.add_parser("show", help="Show current configuration")
 
-        show_parser.add_argument(
-            "--format", choices=["yaml", "json"], default="yaml", help="Output format"
-        )
+        show_parser.add_argument("--format", choices=["yaml", "json"], default="yaml", help="Output format")
 
     def _add_status_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the status command."""
@@ -310,9 +295,7 @@ Examples:
 
         parser.add_argument("--backend", help="Show status for specific backend only")
 
-        parser.add_argument(
-            "--detailed", action="store_true", help="Show detailed status information"
-        )
+        parser.add_argument("--detailed", action="store_true", help="Show detailed status information")
 
     def _add_benchmark_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the benchmark command."""
@@ -324,9 +307,7 @@ Examples:
 
         parser.add_argument("--circuit", help="Path to quantum circuit file for benchmarking")
 
-        parser.add_argument(
-            "--shots", type=int, default=1000, help="Number of measurement shots (default: 1000)"
-        )
+        parser.add_argument("--shots", type=int, default=1000, help="Number of measurement shots (default: 1000)")
 
         parser.add_argument(
             "--backend",
@@ -334,9 +315,7 @@ Examples:
             help="Backend to benchmark (default: all available)",
         )
 
-        parser.add_argument(
-            "--iterations", type=int, default=5, help="Number of benchmark iterations (default: 5)"
-        )
+        parser.add_argument("--iterations", type=int, default=5, help="Number of benchmark iterations (default: 5)")
 
         parser.add_argument("--output", help="Output file for benchmark results (JSON format)")
 
@@ -633,9 +612,7 @@ Examples:
                         "shots": args.shots,
                     }
 
-                    print(
-                        f"  Success rate: {success_count}/{args.iterations} ({success_count / args.iterations:.2%})"
-                    )
+                    print(f"  Success rate: {success_count}/{args.iterations} ({success_count / args.iterations:.2%})")
                     print(f"  Average time: {avg_time:.4f}s")
                     print(f"  Min time: {min_time:.4f}s")
                     print(f"  Max time: {max_time:.4f}s")
@@ -768,9 +745,7 @@ Examples:
         print(f"  Uptime: {metrics.uptime_percentage:.1f}%")
 
         if detailed:
-            print(
-                f"  Last check: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(metrics.last_check))}"
-            )
+            print(f"  Last check: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(metrics.last_check))}")
             print(f"  Consecutive failures: {metrics.consecutive_failures}")
 
             if metrics.details:

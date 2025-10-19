@@ -82,9 +82,7 @@ class ValidationResult:
 class ValidationRule:
     """Base class for validation rules."""
 
-    def __init__(
-        self, message: str, suggestion: str | None = None, code: str | None = None
-    ) -> None:
+    def __init__(self, message: str, suggestion: str | None = None, code: str | None = None) -> None:
         """
         Initialize validation rule.
 
@@ -97,9 +95,7 @@ class ValidationRule:
         self.suggestion = suggestion
         self.code = code
 
-    def validate(
-        self, field_path: str, value: Any, context: dict[str, Any]
-    ) -> ValidationIssue | None:
+    def validate(self, field_path: str, value: Any, context: dict[str, Any]) -> ValidationIssue | None:
         """
         Validate a value.
 
@@ -129,16 +125,12 @@ class TypeRule(ValidationRule):
         self.expected_type = expected_type
 
         if message is None:
-            type_name = (
-                expected_type.__name__ if hasattr(expected_type, "__name__") else str(expected_type)
-            )
+            type_name = expected_type.__name__ if hasattr(expected_type, "__name__") else str(expected_type)
             message = f"Expected type {type_name}"
 
         super().__init__(message, **kwargs)
 
-    def validate(
-        self, field_path: str, value: Any, context: dict[str, Any]
-    ) -> ValidationIssue | None:
+    def validate(self, field_path: str, value: Any, context: dict[str, Any]) -> ValidationIssue | None:
         """Validate value type."""
         if not isinstance(value, self.expected_type):
             return ValidationIssue(
@@ -186,9 +178,7 @@ class RangeRule(ValidationRule):
 
         super().__init__(message, **kwargs)
 
-    def validate(
-        self, field_path: str, value: Any, context: dict[str, Any]
-    ) -> ValidationIssue | None:
+    def validate(self, field_path: str, value: Any, context: dict[str, Any]) -> ValidationIssue | None:
         """Validate numeric range."""
         if not isinstance(value, int | float):
             return None  # Type validation should catch this
@@ -234,9 +224,7 @@ class ChoiceRule(ValidationRule):
         message = f"Value must be one of: {', '.join(str(c) for c in choices)}"
         super().__init__(message, **kwargs)
 
-    def validate(
-        self, field_path: str, value: Any, context: dict[str, Any]
-    ) -> ValidationIssue | None:
+    def validate(self, field_path: str, value: Any, context: dict[str, Any]) -> ValidationIssue | None:
         """Validate choice."""
         if self.case_sensitive:
             is_valid = value in self.choices
@@ -276,9 +264,7 @@ class RegexRule(ValidationRule):
         message = f"Value must match pattern: {pattern}"
         super().__init__(message, **kwargs)
 
-    def validate(
-        self, field_path: str, value: Any, context: dict[str, Any]
-    ) -> ValidationIssue | None:
+    def validate(self, field_path: str, value: Any, context: dict[str, Any]) -> ValidationIssue | None:
         """Validate regex pattern."""
         if not isinstance(value, str):
             return None  # Type validation should catch this
@@ -328,9 +314,7 @@ class PathRule(ValidationRule):
         message = "Invalid path"
         super().__init__(message, **kwargs)
 
-    def validate(
-        self, field_path: str, value: Any, context: dict[str, Any]
-    ) -> ValidationIssue | None:
+    def validate(self, field_path: str, value: Any, context: dict[str, Any]) -> ValidationIssue | None:
         """Validate file system path."""
         if not isinstance(value, str):
             return None  # Type validation should catch this
@@ -402,9 +386,7 @@ class PathRule(ValidationRule):
 class CustomRule(ValidationRule):
     """Rule for custom validation logic."""
 
-    def __init__(
-        self, validator: Callable[[Any, dict[str, Any]], str | None], **kwargs: Any
-    ) -> None:
+    def __init__(self, validator: Callable[[Any, dict[str, Any]], str | None], **kwargs: Any) -> None:
         """
         Initialize custom rule.
 
@@ -415,9 +397,7 @@ class CustomRule(ValidationRule):
         self.validator = validator
         super().__init__("Custom validation failed", **kwargs)
 
-    def validate(
-        self, field_path: str, value: Any, context: dict[str, Any]
-    ) -> ValidationIssue | None:
+    def validate(self, field_path: str, value: Any, context: dict[str, Any]) -> ValidationIssue | None:
         """Validate with custom logic."""
         error_message = self.validator(value, context)
 

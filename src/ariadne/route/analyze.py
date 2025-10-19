@@ -80,9 +80,7 @@ def calculate_gate_entropy(circ: QuantumCircuit, properties: dict[str, Any] | No
     return entropy
 
 
-def estimate_entanglement_entropy(
-    circ: QuantumCircuit, properties: dict[str, Any] | None = None
-) -> float:
+def estimate_entanglement_entropy(circ: QuantumCircuit, properties: dict[str, Any] | None = None) -> float:
     """Estimate the entanglement entropy that will be generated."""
     if properties is None:
         properties = _get_circuit_properties(circ)
@@ -107,9 +105,7 @@ def estimate_quantum_volume(circ: QuantumCircuit) -> float:
     return float(2**m)
 
 
-def calculate_parallelization_factor(
-    circ: QuantumCircuit, properties: dict[str, Any] | None = None
-) -> float:
+def calculate_parallelization_factor(circ: QuantumCircuit, properties: dict[str, Any] | None = None) -> float:
     """Calculate how much parallelization is possible."""
     if circ.depth() == 0:
         return 1.0
@@ -127,9 +123,7 @@ def calculate_parallelization_factor(
     return cast(float, total_gates / circ.depth())
 
 
-def estimate_noise_susceptibility(
-    circ: QuantumCircuit, properties: dict[str, Any] | None = None
-) -> float:
+def estimate_noise_susceptibility(circ: QuantumCircuit, properties: dict[str, Any] | None = None) -> float:
     """Estimate circuit's susceptibility to noise."""
     if properties is None:
         properties = _get_circuit_properties(circ)
@@ -150,9 +144,7 @@ def estimate_noise_susceptibility(
     return float(min(1.0, susceptibility))
 
 
-def estimate_classical_complexity(
-    circ: QuantumCircuit, properties: dict[str, Any] | None = None
-) -> float:
+def estimate_classical_complexity(circ: QuantumCircuit, properties: dict[str, Any] | None = None) -> float:
     """Estimate classical simulation complexity."""
     if is_clifford_circuit(circ, properties=properties):
         # Clifford circuits are polynomial time
@@ -190,9 +182,7 @@ def calculate_connectivity_score(graph: nx.Graph) -> float:
     return 0.7 * density + 0.3 * clustering
 
 
-def calculate_gate_diversity(
-    circ: QuantumCircuit, properties: dict[str, Any] | None = None
-) -> float:
+def calculate_gate_diversity(circ: QuantumCircuit, properties: dict[str, Any] | None = None) -> float:
     """Calculate diversity of gate types used."""
     if properties is None:
         properties = _get_circuit_properties(circ)
@@ -318,9 +308,7 @@ def analyze_circuit(circ: QuantumCircuit) -> dict[str, float | int | bool]:
         "quantum_volume_estimate": estimate_quantum_volume(circ),
         "parallelization_factor": calculate_parallelization_factor(circ, properties=properties),
         "noise_susceptibility": estimate_noise_susceptibility(circ, properties=properties),
-        "classical_simulation_complexity": estimate_classical_complexity(
-            circ, properties=properties
-        ),
+        "classical_simulation_complexity": estimate_classical_complexity(circ, properties=properties),
         "connectivity_score": calculate_connectivity_score(g),
         "gate_diversity": calculate_gate_diversity(circ, properties=properties),
         "expressivity_measure": calculate_expressivity(circ, properties=properties),
@@ -330,9 +318,7 @@ def analyze_circuit(circ: QuantumCircuit) -> dict[str, float | int | bool]:
     return {**basic_metrics, **advanced_metrics}
 
 
-def should_use_tensor_network(
-    circuit: QuantumCircuit, analysis: dict[str, float | int | bool] | None = None
-) -> bool:
+def should_use_tensor_network(circuit: QuantumCircuit, analysis: dict[str, float | int | bool] | None = None) -> bool:
     """Return ``True`` if the circuit should target a tensor network backend."""
 
     metrics = analysis or analyze_circuit(circuit)

@@ -101,9 +101,7 @@ class BackendHealthChecker:
         self._check_history: dict[BackendType, list[HealthCheckResult]] = {}
         self._max_history = 100  # Keep last 100 results per backend
 
-    def register_health_check(
-        self, backend: BackendType, health_check: Callable[[], HealthCheckResult]
-    ) -> None:
+    def register_health_check(self, backend: BackendType, health_check: Callable[[], HealthCheckResult]) -> None:
         """
         Register a health check for a backend.
 
@@ -248,9 +246,7 @@ class BackendHealthChecker:
                 metrics.consecutive_failures += 1
 
             # Calculate average response time
-            metrics.average_response_time = (
-                sum(r.response_time for r in history) / len(history) if history else 0.0
-            )
+            metrics.average_response_time = sum(r.response_time for r in history) / len(history) if history else 0.0
 
             # Calculate uptime percentage (last 24 hours)
             twenty_four_hours_ago = time.time() - 24 * 3600
@@ -337,9 +333,7 @@ class BackendHealthChecker:
             if status in [HealthStatus.UNHEALTHY, HealthStatus.UNKNOWN]
         ]
 
-    def get_backend_health_history(
-        self, backend: BackendType, limit: int = 10
-    ) -> list[HealthCheckResult]:
+    def get_backend_health_history(self, backend: BackendType, limit: int = 10) -> list[HealthCheckResult]:
         """
         Get health check history for a backend.
 
@@ -382,9 +376,7 @@ def is_backend_healthy(backend: BackendType) -> bool:
 
 
 # Default health checks
-def create_basic_health_check(
-    backend_name: str, test_function: Callable[[], bool]
-) -> Callable[[], HealthCheckResult]:
+def create_basic_health_check(backend_name: str, test_function: Callable[[], bool]) -> Callable[[], HealthCheckResult]:
     """
     Create a basic health check function.
 

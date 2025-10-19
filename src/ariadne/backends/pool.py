@@ -171,9 +171,7 @@ class BackendPool:
             self._status = PoolStatus.READY
             self._start_maintenance_thread()
 
-            self.logger.info(
-                f"Initialized {self.backend_name} pool with {self.min_instances} instances"
-            )
+            self.logger.info(f"Initialized {self.backend_name} pool with {self.min_instances} instances")
 
         except Exception as e:
             self._status = PoolStatus.ERROR
@@ -238,19 +236,13 @@ class BackendPool:
                         idle_instances.append(instance)
 
             # Remove idle instances if we have more than minimum
-            instances_to_remove = min(
-                len(idle_instances), max(0, len(self._all_instances) - self.min_instances)
-            )
+            instances_to_remove = min(len(idle_instances), max(0, len(self._all_instances) - self.min_instances))
 
             for instance in idle_instances[:instances_to_remove]:
                 self._remove_instance(instance)
 
             # Check for error instances
-            error_instances = [
-                instance
-                for instance in self._all_instances
-                if instance.error_count >= self.max_errors
-            ]
+            error_instances = [instance for instance in self._all_instances if instance.error_count >= self.max_errors]
 
             for instance in error_instances:
                 self._remove_instance(instance)
@@ -260,9 +252,7 @@ class BackendPool:
             total_count = len(self._all_instances)
 
             if available_count < self.min_instances and total_count < self.max_instances:
-                instances_to_create = min(
-                    self.min_instances - available_count, self.max_instances - total_count
-                )
+                instances_to_create = min(self.min_instances - available_count, self.max_instances - total_count)
 
                 for _ in range(instances_to_create):
                     new_instance = self._create_instance()
@@ -298,9 +288,7 @@ class BackendPool:
                 self._all_instances.remove(instance)
                 self._stats.total_instances -= 1
 
-            self.logger.debug(
-                f"Removed {self.backend_name} instance (errors: {instance.error_count})"
-            )
+            self.logger.debug(f"Removed {self.backend_name} instance (errors: {instance.error_count})")
 
         except Exception as e:
             self.logger.error(f"Failed to remove {self.backend_name} instance: {e}")
@@ -385,9 +373,7 @@ class BackendPool:
                 # Update average wait time
                 total_requests = self._stats.total_requests
                 current_avg = self._stats.average_wait_time
-                self._stats.average_wait_time = (
-                    current_avg * (total_requests - 1) + wait_time
-                ) / total_requests
+                self._stats.average_wait_time = (current_avg * (total_requests - 1) + wait_time) / total_requests
 
             self.logger.debug(f"Retrieved {self.backend_name} instance (wait: {wait_time:.3f}s)")
 

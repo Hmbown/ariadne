@@ -90,9 +90,7 @@ class BackendPerformanceProfile:
         if len(self.metrics[metric.metric_type]) > 1000:
             self.metrics[metric.metric_type] = self.metrics[metric.metric_type][-1000:]
 
-    def get_latest_metrics(
-        self, metric_type: PerformanceMetricType, count: int = 10
-    ) -> list[PerformanceMetric]:
+    def get_latest_metrics(self, metric_type: PerformanceMetricType, count: int = 10) -> list[PerformanceMetric]:
         """Get latest metrics of a specific type."""
         if metric_type not in self.metrics:
             return []
@@ -270,9 +268,7 @@ class BackendPerformanceMonitor:
         self._thresholds: dict[PerformanceMetricType, PerformanceThreshold] = {}
 
         # Regression detectors
-        self._regression_detectors: dict[
-            BackendType, dict[PerformanceMetricType, PerformanceRegressionDetector]
-        ] = {}
+        self._regression_detectors: dict[BackendType, dict[PerformanceMetricType, PerformanceRegressionDetector]] = {}
 
         # Initialize default thresholds
         self._initialize_default_thresholds()
@@ -377,7 +373,9 @@ class BackendPerformanceMonitor:
                 severity=severity,
                 metric_type=metric.metric_type,
                 backend=metric.backend,
-                message=f"{metric.metric_type.value} {metric.value:.3f}{threshold.unit} exceeds {severity.value} threshold",
+                message=(
+                    f"{metric.metric_type.value} {metric.value:.3f}{threshold.unit} exceeds {severity.value} threshold"
+                ),
                 timestamp=metric.timestamp,
                 current_value=metric.value,
                 threshold_value=getattr(threshold, f"{severity.value}_threshold"),
@@ -512,9 +510,7 @@ class BackendPerformanceMonitor:
         """
         return self._profiles.copy()
 
-    def get_backend_summary(
-        self, backend: BackendType, time_window: float = 3600.0
-    ) -> dict[str, Any]:
+    def get_backend_summary(self, backend: BackendType, time_window: float = 3600.0) -> dict[str, Any]:
         """
         Get performance summary for a backend.
 
@@ -536,9 +532,7 @@ class BackendPerformanceMonitor:
             "metrics": {},
             "alerts": {
                 "total": len(profile.alerts),
-                "critical": len(
-                    [a for a in profile.alerts if a.severity == AlertSeverity.CRITICAL]
-                ),
+                "critical": len([a for a in profile.alerts if a.severity == AlertSeverity.CRITICAL]),
                 "error": len([a for a in profile.alerts if a.severity == AlertSeverity.ERROR]),
                 "warning": len([a for a in profile.alerts if a.severity == AlertSeverity.WARNING]),
                 "info": len([a for a in profile.alerts if a.severity == AlertSeverity.INFO]),
@@ -607,9 +601,7 @@ class BackendPerformanceMonitor:
         error_alerts = [a for a in recent_alerts if a.severity == AlertSeverity.ERROR]
 
         if critical_alerts:
-            recommendations.append(
-                f"Critical performance issues detected: {len(critical_alerts)} critical alerts"
-            )
+            recommendations.append(f"Critical performance issues detected: {len(critical_alerts)} critical alerts")
 
         if error_alerts:
             recommendations.append(f"Performance issues detected: {len(error_alerts)} error alerts")
@@ -622,9 +614,7 @@ class BackendPerformanceMonitor:
         # Check memory usage
         memory_stats = profile.get_metric_statistics(PerformanceMetricType.MEMORY_USAGE)
         if memory_stats and memory_stats.get("mean", 0) > 1000:
-            recommendations.append(
-                "High memory usage detected, consider using memory-efficient backends"
-            )
+            recommendations.append("High memory usage detected, consider using memory-efficient backends")
 
         # Check success rate
         success_stats = profile.get_metric_statistics(PerformanceMetricType.SUCCESS_RATE)

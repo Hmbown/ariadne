@@ -96,9 +96,7 @@ class AsyncSimulator:
         self._executor = ThreadPoolExecutor(max_workers=self.thread_pool_size)
 
         # Request queue for priority-based processing
-        self._request_queue: asyncio.PriorityQueue[tuple[int, AsyncSimulationRequest]] = (
-            asyncio.PriorityQueue()
-        )
+        self._request_queue: asyncio.PriorityQueue[tuple[int, AsyncSimulationRequest]] = asyncio.PriorityQueue()
 
         # Background task processor
         self._processor_task: asyncio.Task | None = None
@@ -152,9 +150,7 @@ class AsyncSimulator:
             Async simulation result
         """
         # Create request
-        request = AsyncSimulationRequest(
-            circuit=circuit, shots=shots, backend=backend, priority=priority
-        )
+        request = AsyncSimulationRequest(circuit=circuit, shots=shots, backend=backend, priority=priority)
 
         # Submit request
         return await self._submit_request(request)
@@ -215,18 +211,14 @@ class AsyncSimulator:
 
                 execution_time = time.time() - start_time
 
-                return AsyncSimulationResult(
-                    request=request, result=result, execution_time=execution_time
-                )
+                return AsyncSimulationResult(request=request, result=result, execution_time=execution_time)
 
             except Exception as e:
                 execution_time = time.time() - start_time
 
                 self.logger.error(f"Simulation failed for request {request.request_id}: {e}")
 
-                return AsyncSimulationResult(
-                    request=request, result=None, execution_time=execution_time, error=e
-                )
+                return AsyncSimulationResult(request=request, result=None, execution_time=execution_time, error=e)
 
     def _run_simulation(self, request: AsyncSimulationRequest) -> SimulationResult:
         """
@@ -252,9 +244,7 @@ class AsyncSimulator:
             try:
                 # Get next request (with timeout to allow for cancellation)
                 try:
-                    priority, request = await asyncio.wait_for(
-                        self._request_queue.get(), timeout=1.0
-                    )
+                    priority, request = await asyncio.wait_for(self._request_queue.get(), timeout=1.0)
                 except TimeoutError:
                     continue
 
@@ -296,9 +286,7 @@ class AsyncBackendInterface:
         loop = asyncio.get_event_loop()
 
         # Run health check in thread pool
-        result = await loop.run_in_executor(
-            None, self._health_checker.check_backend_health, backend
-        )
+        result = await loop.run_in_executor(None, self._health_checker.check_backend_health, backend)
 
         return {
             "backend": backend.value,
@@ -364,9 +352,7 @@ class AsyncBackendInterface:
             loop = asyncio.get_event_loop()
             backend_metrics = await loop.run_in_executor(None, self._get_backend_metrics, backend)
 
-            metrics.append(
-                {"backend": backend.value, "timestamp": time.time(), "metrics": backend_metrics}
-            )
+            metrics.append({"backend": backend.value, "timestamp": time.time(), "metrics": backend_metrics})
 
             # Wait for next interval
             await asyncio.sleep(interval)
@@ -442,10 +428,7 @@ async def simulate_batch_async(
         List of async simulation results
     """
     # Create requests
-    requests = [
-        AsyncSimulationRequest(circuit=circuit, shots=shots, backend=backend)
-        for circuit in circuits
-    ]
+    requests = [AsyncSimulationRequest(circuit=circuit, shots=shots, backend=backend) for circuit in circuits]
 
     # Get simulator and run batch simulation
     simulator = await get_async_simulator()

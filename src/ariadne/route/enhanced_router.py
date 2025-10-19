@@ -295,9 +295,7 @@ class EnhancedQuantumRouter:
             performance_preferences=PerformancePreferences(),
         )
 
-    def select_optimal_backend(
-        self, circuit: QuantumCircuit, strategy: RouterType | None = None
-    ) -> RoutingDecision:
+    def select_optimal_backend(self, circuit: QuantumCircuit, strategy: RouterType | None = None) -> RoutingDecision:
         """Select optimal backend using specified strategy."""
 
         entropy = self._calculate_entropy(circuit)
@@ -325,9 +323,7 @@ class EnhancedQuantumRouter:
 
         for backend in BackendType:
             if self._is_backend_available(backend):
-                score_obj = strategy_impl.score_backend(
-                    circuit, backend, self.user_context, analysis
-                )
+                score_obj = strategy_impl.score_backend(circuit, backend, self.user_context, analysis)
                 backend_scores[backend] = score_obj.total_score
 
         if not backend_scores:
@@ -358,9 +354,7 @@ class EnhancedQuantumRouter:
         baseline_score = backend_scores.get(BackendType.QISKIT, 1.0)
         expected_speedup = optimal_score / baseline_score if baseline_score > 0 else 1.0
 
-        confidence = (
-            0.9 if not alternatives else min(1.0, 0.5 + (optimal_score - alternatives[0][1]) / 10.0)
-        )
+        confidence = 0.9 if not alternatives else min(1.0, 0.5 + (optimal_score - alternatives[0][1]) / 10.0)
 
         return RoutingDecision(
             circuit_entropy=entropy,

@@ -65,9 +65,7 @@ class OptimizationResult:
         if self.original_circuit.depth() == 0:
             return 0.0
         return float(
-            (self.original_circuit.depth() - self.optimized_circuit.depth())
-            / self.original_circuit.depth()
-            * 100
+            (self.original_circuit.depth() - self.optimized_circuit.depth()) / self.original_circuit.depth() * 100
         )
 
     @property
@@ -110,9 +108,7 @@ class CircuitOptimizer(ABC):
         """
         pass
 
-    def _calculate_metrics(
-        self, original: QuantumCircuit, optimized: QuantumCircuit
-    ) -> dict[str, Any]:
+    def _calculate_metrics(self, original: QuantumCircuit, optimized: QuantumCircuit) -> dict[str, Any]:
         """Calculate optimization metrics."""
         return {
             "original_depth": original.depth(),
@@ -125,17 +121,13 @@ class CircuitOptimizer(ABC):
             "optimized_qubits": optimized.num_qubits,
         }
 
-    def _calculate_depth_reduction(
-        self, original: QuantumCircuit, optimized: QuantumCircuit
-    ) -> float:
+    def _calculate_depth_reduction(self, original: QuantumCircuit, optimized: QuantumCircuit) -> float:
         """Calculate depth reduction percentage."""
         if original.depth() == 0:
             return 0.0
         return float((original.depth() - optimized.depth()) / original.depth() * 100)
 
-    def _calculate_gate_count_reduction(
-        self, original: QuantumCircuit, optimized: QuantumCircuit
-    ) -> float:
+    def _calculate_gate_count_reduction(self, original: QuantumCircuit, optimized: QuantumCircuit) -> float:
         """Calculate gate count reduction percentage."""
         original_count = len(original.data)
         optimized_count = len(optimized.data)

@@ -49,9 +49,7 @@ class AppleSiliconMemoryManager:
     optimized memory layout for quantum circuit simulation.
     """
 
-    def __init__(
-        self, pool_size_mb: int = 2048, enable_mapping: bool = True, enable_caching: bool = True
-    ):
+    def __init__(self, pool_size_mb: int = 2048, enable_mapping: bool = True, enable_caching: bool = True):
         self.pool_size_mb = pool_size_mb
         self.enable_mapping = enable_mapping
         self.enable_caching = enable_caching
@@ -89,9 +87,7 @@ class AppleSiliconMemoryManager:
         # CPU-only mode can still benefit from unified memory optimizations
         pass
 
-    def allocate_state_vector(
-        self, num_qubits: int, block_id: str | None = None
-    ) -> tuple[np.ndarray, str]:
+    def allocate_state_vector(self, num_qubits: int, block_id: str | None = None) -> tuple[np.ndarray, str]:
         """Allocate optimally aligned state vector for Apple Silicon."""
         state_size = 2**num_qubits
         size_mb = state_size * 16 / (1024 * 1024)  # 16 bytes per complex128
@@ -377,9 +373,7 @@ class MetalBackend:
         # Initialize device selection with memory considerations
         self._initialize_device(device_id, prefer_gpu, allow_cpu_fallback)
 
-    def _initialize_device(
-        self, device_id: int, prefer_gpu: bool, allow_cpu_fallback: bool
-    ) -> None:
+    def _initialize_device(self, device_id: int, prefer_gpu: bool, allow_cpu_fallback: bool) -> None:
         """Initialize device with unified memory management."""
         if prefer_gpu and JAX_AVAILABLE:
             try:
@@ -410,9 +404,7 @@ class MetalBackend:
                     self.memory_manager.configure_for_cpu()
         else:
             if not allow_cpu_fallback:
-                raise RuntimeError(
-                    "JAX with Metal support not available and CPU fallback disabled."
-                )
+                raise RuntimeError("JAX with Metal support not available and CPU fallback disabled.")
             self._device = None
             self._mode = "cpu"
             self.memory_manager.configure_for_cpu()
@@ -473,9 +465,7 @@ class MetalBackend:
         else:  # type: ignore[unreachable]
             return self._simulate_statevector_cpu(circuit)
 
-    def _simulate_statevector_cpu(
-        self, circuit: QuantumCircuit
-    ) -> tuple[Any, Sequence[int], float]:
+    def _simulate_statevector_cpu(self, circuit: QuantumCircuit) -> tuple[Any, Sequence[int], float]:
         """CPU-based statevector simulation using NumPy (JAX fallback)."""
         num_qubits = circuit.num_qubits
         state = np.zeros(2**num_qubits, dtype=np.complex128)
@@ -491,9 +481,7 @@ class MetalBackend:
 
         return state, measured_qubits, execution_time
 
-    def _prepare_operations(
-        self, circuit: QuantumCircuit
-    ) -> tuple[list[tuple[Instruction, list[int]]], Sequence[int]]:
+    def _prepare_operations(self, circuit: QuantumCircuit) -> tuple[list[tuple[Instruction, list[int]]], Sequence[int]]:
         operations: list[tuple[Instruction, list[int]]] = []
         measurement_map: list[tuple[int, int]] = []
 
@@ -564,9 +552,7 @@ class MetalBackend:
         updated = jnp.moveaxis(updated.reshape([2] * num_qubits, order="F"), range(k), axes)
         return jnp.reshape(updated, state.shape[0], order="F")
 
-    def _apply_gate_numpy(
-        self, state: np.ndarray, matrix: np.ndarray, qubits: Sequence[int]
-    ) -> np.ndarray:
+    def _apply_gate_numpy(self, state: np.ndarray, matrix: np.ndarray, qubits: Sequence[int]) -> np.ndarray:
         """NumPy version of gate application."""
         if not qubits:
             return state
@@ -586,9 +572,7 @@ class MetalBackend:
         updated = np.moveaxis(updated.reshape([2] * num_qubits, order="F"), range(k), axes)
         return np.reshape(updated, state.shape[0], order="F")
 
-    def _simulate_statevector_metal_hybrid(
-        self, circuit: QuantumCircuit
-    ) -> tuple[Any, Sequence[int], float]:
+    def _simulate_statevector_metal_hybrid(self, circuit: QuantumCircuit) -> tuple[Any, Sequence[int], float]:
         """Advanced Metal hybrid simulation with Apple Silicon optimizations."""
         start = time.perf_counter()
 
@@ -603,19 +587,13 @@ class MetalBackend:
 
         # Apply gates using Apple Silicon optimized path
         for instruction, targets in operations:
-            gate_matrix = self._instruction_to_matrix_optimized(
-                instruction, len(targets), use_accelerate
-            )
+            gate_matrix = self._instruction_to_matrix_optimized(instruction, len(targets), use_accelerate)
 
             # Route to optimized implementations based on gate type and size
             if len(targets) == 1:
-                state = self._apply_single_qubit_accelerated(
-                    state, gate_matrix, targets[0], num_qubits, use_simd
-                )
+                state = self._apply_single_qubit_accelerated(state, gate_matrix, targets[0], num_qubits, use_simd)
             elif len(targets) == 2:
-                state = self._apply_two_qubit_accelerated(
-                    state, gate_matrix, targets, num_qubits, use_accelerate
-                )
+                state = self._apply_two_qubit_accelerated(state, gate_matrix, targets, num_qubits, use_accelerate)
             else:
                 # Fall back to general implementation for multi-qubit gates
                 state = self._apply_gate_numpy(state, gate_matrix, targets)
@@ -662,9 +640,7 @@ class MetalBackend:
         except Exception:
             return False
 
-    def _initialize_optimized_state(
-        self, num_qubits: int, use_accelerate: bool
-    ) -> tuple[np.ndarray, str]:
+    def _initialize_optimized_state(self, num_qubits: int, use_accelerate: bool) -> tuple[np.ndarray, str]:
         """Initialize state vector with optimal memory layout using memory manager."""
         # Use memory manager for optimal allocation
         state, block_id = self.memory_manager.allocate_state_vector(num_qubits)
@@ -693,9 +669,7 @@ class MetalBackend:
         # Try Metal acceleration first if available
         if self.metal_accelerator:
             try:
-                return np.array(
-                    self.metal_accelerator.apply_single_qubit_gate_metal(state, matrix, qubit)
-                )
+                return np.array(self.metal_accelerator.apply_single_qubit_gate_metal(state, matrix, qubit))
             except Exception:
                 pass  # Fall back to SIMD
 
@@ -763,9 +737,7 @@ class MetalBackend:
         if self.metal_accelerator:
             try:
                 return np.array(
-                    self.metal_accelerator.apply_two_qubit_gate_metal(
-                        state, matrix, (qubits[0], qubits[1])
-                    )
+                    self.metal_accelerator.apply_two_qubit_gate_metal(state, matrix, (qubits[0], qubits[1]))
                 )
             except Exception:
                 pass  # Fall back to other methods
@@ -805,9 +777,7 @@ class MetalBackend:
                         idx10, idx11 = i | mask1, i | mask1 | mask2
 
                         if all(idx < n for idx in [idx00, idx01, idx10, idx11]):
-                            block_states.append(
-                                [state[idx00], state[idx01], state[idx10], state[idx11]]
-                            )
+                            block_states.append([state[idx00], state[idx01], state[idx10], state[idx11]])
                             block_indices.append([idx00, idx01, idx10, idx11])
 
                 if block_states:
@@ -829,9 +799,7 @@ class MetalBackend:
             # Fall back to optimized implementation if BLAS approach fails
             return self._apply_two_qubit_gate_optimized(state, matrix, qubits, num_qubits)
 
-    def _apply_gate_numpy_optimized(
-        self, state: np.ndarray, matrix: np.ndarray, qubits: Sequence[int]
-    ) -> np.ndarray:
+    def _apply_gate_numpy_optimized(self, state: np.ndarray, matrix: np.ndarray, qubits: Sequence[int]) -> np.ndarray:
         """Optimized gate application that leverages Accelerate framework on macOS."""
         if not qubits:
             return state
@@ -925,24 +893,14 @@ class MetalBackend:
 
                         # Apply 4x4 gate matrix using Apple Silicon's NEON vector instructions
                         # This can be further optimized with BLAS calls on Apple Silicon
-                        new_state[idx00] = (
-                            m[0, 0] * s00 + m[0, 1] * s01 + m[0, 2] * s10 + m[0, 3] * s11
-                        )
-                        new_state[idx01] = (
-                            m[1, 0] * s00 + m[1, 1] * s01 + m[1, 2] * s10 + m[1, 3] * s11
-                        )
-                        new_state[idx10] = (
-                            m[2, 0] * s00 + m[2, 1] * s01 + m[2, 2] * s10 + m[2, 3] * s11
-                        )
-                        new_state[idx11] = (
-                            m[3, 0] * s00 + m[3, 1] * s01 + m[3, 2] * s10 + m[3, 3] * s11
-                        )
+                        new_state[idx00] = m[0, 0] * s00 + m[0, 1] * s01 + m[0, 2] * s10 + m[0, 3] * s11
+                        new_state[idx01] = m[1, 0] * s00 + m[1, 1] * s01 + m[1, 2] * s10 + m[1, 3] * s11
+                        new_state[idx10] = m[2, 0] * s00 + m[2, 1] * s01 + m[2, 2] * s10 + m[2, 3] * s11
+                        new_state[idx11] = m[3, 0] * s00 + m[3, 1] * s01 + m[3, 2] * s10 + m[3, 3] * s11
 
         return new_state
 
-    def _sample_measurements(
-        self, state: Any, measured_qubits: Sequence[int], shots: int
-    ) -> dict[str, int]:
+    def _sample_measurements(self, state: Any, measured_qubits: Sequence[int], shots: int) -> dict[str, int]:
         # Handle both JAX and NumPy arrays by converting to NumPy first
         state_np = np.asarray(state)
 

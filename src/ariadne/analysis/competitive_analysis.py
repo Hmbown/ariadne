@@ -144,9 +144,7 @@ class CompetitiveAnalyzer:
             competitor_metrics = self._test_competitors(circuit, shots)
 
             # Analyze results
-            analysis = self._analyze_performance_results(
-                circuit_name, circuit, ariadne_metrics, competitor_metrics
-            )
+            analysis = self._analyze_performance_results(circuit_name, circuit, ariadne_metrics, competitor_metrics)
 
             results.append(analysis)
 
@@ -302,9 +300,7 @@ class CompetitiveAnalyzer:
 
         # Execution time comparison
         if ariadne_metrics["success"]:
-            time_scores = {
-                "ariadne": 1.0 / ariadne_metrics["execution_time"]
-            }  # Higher score = faster
+            time_scores = {"ariadne": 1.0 / ariadne_metrics["execution_time"]}  # Higher score = faster
             for name, comp_metrics in competitor_metrics.items():
                 if comp_metrics["success"]:
                     time_scores[name] = 1.0 / comp_metrics["execution_time"]
@@ -385,9 +381,7 @@ class CompetitiveAnalyzer:
             overall_scores[framework] = np.mean(scores)
 
         # Rank all frameworks
-        ranked_frameworks = sorted(
-            overall_scores.keys(), key=lambda k: overall_scores[k], reverse=True
-        )
+        ranked_frameworks = sorted(overall_scores.keys(), key=lambda k: overall_scores[k], reverse=True)
 
         overall_winner = ranked_frameworks[0]
         ariadne_rank = ranked_frameworks.index("ariadne") + 1
@@ -430,9 +424,7 @@ class CompetitiveAnalyzer:
         avg_rank = np.mean([r.ariadne_rank for r in results]) if results else 0
 
         report_lines.append("## Executive Summary")
-        report_lines.append(
-            f"- **Ariadne Win Rate**: {win_rate:.1f}% ({ariadne_wins}/{total_tests} tests)"
-        )
+        report_lines.append(f"- **Ariadne Win Rate**: {win_rate:.1f}% ({ariadne_wins}/{total_tests} tests)")
         report_lines.append(
             f"- **Average Ranking**: {avg_rank:.1f} out of {results[0].total_competitors if results else 0}"
         )
@@ -465,17 +457,13 @@ class CompetitiveAnalyzer:
         report_lines.append("### Ariadne Strengths")
         for strength, count in sorted(strength_counts.items(), key=lambda x: x[1], reverse=True):
             percentage = count / total_tests * 100
-            report_lines.append(
-                f"- **{strength}**: Won {count}/{total_tests} tests ({percentage:.1f}%)"
-            )
+            report_lines.append(f"- **{strength}**: Won {count}/{total_tests} tests ({percentage:.1f}%)")
 
         report_lines.append("")
         report_lines.append("### Areas for Improvement")
         for weakness, count in sorted(weakness_counts.items(), key=lambda x: x[1], reverse=True):
             percentage = count / total_tests * 100
-            report_lines.append(
-                f"- **{weakness}**: Lost {count}/{total_tests} tests ({percentage:.1f}%)"
-            )
+            report_lines.append(f"- **{weakness}**: Lost {count}/{total_tests} tests ({percentage:.1f}%)")
 
         report_lines.append("")
 
@@ -494,9 +482,7 @@ class CompetitiveAnalyzer:
 
             for metric in result.metrics:
                 winner_score = metric.competitor_scores.get(metric.winner, metric.ariadne_score)
-                margin_text = (
-                    f"{metric.margin:.2f}x" if metric.margin > 1 else f"1/{1 / metric.margin:.2f}x"
-                )
+                margin_text = f"{metric.margin:.2f}x" if metric.margin > 1 else f"1/{1 / metric.margin:.2f}x"
 
                 report_lines.append(
                     f"| {metric.metric_name} | {metric.ariadne_score:.3f} | "
@@ -609,19 +595,14 @@ class CompetitiveAnalyzer:
                 "winner": winner,
                 "ariadne_value": ariadne_val,
                 "competitor_value": competitor_val,
-                "margin": max(ariadne_val, competitor_val)
-                / max(min(ariadne_val, competitor_val), 1e-10),
+                "margin": max(ariadne_val, competitor_val) / max(min(ariadne_val, competitor_val), 1e-10),
             }
 
         # Overall winner (simple majority)
-        ariadne_wins = sum(
-            1 for v in comparison["winner_by_metric"].values() if v["winner"] == "ariadne"
-        )
+        ariadne_wins = sum(1 for v in comparison["winner_by_metric"].values() if v["winner"] == "ariadne")
         competitor_wins = len(metrics_to_compare) - ariadne_wins
 
-        comparison["overall_winner"] = (
-            "ariadne" if ariadne_wins > competitor_wins else competitor_name
-        )
+        comparison["overall_winner"] = "ariadne" if ariadne_wins > competitor_wins else competitor_name
         comparison["score"] = f"{ariadne_wins}-{competitor_wins}"
 
         return comparison

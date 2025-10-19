@@ -234,9 +234,7 @@ class CUDABackend:
 
         return counts
 
-    def _simulate_statevector_multi_gpu(
-        self, circuit: QuantumCircuit
-    ) -> tuple[Any, Sequence[int], float]:
+    def _simulate_statevector_multi_gpu(self, circuit: QuantumCircuit) -> tuple[Any, Sequence[int], float]:
         """Simulate using multiple GPUs for large circuits."""
         num_qubits = circuit.num_qubits
 
@@ -290,9 +288,7 @@ class CUDABackend:
         execution_time = time.perf_counter() - start
         return full_state, measured_qubits, execution_time
 
-    def _simulate_chunked_circuit(
-        self, circuit: QuantumCircuit
-    ) -> tuple[Any, Sequence[int], float]:
+    def _simulate_chunked_circuit(self, circuit: QuantumCircuit) -> tuple[Any, Sequence[int], float]:
         """Simulate very large circuits using memory-efficient chunking."""
         time.perf_counter()
 
@@ -322,9 +318,7 @@ class CUDABackend:
 
             if num_qubits <= chunk_qubits:
                 # Circuit fits in memory, use standard simulation
-                state, _, _ = self._simulate_statevector(
-                    QuantumCircuit.from_instructions(operations)
-                )
+                state, _, _ = self._simulate_statevector(QuantumCircuit.from_instructions(operations))
                 execution_time = time.perf_counter() - start
                 return state, measured_qubits, execution_time
 
@@ -350,9 +344,7 @@ class CUDABackend:
                     current_chunk = chunk_idx + i
 
                     with stream:
-                        chunk_state = self._process_chunk(
-                            operations, current_chunk, chunk_qubits, num_qubits
-                        )
+                        chunk_state = self._process_chunk(operations, current_chunk, chunk_qubits, num_qubits)
                         chunk_results.append((current_chunk, chunk_state))
 
                 # Synchronize and collect results
@@ -466,9 +458,7 @@ class CUDABackend:
             size = 2**num_qubits
             return sparse.csr_matrix((1, size), dtype=np.complex128)
 
-    def _process_chunk(
-        self, operations: Sequence[tuple], chunk_idx: int, chunk_qubits: int, total_qubits: int
-    ) -> Any:
+    def _process_chunk(self, operations: Sequence[tuple], chunk_idx: int, chunk_qubits: int, total_qubits: int) -> Any:
         """Process a single chunk of the quantum state."""
         xp = self._xp
 
@@ -508,9 +498,7 @@ class CUDABackend:
 
         return False
 
-    def _map_to_local_qubits(
-        self, targets: Sequence[int], chunk_offset: int, chunk_qubits: int
-    ) -> list[int]:
+    def _map_to_local_qubits(self, targets: Sequence[int], chunk_offset: int, chunk_qubits: int) -> list[int]:
         """Map global qubit indices to local chunk indices."""
         local_targets = []
         for qubit in targets:
@@ -533,9 +521,7 @@ class CUDABackend:
                 result = self.custom_kernels.apply_single_qubit_gate(state, matrix, qubits[0])
                 state[:] = result
             elif len(qubits) == 2:
-                result = self.custom_kernels.apply_two_qubit_gate(
-                    state, matrix, qubits[0], qubits[1]
-                )
+                result = self.custom_kernels.apply_two_qubit_gate(state, matrix, qubits[0], qubits[1])
                 state[:] = result
             else:
                 # Fallback to standard method for multi-qubit gates
@@ -543,9 +529,7 @@ class CUDABackend:
         else:
             self._apply_gate(state, matrix, qubits)
 
-    def _simulate_model_parallel_circuit(
-        self, circuit: QuantumCircuit
-    ) -> tuple[Any, Sequence[int], float]:
+    def _simulate_model_parallel_circuit(self, circuit: QuantumCircuit) -> tuple[Any, Sequence[int], float]:
         """Model parallel simulation for very large circuits."""
         # For very large circuits, implement circuit partitioning
         # This is a simplified version - full implementation would be more complex
@@ -591,9 +575,7 @@ class CUDABackend:
 
         return updated_chunks
 
-    def _apply_gate_chunk(
-        self, chunk: Any, matrix: Any, qubits: Sequence[int], chunk_offset: int
-    ) -> Any:
+    def _apply_gate_chunk(self, chunk: Any, matrix: Any, qubits: Sequence[int], chunk_offset: int) -> Any:
         """Apply gate to a state chunk."""
         # Simplified gate application for demonstration
         # Real implementation would handle the chunked state vector properly
@@ -606,17 +588,13 @@ class CUDABackend:
             # For multi-qubit gates, fall back to standard method
             return chunk  # Placeholder
 
-    def _apply_single_qubit_gate_chunk(
-        self, chunk: Any, matrix: Any, qubit: int, chunk_offset: int
-    ) -> Any:
+    def _apply_single_qubit_gate_chunk(self, chunk: Any, matrix: Any, qubit: int, chunk_offset: int) -> Any:
         """Apply single qubit gate to chunk."""
         # This is a simplified implementation
         # Real version would handle the chunk indexing properly
         return chunk
 
-    def _apply_two_qubit_gate_chunk(
-        self, chunk: Any, matrix: Any, qubits: Sequence[int], chunk_offset: int
-    ) -> Any:
+    def _apply_two_qubit_gate_chunk(self, chunk: Any, matrix: Any, qubits: Sequence[int], chunk_offset: int) -> Any:
         """Apply two qubit gate to chunk."""
         # This is a simplified implementation
         # Real version would handle cross-chunk communication
@@ -648,9 +626,7 @@ class CUDABackend:
 
         return state, measured_qubits, execution_time
 
-    def _prepare_operations(
-        self, circuit: QuantumCircuit
-    ) -> tuple[list[tuple[Instruction, list[int]]], Sequence[int]]:
+    def _prepare_operations(self, circuit: QuantumCircuit) -> tuple[list[tuple[Instruction, list[int]]], Sequence[int]]:
         operations: list[tuple[Instruction, list[int]]] = []
         measurement_map: list[tuple[int, int]] = []
 
@@ -715,9 +691,7 @@ class CUDABackend:
         updated = xp.moveaxis(updated.reshape([2] * num_qubits, order="F"), range(k), axes)
         state[:] = xp.reshape(updated, state.shape[0], order="F")
 
-    def _sample_measurements(
-        self, state: Any, measured_qubits: Sequence[int], shots: int
-    ) -> dict[str, int]:
+    def _sample_measurements(self, state: Any, measured_qubits: Sequence[int], shots: int) -> dict[str, int]:
         xp = self._xp
 
         if xp is np:

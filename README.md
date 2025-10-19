@@ -46,7 +46,7 @@ The routing system prioritizes transparency and determinism - every routing deci
 | **🧠 Intelligent Routing** | Mathematical analysis of circuit properties automatically selects the optimal backend without user intervention. |
 | **⚡ Stim Auto-Detection** | Pure Clifford circuits are automatically routed to Stim, enabling the simulation of circuits that are too large for other backends. |
 | **🍎 Apple Silicon Acceleration** | JAX-Metal backend can provide speedups for general-purpose circuits on M-series chips. |
-| **🚀 CUDA Support** | NVIDIA GPU acceleration is supported, with expected speedups depending on the hardware and circuit structure. |
+| **🚀 CUDA Support** | NVIDIA GPU acceleration is supported when available, with performance improvements depending on the hardware and circuit structure. Actual speedups will vary based on your specific GPU and circuit characteristics. |
 | **🔄 Zero Configuration** | `simulate(circuit, shots)` just works—no vendor imports or backend selection logic required. |
 | **🔢 Universal Fallback** | Always returns a result, even when specialized backends fail. |
 | **📊 Transparent Decisions** | Every routing decision can be inspected and validated with detailed reasoning. |

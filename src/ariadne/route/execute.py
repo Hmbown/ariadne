@@ -51,9 +51,7 @@ class Trace:
     metrics: dict[str, float | int | bool]
 
 
-def execute(
-    circuit: QuantumCircuit, shots: int = 1024
-) -> dict[str, object]:  # pragma: no cover - integration helper
+def execute(circuit: QuantumCircuit, shots: int = 1024) -> dict[str, object]:  # pragma: no cover - integration helper
     backend = decide_backend(circuit)
     metrics = analyze_circuit(circuit)
 

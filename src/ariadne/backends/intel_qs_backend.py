@@ -181,11 +181,7 @@ class IntelQuantumSimulatorBackend:
             # Parameterized gates
             elif gate_name in ["rx", "ry", "rz"]:
                 if instruction.params:
-                    angle = (
-                        float(instruction.params[0])
-                        if not isinstance(instruction.params[0], Parameter)
-                        else 0.0
-                    )
+                    angle = float(instruction.params[0]) if not isinstance(instruction.params[0], Parameter) else 0.0
                     intel_gate = {
                         "type": gate_name.upper(),
                         "qubits": qubit_indices,
@@ -196,21 +192,9 @@ class IntelQuantumSimulatorBackend:
             # U3 gate decomposition
             elif gate_name == "u3":
                 if len(instruction.params) >= 3:
-                    theta = (
-                        float(instruction.params[0])
-                        if not isinstance(instruction.params[0], Parameter)
-                        else 0.0
-                    )
-                    phi = (
-                        float(instruction.params[1])
-                        if not isinstance(instruction.params[1], Parameter)
-                        else 0.0
-                    )
-                    lam = (
-                        float(instruction.params[2])
-                        if not isinstance(instruction.params[2], Parameter)
-                        else 0.0
-                    )
+                    theta = float(instruction.params[0]) if not isinstance(instruction.params[0], Parameter) else 0.0
+                    phi = float(instruction.params[1]) if not isinstance(instruction.params[1], Parameter) else 0.0
+                    lam = float(instruction.params[2]) if not isinstance(instruction.params[2], Parameter) else 0.0
 
                     # Decompose U3 into RZ-RY-RZ sequence
                     intel_operations.extend(
@@ -275,9 +259,7 @@ class IntelQuantumSimulatorBackend:
         for operation in intel_circuit["operations"]:
             gate_matrix = self._get_intel_gate_matrix(operation)
             if gate_matrix is not None:
-                state = self._apply_gate_optimized(
-                    state, gate_matrix, operation["qubits"], num_qubits
-                )
+                state = self._apply_gate_optimized(state, gate_matrix, operation["qubits"], num_qubits)
 
         return self._sample_from_state(state, shots)
 
@@ -303,11 +285,7 @@ class IntelQuantumSimulatorBackend:
 
         # Parameterized gates
         elif gate_name == "rx" and instruction.params:
-            angle = (
-                float(instruction.params[0])
-                if not isinstance(instruction.params[0], Parameter)
-                else 0.0
-            )
+            angle = float(instruction.params[0]) if not isinstance(instruction.params[0], Parameter) else 0.0
             return np.array(
                 [
                     [np.cos(angle / 2), -1j * np.sin(angle / 2)],
@@ -317,41 +295,25 @@ class IntelQuantumSimulatorBackend:
             )
 
         elif gate_name == "ry" and instruction.params:
-            angle = (
-                float(instruction.params[0])
-                if not isinstance(instruction.params[0], Parameter)
-                else 0.0
-            )
+            angle = float(instruction.params[0]) if not isinstance(instruction.params[0], Parameter) else 0.0
             return np.array(
                 [[np.cos(angle / 2), -np.sin(angle / 2)], [np.sin(angle / 2), np.cos(angle / 2)]],
                 dtype=np.complex128,
             )
 
         elif gate_name == "rz" and instruction.params:
-            angle = (
-                float(instruction.params[0])
-                if not isinstance(instruction.params[0], Parameter)
-                else 0.0
-            )
-            return np.array(
-                [[np.exp(-1j * angle / 2), 0], [0, np.exp(1j * angle / 2)]], dtype=np.complex128
-            )
+            angle = float(instruction.params[0]) if not isinstance(instruction.params[0], Parameter) else 0.0
+            return np.array([[np.exp(-1j * angle / 2), 0], [0, np.exp(1j * angle / 2)]], dtype=np.complex128)
 
         # Two-qubit gates
         elif gate_name == "cx":
-            return np.array(
-                [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=np.complex128
-            )
+            return np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=np.complex128)
 
         elif gate_name == "cz":
-            return np.array(
-                [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, -1]], dtype=np.complex128
-            )
+            return np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, -1]], dtype=np.complex128)
 
         elif gate_name == "swap":
-            return np.array(
-                [[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]], dtype=np.complex128
-            )
+            return np.array([[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]], dtype=np.complex128)
 
         return None
 
@@ -390,13 +352,9 @@ class IntelQuantumSimulatorBackend:
             )
         elif gate_type == "RZ" and params:
             angle = params[0]
-            return np.array(
-                [[np.exp(-1j * angle / 2), 0], [0, np.exp(1j * angle / 2)]], dtype=np.complex128
-            )
+            return np.array([[np.exp(-1j * angle / 2), 0], [0, np.exp(1j * angle / 2)]], dtype=np.complex128)
         elif gate_type == "CNOT":
-            return np.array(
-                [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=np.complex128
-            )
+            return np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=np.complex128)
 
         return None
 
@@ -407,9 +365,7 @@ class IntelQuantumSimulatorBackend:
 
         # Use Intel MKL optimized operations where possible
         if len(qubits) == 1:
-            return self._apply_single_qubit_gate_vectorized(
-                state, gate_matrix, qubits[0], num_qubits
-            )
+            return self._apply_single_qubit_gate_vectorized(state, gate_matrix, qubits[0], num_qubits)
         elif len(qubits) == 2:
             return self._apply_two_qubit_gate_vectorized(state, gate_matrix, qubits, num_qubits)
         else:

@@ -98,14 +98,10 @@ class ComprehensiveRoutingTree:
         availability[BackendType.CUDA] = find_spec("cupy") is not None
 
         # Check Metal (Apple Silicon)
-        availability[BackendType.JAX_METAL] = self._is_apple_silicon() and (
-            find_spec("jax") is not None
-        )
+        availability[BackendType.JAX_METAL] = self._is_apple_silicon() and (find_spec("jax") is not None)
 
         # Check Tensor Network
-        availability[BackendType.TENSOR_NETWORK] = bool(
-            find_spec("cotengra") and find_spec("quimb")
-        )
+        availability[BackendType.TENSOR_NETWORK] = bool(find_spec("cotengra") and find_spec("quimb"))
 
         # Check MPS
         availability[BackendType.MPS] = find_spec("quimb") is not None
@@ -436,9 +432,7 @@ class ComprehensiveRoutingTree:
             # Default tree traversal
             return self._traverse_tree(self.tree, circuit, user_context)
 
-    def _traverse_tree(
-        self, node: RoutingNode, circuit: QuantumCircuit, context: UserContext
-    ) -> RoutingDecision:
+    def _traverse_tree(self, node: RoutingNode, circuit: QuantumCircuit, context: UserContext) -> RoutingDecision:
         """Traverse the routing tree to find the best backend."""
 
         # If this node has a backend and is available, consider it
@@ -467,9 +461,7 @@ class ComprehensiveRoutingTree:
             alternatives=[],
         )
 
-    def _evaluate_condition(
-        self, condition: str, circuit: QuantumCircuit, context: UserContext
-    ) -> bool:
+    def _evaluate_condition(self, condition: str, circuit: QuantumCircuit, context: UserContext) -> bool:
         """Evaluate a routing condition."""
 
         if condition == "always":
@@ -514,9 +506,7 @@ class ComprehensiveRoutingTree:
         """Check if circuit has low entanglement."""
         return should_use_mps(circuit)
 
-    def _clifford_optimized_routing(
-        self, circuit: QuantumCircuit, context: UserContext
-    ) -> RoutingDecision:
+    def _clifford_optimized_routing(self, circuit: QuantumCircuit, context: UserContext) -> RoutingDecision:
         """Routing optimized for Clifford circuits."""
         if is_clifford_circuit(circuit):
             if self.backend_availability.get(BackendType.STIM, False):
@@ -532,9 +522,7 @@ class ComprehensiveRoutingTree:
         # Fallback to general routing
         return self._traverse_tree(self.tree, circuit, context)
 
-    def _apple_silicon_routing(
-        self, circuit: QuantumCircuit, context: UserContext
-    ) -> RoutingDecision:
+    def _apple_silicon_routing(self, circuit: QuantumCircuit, context: UserContext) -> RoutingDecision:
         """Routing optimized for Apple Silicon."""
         if self._is_apple_silicon() and self.backend_availability.get(BackendType.JAX_METAL, False):
             return RoutingDecision(
@@ -562,9 +550,7 @@ class ComprehensiveRoutingTree:
 
         return self._traverse_tree(self.tree, circuit, context)
 
-    def _memory_efficient_routing(
-        self, circuit: QuantumCircuit, context: UserContext
-    ) -> RoutingDecision:
+    def _memory_efficient_routing(self, circuit: QuantumCircuit, context: UserContext) -> RoutingDecision:
         """Routing optimized for memory efficiency."""
         if circuit.num_qubits > 30 and self._has_low_entanglement(circuit):
             if self.backend_availability.get(BackendType.MPS, False):
@@ -589,10 +575,7 @@ class ComprehensiveRoutingTree:
             for backend, available in self.backend_availability.items()
         )
         alternatives_text = (
-            "\n".join(
-                f"- {backend.value}: confidence {score:.2f}"
-                for backend, score in decision.alternatives
-            )
+            "\n".join(f"- {backend.value}: confidence {score:.2f}" for backend, score in decision.alternatives)
             if decision.alternatives
             else "  (no alternatives)"
         )

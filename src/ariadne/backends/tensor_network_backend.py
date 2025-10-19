@@ -88,9 +88,7 @@ class TensorNetworkBackend:
 
         return np.asarray(dense_state).reshape(-1)
 
-    def _sample_counts(
-        self, statevector: np.ndarray, shots: int, num_qubits: int
-    ) -> dict[str, int]:
+    def _sample_counts(self, statevector: np.ndarray, shots: int, num_qubits: int) -> dict[str, int]:
         if shots == 0:
             return {}
 

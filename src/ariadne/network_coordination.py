@@ -162,9 +162,7 @@ class TimePrecisionManager:
             recent_offset = offsets[-1]
             old_offset = self._calibration_data[-1]
             time_diff = (
-                reference_timestamps[-1][0] - self._calibration_data[-2]
-                if len(self._calibration_data) > 1
-                else 1.0
+                reference_timestamps[-1][0] - self._calibration_data[-2] if len(self._calibration_data) > 1 else 1.0
             )
 
             self.drift_compensation = (recent_offset - old_offset) / time_diff
@@ -293,9 +291,7 @@ class NetworkCoordinator:
             logger.error("WebSockets library unavailable despite flag; cannot start server")
             return
 
-        self._websocket_server = await websockets.serve(
-            handle_websocket, "localhost", self.listen_port
-        )
+        self._websocket_server = await websockets.serve(handle_websocket, "localhost", self.listen_port)
         logger.info(f"WebSocket server started on port {self.listen_port}")
 
     async def _start_zmq_server(self) -> None:
@@ -332,9 +328,7 @@ class NetworkCoordinator:
             if node_id and node_id in self.nodes:
                 self.nodes[node_id].status = NetworkStatus.OFFLINE
 
-    async def _process_message(
-        self, data: dict[str, Any], connection: Any
-    ) -> dict[str, Any] | None:
+    async def _process_message(self, data: dict[str, Any], connection: Any) -> dict[str, Any] | None:
         """Process incoming network messages."""
         message_type = data.get("type")
 
@@ -352,9 +346,7 @@ class NetworkCoordinator:
             logger.warning(f"Unknown message type: {message_type}")
             return {"type": "error", "message": "Unknown message type"}
 
-    async def _handle_node_registration(
-        self, data: dict[str, Any], connection: Any
-    ) -> dict[str, Any]:
+    async def _handle_node_registration(self, data: dict[str, Any], connection: Any) -> dict[str, Any]:
         """Handle node registration requests."""
         try:
             node = NetworkNode(
@@ -490,9 +482,7 @@ class NetworkCoordinator:
                 )
 
                 # Calculate average latency
-                online_nodes = [
-                    node for node in self.nodes.values() if node.status == NetworkStatus.ONLINE
-                ]
+                online_nodes = [node for node in self.nodes.values() if node.status == NetworkStatus.ONLINE]
                 if online_nodes:
                     avg_latency = sum(node.latency for node in online_nodes) / len(online_nodes)
                     self.stats["average_latency"] = avg_latency
@@ -532,9 +522,7 @@ class NetworkCoordinator:
 
         # Find available nodes
         available_nodes = [
-            node
-            for node in self.nodes.values()
-            if node.status == NetworkStatus.ONLINE and node.load < 0.8
+            node for node in self.nodes.values() if node.status == NetworkStatus.ONLINE and node.load < 0.8
         ]
 
         if not available_nodes:
@@ -567,9 +555,7 @@ class NetworkCoordinator:
         for i in reversed(tasks_to_remove):
             del self.task_queue[i]
 
-    def _select_best_node(
-        self, task: QuantumTask, available_nodes: list[NetworkNode]
-    ) -> NetworkNode | None:
+    def _select_best_node(self, task: QuantumTask, available_nodes: list[NetworkNode]) -> NetworkNode | None:
         if not available_nodes:
             return None
 
@@ -688,15 +674,11 @@ class NetworkCoordinator:
         """Rebalance load across nodes if necessary."""
         # Simple load balancing - can be enhanced
         overloaded_nodes = [
-            node
-            for node in self.nodes.values()
-            if node.status == NetworkStatus.ONLINE and node.load > 0.9
+            node for node in self.nodes.values() if node.status == NetworkStatus.ONLINE and node.load > 0.9
         ]
 
         underloaded_nodes = [
-            node
-            for node in self.nodes.values()
-            if node.status == NetworkStatus.ONLINE and node.load < 0.3
+            node for node in self.nodes.values() if node.status == NetworkStatus.ONLINE and node.load < 0.3
         ]
 
         # In a full implementation, we would migrate tasks between nodes

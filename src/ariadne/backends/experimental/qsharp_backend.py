@@ -22,9 +22,7 @@ class QSharpBackend:
             # Real Qiskit -> Q# conversion not implemented yet.
             raise NotImplementedError("Qiskit->Q# conversion not implemented")
         except Exception as exc:
-            warnings.warn(
-                f"Q# simulation unavailable ({exc}), falling back to Qiskit", stacklevel=2
-            )
+            warnings.warn(f"Q# simulation unavailable ({exc}), falling back to Qiskit", stacklevel=2)
             return self._simulate_with_qiskit(circuit, shots)
 
     def _simulate_with_qiskit(self, circuit: QuantumCircuit, shots: int) -> dict[str, int]:

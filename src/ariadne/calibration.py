@@ -46,9 +46,7 @@ GENERAL_MAX_CAPACITY = 25.0
 
 # Memory Efficiency Parameters
 MEMORY_DEFAULT_EFFICIENCY = 0.8
-MEMORY_AMPLITUDE_BYTES = (
-    8  # 8 bytes per complex amplitude (64-bit float real + 64-bit float imaginary)
-)
+MEMORY_AMPLITUDE_BYTES = 8  # 8 bytes per complex amplitude (64-bit float real + 64-bit float imaginary)
 BYTES_TO_MB_DIVISOR = 1024 * 1024
 MEMORY_MIN_USAGE_THRESHOLD = 1.0
 MEMORY_MAX_EFFICIENCY = 1.0
@@ -199,9 +197,7 @@ class BackendCalibrator:
     def _calculate_clifford_capacity(self, measurements: list[PerformanceMeasurement]) -> float:
         """Calculate calibrated Clifford circuit capacity."""
         clifford_times = [
-            m.execution_time
-            for m in measurements
-            if m.is_clifford and m.success and m.execution_time > 0
+            m.execution_time for m in measurements if m.is_clifford and m.success and m.execution_time > 0
         ]
 
         if not clifford_times:
@@ -219,9 +215,7 @@ class BackendCalibrator:
     def _calculate_general_capacity(self, measurements: list[PerformanceMeasurement]) -> float:
         """Calculate calibrated general circuit capacity."""
         general_times = [
-            m.execution_time
-            for m in measurements
-            if not m.is_clifford and m.success and m.execution_time > 0
+            m.execution_time for m in measurements if not m.is_clifford and m.success and m.execution_time > 0
         ]
 
         if not general_times:
@@ -236,17 +230,13 @@ class BackendCalibrator:
 
     def _calculate_memory_efficiency(self, measurements: list[PerformanceMeasurement]) -> float:
         """Calculate memory efficiency score."""
-        memory_usages = [
-            m.memory_usage_mb for m in measurements if m.memory_usage_mb > 0 and m.success
-        ]
+        memory_usages = [m.memory_usage_mb for m in measurements if m.memory_usage_mb > 0 and m.success]
 
         if not memory_usages:
             return MEMORY_DEFAULT_EFFICIENCY  # Default efficiency
 
         # Qubit scaling analysis
-        qubit_counts = [
-            m.circuit_qubits for m in measurements if m.memory_usage_mb > 0 and m.success
-        ]
+        qubit_counts = [m.circuit_qubits for m in measurements if m.memory_usage_mb > 0 and m.success]
 
         if (
             len(memory_usages) < MIN_MEASUREMENTS_FOR_CALIBRATION - 1
@@ -308,10 +298,7 @@ class BackendCalibrator:
             MEMORY_MAX_EFFICIENCY, count / FULL_CONFIDENCE_MEASUREMENT_COUNT
         )  # Full confidence at FULL_CONFIDENCE_MEASUREMENT_COUNT+ measurements
 
-        return (
-            count_confidence * CONFIDENCE_COUNT_WEIGHT
-            + success_rate * CONFIDENCE_SUCCESS_RATE_WEIGHT
-        )
+        return count_confidence * CONFIDENCE_COUNT_WEIGHT + success_rate * CONFIDENCE_SUCCESS_RATE_WEIGHT
 
     def _hash_circuit(self, circuit: QuantumCircuit) -> str:
         """Generate hash for circuit to enable deduplication."""

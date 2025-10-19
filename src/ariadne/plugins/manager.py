@@ -284,11 +284,7 @@ class PluginManager:
 
             # Look for plugin class
             for name, obj in inspect.getmembers(module, inspect.isclass):
-                if (
-                    issubclass(obj, Plugin)
-                    and obj is not Plugin
-                    and obj.__module__.startswith(package_name)
-                ):
+                if issubclass(obj, Plugin) and obj is not Plugin and obj.__module__.startswith(package_name):
                     # Get plugin info
                     try:
                         plugin_instance = obj()
@@ -350,8 +346,7 @@ class PluginManager:
 
         self.logger.info(f"Loading plugin: {name}")
         metadata_message = (
-            f"Discovered plugin metadata - version: {plugin_info.version}, "
-            f"type: {plugin_info.plugin_type.value}"
+            f"Discovered plugin metadata - version: {plugin_info.version}, type: {plugin_info.plugin_type.value}"
         )
         self.logger.debug(metadata_message)
 
@@ -448,9 +443,7 @@ class PluginManager:
 
         return self.load_plugin(name, config)
 
-    def load_plugins_by_type(
-        self, plugin_type: PluginType, config: dict[str, Any] | None = None
-    ) -> list[str]:
+    def load_plugins_by_type(self, plugin_type: PluginType, config: dict[str, Any] | None = None) -> list[str]:
         """
         Load all plugins of a specific type.
 
@@ -508,9 +501,7 @@ class PluginManager:
 
     def get_plugins_by_type(self, plugin_type: PluginType) -> list[Plugin]:
         """Get all loaded plugins of a specific type."""
-        return [
-            plugin for plugin in self._plugins.values() if plugin.info.plugin_type == plugin_type
-        ]
+        return [plugin for plugin in self._plugins.values() if plugin.info.plugin_type == plugin_type]
 
     def get_backend_plugins(self) -> list[BackendPlugin]:
         """Get all loaded backend plugins."""

@@ -161,9 +161,7 @@ class ParallelSimulator:
         # Simulate
         return self._simulate_request(request)
 
-    def simulate_batch(
-        self, requests: list[ParallelSimulationRequest]
-    ) -> list[ParallelSimulationResult]:
+    def simulate_batch(self, requests: list[ParallelSimulationRequest]) -> list[ParallelSimulationResult]:
         """
         Simulate multiple circuits in parallel.
 
@@ -200,18 +198,14 @@ class ParallelSimulator:
 
             execution_time = time.time() - start_time
 
-            return ParallelSimulationResult(
-                request=request, result=result, execution_time=execution_time
-            )
+            return ParallelSimulationResult(request=request, result=result, execution_time=execution_time)
 
         except Exception as e:
             execution_time = time.time() - start_time
 
             self.logger.error(f"Simulation failed for request {request.request_id}: {e}")
 
-            return ParallelSimulationResult(
-                request=request, result=None, execution_time=execution_time, error=e
-            )
+            return ParallelSimulationResult(request=request, result=None, execution_time=execution_time, error=e)
 
     def _simulate_batch_single_thread(
         self, requests: list[ParallelSimulationRequest]
@@ -225,9 +219,7 @@ class ParallelSimulator:
 
         return results
 
-    def _simulate_batch_parallel(
-        self, requests: list[ParallelSimulationRequest]
-    ) -> list[ParallelSimulationResult]:
+    def _simulate_batch_parallel(self, requests: list[ParallelSimulationRequest]) -> list[ParallelSimulationResult]:
         """Simulate batch in parallel."""
         results = [None] * len(requests)
 
@@ -246,9 +238,7 @@ class ParallelSimulator:
             except Exception as e:
                 # Create error result
                 request = requests[index]
-                results[index] = ParallelSimulationResult(
-                    request=request, result=None, execution_time=0.0, error=e
-                )
+                results[index] = ParallelSimulationResult(request=request, result=None, execution_time=0.0, error=e)
 
         return results
 
@@ -295,9 +285,7 @@ class ParallelSimulator:
         # Simulate all variations
         return self.simulate_batch(requests)
 
-    def _apply_parameter_variations(
-        self, circuit: QuantumCircuit, params: dict[str, Any]
-    ) -> QuantumCircuit:
+    def _apply_parameter_variations(self, circuit: QuantumCircuit, params: dict[str, Any]) -> QuantumCircuit:
         """Apply parameter variations to a circuit."""
         # This is a simplified implementation
         # In a production system, this would handle various parameter types
@@ -396,19 +384,14 @@ class ParallelBenchmark:
         single_thread_sim = ParallelSimulator(execution_mode=ExecutionMode.SINGLE_THREAD)
         start_time = time.time()
         single_thread_results = single_thread_sim.simulate_batch(
-            [
-                ParallelSimulationRequest(circuit=circuit, shots=shots, backend=backend)
-                for circuit in circuits
-            ]
+            [ParallelSimulationRequest(circuit=circuit, shots=shots, backend=backend) for circuit in circuits]
         )
         single_thread_time = time.time() - start_time
 
         results["single_thread"] = {
             "total_time": single_thread_time,
-            "success_rate": sum(1 for r in single_thread_results if r.success)
-            / len(single_thread_results),
-            "avg_time": sum(r.execution_time for r in single_thread_results)
-            / len(single_thread_results),
+            "success_rate": sum(1 for r in single_thread_results if r.success) / len(single_thread_results),
+            "avg_time": sum(r.execution_time for r in single_thread_results) / len(single_thread_results),
         }
 
         single_thread_sim.shutdown()
@@ -418,19 +401,14 @@ class ParallelBenchmark:
         multi_thread_sim = ParallelSimulator(execution_mode=ExecutionMode.MULTI_THREAD)
         start_time = time.time()
         multi_thread_results = multi_thread_sim.simulate_batch(
-            [
-                ParallelSimulationRequest(circuit=circuit, shots=shots, backend=backend)
-                for circuit in circuits
-            ]
+            [ParallelSimulationRequest(circuit=circuit, shots=shots, backend=backend) for circuit in circuits]
         )
         multi_thread_time = time.time() - start_time
 
         results["multi_thread"] = {
             "total_time": multi_thread_time,
-            "success_rate": sum(1 for r in multi_thread_results if r.success)
-            / len(multi_thread_results),
-            "avg_time": sum(r.execution_time for r in multi_thread_results)
-            / len(multi_thread_results),
+            "success_rate": sum(1 for r in multi_thread_results if r.success) / len(multi_thread_results),
+            "avg_time": sum(r.execution_time for r in multi_thread_results) / len(multi_thread_results),
             "speedup": single_thread_time / multi_thread_time,
         }
 
@@ -441,19 +419,14 @@ class ParallelBenchmark:
         multi_process_sim = ParallelSimulator(execution_mode=ExecutionMode.MULTI_PROCESS)
         start_time = time.time()
         multi_process_results = multi_process_sim.simulate_batch(
-            [
-                ParallelSimulationRequest(circuit=circuit, shots=shots, backend=backend)
-                for circuit in circuits
-            ]
+            [ParallelSimulationRequest(circuit=circuit, shots=shots, backend=backend) for circuit in circuits]
         )
         multi_process_time = time.time() - start_time
 
         results["multi_process"] = {
             "total_time": multi_process_time,
-            "success_rate": sum(1 for r in multi_process_results if r.success)
-            / len(multi_process_results),
-            "avg_time": sum(r.execution_time for r in multi_process_results)
-            / len(multi_process_results),
+            "success_rate": sum(1 for r in multi_process_results if r.success) / len(multi_process_results),
+            "avg_time": sum(r.execution_time for r in multi_process_results) / len(multi_process_results),
             "speedup": single_thread_time / multi_process_time,
         }
 
@@ -486,9 +459,7 @@ class ParallelBenchmark:
             self.logger.info(f"Benchmarking with {num_workers} workers")
 
             # Create simulator
-            sim = ParallelSimulator(
-                execution_mode=ExecutionMode.MULTI_PROCESS, max_workers=num_workers
-            )
+            sim = ParallelSimulator(execution_mode=ExecutionMode.MULTI_PROCESS, max_workers=num_workers)
 
             # Create multiple requests
             requests = [
@@ -537,9 +508,7 @@ def get_parallel_simulator(
     """
     global _global_parallel_simulator
     if _global_parallel_simulator is None:
-        _global_parallel_simulator = ParallelSimulator(
-            execution_mode=execution_mode, max_workers=max_workers
-        )
+        _global_parallel_simulator = ParallelSimulator(execution_mode=execution_mode, max_workers=max_workers)
     return _global_parallel_simulator
 
 
@@ -564,10 +533,7 @@ def simulate_parallel(
     simulator = get_parallel_simulator(execution_mode=execution_mode)
 
     # Create requests
-    requests = [
-        ParallelSimulationRequest(circuit=circuit, shots=shots, backend=backend)
-        for circuit in circuits
-    ]
+    requests = [ParallelSimulationRequest(circuit=circuit, shots=shots, backend=backend) for circuit in circuits]
 
     # Simulate batch
     return simulator.simulate_batch(requests)

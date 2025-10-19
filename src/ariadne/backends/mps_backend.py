@@ -96,9 +96,7 @@ class MPSBackend(UniversalBackend):
             except Exception as err:
                 if gate_name in ["measure", "barrier", "reset"]:
                     continue
-                raise NotImplementedError(
-                    f"Gate '{gate_name}' not supported by MPS backend."
-                ) from err
+                raise NotImplementedError(f"Gate '{gate_name}' not supported by MPS backend.") from err
 
             if not physical_qubits:
                 continue
@@ -144,9 +142,7 @@ class MPSBackend(UniversalBackend):
         return counts
 
     def _simulate_with_statevector(self, circuit: QuantumCircuit, shots: int) -> dict[str, int]:
-        circuit_no_measure = (
-            circuit.remove_final_measurements(inplace=False) if circuit.num_clbits else circuit
-        )
+        circuit_no_measure = circuit.remove_final_measurements(inplace=False) if circuit.num_clbits else circuit
         state = Statevector.from_instruction(circuit_no_measure)
         counts = state.sample_counts(shots=shots)
         return {bitstring: int(count) for bitstring, count in counts.items()}

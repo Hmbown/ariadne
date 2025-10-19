@@ -174,12 +174,8 @@ class PerformanceRegressionDetector:
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_metrics_backend_type ON performance_metrics(backend, metric_type)"
             )
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_metrics_timestamp ON performance_metrics(timestamp)"
-            )
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_metrics_circuit ON performance_metrics(circuit_hash)"
-            )
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_metrics_timestamp ON performance_metrics(timestamp)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_metrics_circuit ON performance_metrics(circuit_hash)")
 
             conn.commit()
 
@@ -292,9 +288,7 @@ class PerformanceRegressionDetector:
 
     def _check_for_regression(self, metric: PerformanceMetric) -> None:
         """Check if a metric indicates a performance regression."""
-        baseline_key = self._get_baseline_key(
-            metric.metric_type, metric.backend, metric.circuit_hash
-        )
+        baseline_key = self._get_baseline_key(metric.metric_type, metric.backend, metric.circuit_hash)
 
         # Get or create baseline
         baseline_result: StatisticalBaseline | None = self._get_baseline(
@@ -313,52 +307,34 @@ class PerformanceRegressionDetector:
             threshold_value = baseline_result.mean * (1 + self.detection_threshold)
 
             if metric.value > threshold_value:
-                degradation_percent = (
-                    (metric.value - baseline_result.mean) / baseline_result.mean
-                ) * 100
-                confidence = min(
-                    1.0, (metric.value - threshold_value) / (expected_max - threshold_value)
-                )
+                degradation_percent = ((metric.value - baseline_result.mean) / baseline_result.mean) * 100
+                confidence = min(1.0, (metric.value - threshold_value) / (expected_max - threshold_value))
 
                 if confidence >= self.confidence_threshold:
-                    self._create_regression_alert(
-                        metric, baseline_result, degradation_percent, confidence
-                    )
+                    self._create_regression_alert(metric, baseline_result, degradation_percent, confidence)
 
         # For throughput and accuracy, lower values are worse
         elif metric.metric_type in [MetricType.THROUGHPUT, MetricType.ACCURACY]:
             threshold_value = baseline_result.mean * (1 - self.detection_threshold)
 
             if metric.value < threshold_value:
-                degradation_percent = (
-                    (baseline_result.mean - metric.value) / baseline_result.mean
-                ) * 100
+                degradation_percent = ((baseline_result.mean - metric.value) / baseline_result.mean) * 100
                 expected_min = baseline_result.mean - 2 * baseline_result.std
-                confidence = min(
-                    1.0, (threshold_value - metric.value) / (threshold_value - expected_min)
-                )
+                confidence = min(1.0, (threshold_value - metric.value) / (threshold_value - expected_min))
 
                 if confidence >= self.confidence_threshold:
-                    self._create_regression_alert(
-                        metric, baseline_result, degradation_percent, confidence
-                    )
+                    self._create_regression_alert(metric, baseline_result, degradation_percent, confidence)
 
         # For error rate, higher values are worse
         elif metric.metric_type == MetricType.ERROR_RATE:
             threshold_value = baseline_result.mean * (1 + self.detection_threshold)
 
             if metric.value > threshold_value:
-                degradation_percent = (
-                    (metric.value - baseline_result.mean) / baseline_result.mean
-                ) * 100
-                confidence = min(
-                    1.0, (metric.value - threshold_value) / (expected_max - threshold_value)
-                )
+                degradation_percent = ((metric.value - baseline_result.mean) / baseline_result.mean) * 100
+                confidence = min(1.0, (metric.value - threshold_value) / (expected_max - threshold_value))
 
                 if confidence >= self.confidence_threshold:
-                    self._create_regression_alert(
-                        metric, baseline_result, degradation_percent, confidence
-                    )
+                    self._create_regression_alert(metric, baseline_result, degradation_percent, confidence)
 
     def _create_regression_alert(
         self,
@@ -381,8 +357,7 @@ class PerformanceRegressionDetector:
         # Create description
         direction = (
             "increased"
-            if metric.metric_type
-            in [MetricType.EXECUTION_TIME, MetricType.BACKEND_LATENCY, MetricType.ERROR_RATE]
+            if metric.metric_type in [MetricType.EXECUTION_TIME, MetricType.BACKEND_LATENCY, MetricType.ERROR_RATE]
             else "decreased"
         )
 
@@ -520,9 +495,7 @@ class PerformanceRegressionDetector:
 
         return baseline
 
-    def _update_baseline(
-        self, baseline_key: str, metric_type: MetricType, backend: str, circuit_hash: str
-    ) -> None:
+    def _update_baseline(self, baseline_key: str, metric_type: MetricType, backend: str, circuit_hash: str) -> None:
         """Update an existing baseline with new data."""
         new_baseline = self._compute_baseline(baseline_key, metric_type, backend, circuit_hash)
 
@@ -593,9 +566,7 @@ class PerformanceRegressionDetector:
             return
 
         self._running = True
-        self._monitoring_thread = threading.Thread(
-            target=self._monitoring_loop, args=(check_interval,), daemon=True
-        )
+        self._monitoring_thread = threading.Thread(target=self._monitoring_loop, args=(check_interval,), daemon=True)
         self._monitoring_thread.start()
 
         logger.info("Started performance regression monitoring")
@@ -651,24 +622,18 @@ class PerformanceRegressionDetector:
 
         with sqlite3.connect(self.db_path) as conn:
             # Clean up old metrics
-            cursor = conn.execute(
-                "DELETE FROM performance_metrics WHERE timestamp < ?", (cutoff_time,)
-            )
+            cursor = conn.execute("DELETE FROM performance_metrics WHERE timestamp < ?", (cutoff_time,))
             metrics_deleted = cursor.rowcount
 
             # Clean up old alerts (keep for 180 days)
             alert_cutoff = time.time() - (180 * 86400)
-            cursor = conn.execute(
-                "DELETE FROM regression_alerts WHERE detection_timestamp < ?", (alert_cutoff,)
-            )
+            cursor = conn.execute("DELETE FROM regression_alerts WHERE detection_timestamp < ?", (alert_cutoff,))
             alerts_deleted = cursor.rowcount
 
             conn.commit()
 
             if metrics_deleted > 0 or alerts_deleted > 0:
-                logger.info(
-                    f"Cleaned up {metrics_deleted} old metrics and {alerts_deleted} old alerts"
-                )
+                logger.info(f"Cleaned up {metrics_deleted} old metrics and {alerts_deleted} old alerts")
 
     # Public API methods
 
@@ -774,14 +739,10 @@ class PerformanceRegressionDetector:
     def acknowledge_alert(self, alert_id: int) -> None:
         """Acknowledge a regression alert."""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute(
-                "UPDATE regression_alerts SET acknowledged = TRUE WHERE id = ?", (alert_id,)
-            )
+            conn.execute("UPDATE regression_alerts SET acknowledged = TRUE WHERE id = ?", (alert_id,))
             conn.commit()
 
-    def get_baseline_info(
-        self, metric_type: MetricType, backend: str, circuit_hash: str
-    ) -> dict[str, Any] | None:
+    def get_baseline_info(self, metric_type: MetricType, backend: str, circuit_hash: str) -> dict[str, Any] | None:
         """Get baseline information for a specific metric."""
         baseline_key = self._get_baseline_key(metric_type, backend, circuit_hash)
         baseline = self._get_baseline(baseline_key, metric_type, backend, circuit_hash)

@@ -126,9 +126,7 @@ class QulacsBackend:
 
         except Exception as e:
             if self.allow_cpu_fallback:
-                warnings.warn(
-                    f"Qulacs simulation failed: {e}, falling back to Qiskit", stacklevel=2
-                )
+                warnings.warn(f"Qulacs simulation failed: {e}, falling back to Qiskit", stacklevel=2)
                 return self._simulate_with_qiskit(circuit, shots)
             else:
                 raise
@@ -159,8 +157,7 @@ class QulacsBackend:
             "rx": lambda qubit, angle: qulacs.gate.RX(qubit, angle),
             "ry": lambda qubit, angle: qulacs.gate.RY(qubit, angle),
             "rz": lambda qubit, angle: qulacs.gate.RZ(qubit, angle),
-            "p": lambda qubit, angle: qulacs.gate.P0(qubit)
-            + qulacs.gate.P1(qubit) * np.exp(1j * angle),
+            "p": lambda qubit, angle: qulacs.gate.P0(qubit) + qulacs.gate.P1(qubit) * np.exp(1j * angle),
             "u1": lambda qubit, angle: qulacs.gate.U1(qubit, angle),
         }
 
@@ -229,9 +226,7 @@ class QulacsBackend:
 
         return qulacs_circuit
 
-    def _simulate_measurements(
-        self, state: Any, circuit: QuantumCircuit, shots: int
-    ) -> dict[str, int]:
+    def _simulate_measurements(self, state: Any, circuit: QuantumCircuit, shots: int) -> dict[str, int]:
         """Simulate measurements for circuits with explicit measurement operations."""
         # For now, measure all qubits at the end
         # TODO: Implement proper mid-circuit measurements
@@ -333,9 +328,7 @@ class QulacsBackend:
 
             available_memory = psutil.virtual_memory().available / (1024 * 1024)
 
-            if (
-                estimated_memory > available_memory * 0.8
-            ):  # Don't use more than 80% of available memory
+            if estimated_memory > available_memory * 0.8:  # Don't use more than 80% of available memory
                 return (
                     False,
                     f"Insufficient memory: need {estimated_memory:.0f}MB, have {available_memory:.0f}MB",
@@ -399,18 +392,14 @@ def is_qulacs_gpu_available() -> bool:
         import qulacs
 
         # Try to create a GPU state vector
-        test_state = qulacs.QuantumState(
-            2
-        )  # Use generic QuantumState, it will use GPU if available
+        test_state = qulacs.QuantumState(2)  # Use generic QuantumState, it will use GPU if available
         del test_state
         return True
     except Exception:
         return False
 
 
-def create_qulacs_backend(
-    use_gpu: bool = True, gpu_device: int = 0, allow_cpu_fallback: bool = True
-) -> QulacsBackend:
+def create_qulacs_backend(use_gpu: bool = True, gpu_device: int = 0, allow_cpu_fallback: bool = True) -> QulacsBackend:
     """
     Factory function to create a Qulacs backend.
 
@@ -422,9 +411,7 @@ def create_qulacs_backend(
     Returns:
         Configured QulacsBackend instance
     """
-    return QulacsBackend(
-        use_gpu=use_gpu, gpu_device=gpu_device, allow_cpu_fallback=allow_cpu_fallback
-    )
+    return QulacsBackend(use_gpu=use_gpu, gpu_device=gpu_device, allow_cpu_fallback=allow_cpu_fallback)
 
 
 # Performance optimization utilities

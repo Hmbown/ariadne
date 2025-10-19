@@ -201,13 +201,9 @@ class MetalQuantumAccelerator:
 
     def __init__(self, enable_metal: bool = True):
         self.enable_metal = enable_metal and METAL_AVAILABLE
-        self.shader_library: MetalShaderLibrary | None = (
-            MetalShaderLibrary() if self.enable_metal else None
-        )
+        self.shader_library: MetalShaderLibrary | None = MetalShaderLibrary() if self.enable_metal else None
 
-    def apply_single_qubit_gate_metal(
-        self, state: NDArray[Any], gate_matrix: NDArray[Any], qubit: int
-    ) -> NDArray[Any]:
+    def apply_single_qubit_gate_metal(self, state: NDArray[Any], gate_matrix: NDArray[Any], qubit: int) -> NDArray[Any]:
         """Apply single qubit gate using Metal compute shader."""
 
         if not self.enable_metal:
@@ -256,9 +252,7 @@ class MetalQuantumAccelerator:
         except Exception:
             return np.real(np.abs(state) ** 2).astype(np.float64)
 
-    def _apply_single_qubit_gate_cpu(
-        self, state: NDArray[Any], gate_matrix: NDArray[Any], qubit: int
-    ) -> NDArray[Any]:
+    def _apply_single_qubit_gate_cpu(self, state: NDArray[Any], gate_matrix: NDArray[Any], qubit: int) -> NDArray[Any]:
         """CPU fallback for single qubit gate."""
         int(math.log2(len(state)))
         new_state = np.zeros_like(state)

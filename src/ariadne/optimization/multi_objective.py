@@ -126,9 +126,7 @@ class BackendObjectiveScores:
 class ParetoOptimizer:
     """Pareto-optimal solution finder for multi-objective optimization."""
 
-    def find_pareto_front(
-        self, solutions: list[BackendObjectiveScores]
-    ) -> list[BackendObjectiveScores]:
+    def find_pareto_front(self, solutions: list[BackendObjectiveScores]) -> list[BackendObjectiveScores]:
         """Find Pareto-optimal solutions."""
         pareto_front = []
 
@@ -145,9 +143,7 @@ class ParetoOptimizer:
 
         return pareto_front
 
-    def _dominates(
-        self, solution_a: BackendObjectiveScores, solution_b: BackendObjectiveScores
-    ) -> bool:
+    def _dominates(self, solution_a: BackendObjectiveScores, solution_b: BackendObjectiveScores) -> bool:
         """Check if solution A dominates solution B."""
         # Solution A dominates B if A is better or equal in all objectives
         # and strictly better in at least one objective
@@ -190,9 +186,7 @@ class ParetoOptimizer:
 
         return equal_or_better_count == len(objectives) and better_count > 0
 
-    def rank_solutions(
-        self, solutions: list[BackendObjectiveScores]
-    ) -> dict[BackendObjectiveScores, int]:
+    def rank_solutions(self, solutions: list[BackendObjectiveScores]) -> dict[BackendObjectiveScores, int]:
         """Assign Pareto ranks to solutions (0 = best)."""
         remaining_solutions = solutions.copy()
         ranks = {}
@@ -269,9 +263,7 @@ class ObjectiveScorer:
         else:  # Uses > 80% of system memory
             return 0.1
 
-    def _score_energy_consumption(
-        self, backend: BackendType, analysis: dict[str, Any], context: UserContext
-    ) -> float:
+    def _score_energy_consumption(self, backend: BackendType, analysis: dict[str, Any], context: UserContext) -> float:
         """Score energy consumption (lower consumption = higher score)."""
         # Base energy scores for backends (higher = more energy efficient)
         base_energy_scores = {
@@ -297,9 +289,7 @@ class ObjectiveScorer:
 
         return min(1.0, base_score * size_factor)
 
-    def _score_computational_cost(
-        self, backend: BackendType, prediction: PredictionResult
-    ) -> float:
+    def _score_computational_cost(self, backend: BackendType, prediction: PredictionResult) -> float:
         """Score computational cost (lower cost = higher score)."""
         # Simplified cost model based on execution time and resource usage
         time_cost = prediction.predicted_time
@@ -443,9 +433,7 @@ class MultiObjectiveOptimizer:
             success_rate_weight=0.1,  # Default reliability consideration
         ).normalize()
 
-    def _calculate_weighted_score(
-        self, scores: BackendObjectiveScores, weights: ObjectiveWeight
-    ) -> float:
+    def _calculate_weighted_score(self, scores: BackendObjectiveScores, weights: ObjectiveWeight) -> float:
         """Calculate weighted score for multi-objective optimization."""
         return (
             weights.time_weight * scores.time_score

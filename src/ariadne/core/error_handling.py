@@ -59,17 +59,13 @@ class ResourceExhaustionError(AriadneError):
         self.required = required
         self.available = available
         message = f"Insufficient {resource_type}: required {required}, available {available}"
-        super().__init__(
-            message, {"resource_type": resource_type, "required": required, "available": available}
-        )
+        super().__init__(message, {"resource_type": resource_type, "required": required, "available": available})
 
 
 class SimulationError(AriadneError):
     """Raised when simulation fails due to circuit or backend issues."""
 
-    def __init__(
-        self, message: str, circuit_info: dict[str, Any] | None = None, backend: str | None = None
-    ):
+    def __init__(self, message: str, circuit_info: dict[str, Any] | None = None, backend: str | None = None):
         self.circuit_info = circuit_info or {}
         self.backend = backend
         details = {"circuit_info": circuit_info, "backend": backend}
@@ -94,9 +90,7 @@ class RoutingError(AriadneError):
         self.circuit_info = circuit_info
         self.available_backends = available_backends
         message = f"No suitable backend found for circuit with {circuit_info.get('num_qubits', 'unknown')} qubits"
-        super().__init__(
-            message, {"circuit_info": circuit_info, "available_backends": available_backends}
-        )
+        super().__init__(message, {"circuit_info": circuit_info, "available_backends": available_backends})
 
 
 class TimeoutError(AriadneError):
@@ -127,6 +121,4 @@ class ValidationError(AriadneError):
         self.value = value
         self.constraint = constraint
         message = f"Validation failed for '{field_name}': {constraint}"
-        super().__init__(
-            message, {"field_name": field_name, "value": value, "constraint": constraint}
-        )
+        super().__init__(message, {"field_name": field_name, "value": value, "constraint": constraint})

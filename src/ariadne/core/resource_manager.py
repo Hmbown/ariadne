@@ -88,9 +88,7 @@ class ResourceManager:
         self._initialized: bool = False
 
         if not PSUTIL_AVAILABLE:
-            raise DependencyError(
-                "psutil", "Resource management requires psutil. Install with: pip install psutil"
-            )
+            raise DependencyError("psutil", "Resource management requires psutil. Install with: pip install psutil")
 
         self._initialized = True
         self._update_resources()
@@ -106,7 +104,7 @@ class ResourceManager:
             total_memory_mb = memory.total / (1024 * 1024)
 
             # CPU information
-            cpu_count = psutil.cpu_count()
+            cpu_count = psutil.cpu_count() or 1  # Default to 1 if psutil returns None
             available_cpu_cores = cpu_count  # Simplified - could check load
 
             # GPU information
@@ -173,9 +171,7 @@ class ResourceManager:
         self._ensure_fresh_resources()
         return self.resources
 
-    def estimate_circuit_requirements(
-        self, circuit: QuantumCircuit, backend: str
-    ) -> ResourceRequirements:
+    def estimate_circuit_requirements(self, circuit: QuantumCircuit, backend: str) -> ResourceRequirements:
         """
         Estimate resource requirements for circuit simulation.
 
@@ -237,9 +233,7 @@ class ResourceManager:
             requirements = self.estimate_circuit_requirements(circuit, backend)
 
             # Check memory
-            if (
-                requirements.memory_mb > self.resources.available_memory_mb * 0.8
-            ):  # Leave 20% margin
+            if requirements.memory_mb > self.resources.available_memory_mb * 0.8:  # Leave 20% margin
                 return False, (
                     f"Insufficient memory: need {requirements.memory_mb:.1f}MB, "
                     f"available {self.resources.available_memory_mb:.1f}MB"
@@ -305,12 +299,8 @@ class ResourceManager:
         self.resources.available_cpu_cores += requirements.cpu_cores
 
         # Ensure we don't exceed total resources
-        self.resources.available_memory_mb = min(
-            self.resources.available_memory_mb, self.resources.total_memory_mb
-        )
-        self.resources.available_cpu_cores = min(
-            self.resources.available_cpu_cores, self.resources.total_cpu_cores
-        )
+        self.resources.available_memory_mb = min(self.resources.available_memory_mb, self.resources.total_memory_mb)
+        self.resources.available_cpu_cores = min(self.resources.available_cpu_cores, self.resources.total_cpu_cores)
 
     def get_recommendations(self, circuit: QuantumCircuit) -> list[str]:
         """
@@ -328,9 +318,7 @@ class ResourceManager:
 
         # Memory recommendations
         if num_qubits > 25:
-            recommendations.append(
-                "Consider using tensor network or MPS backend for large circuits"
-            )
+            recommendations.append("Consider using tensor network or MPS backend for large circuits")
 
         # Backend recommendations
         if depth > 100 and num_qubits > 15:
@@ -338,9 +326,7 @@ class ResourceManager:
 
         # System recommendations
         if self.resources.memory_usage_percent > 80:
-            recommendations.append(
-                "System memory usage is high, consider closing other applications"
-            )
+            recommendations.append("System memory usage is high, consider closing other applications")
 
         if self.resources.available_cpu_cores < 2:
             recommendations.append("Limited CPU cores available, simulation may be slow")

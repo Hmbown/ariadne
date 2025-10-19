@@ -220,7 +220,8 @@ class EnhancedBackendInterface(ABC):
         # Check circuit properties
         if circuit.num_qubits > capabilities.typical_qubits:
             recommendations.append(
-                f"Circuit has {circuit.num_qubits} qubits, which is larger than typical for this backend ({capabilities.typical_qubits})"
+                f"Circuit has {circuit.num_qubits} qubits, which is larger "
+                f"than typical for this backend ({capabilities.typical_qubits})"
             )
 
         if circuit.depth() > 100:
@@ -301,9 +302,7 @@ class EnhancedBackendWrapper:
     the enhanced interface without requiring changes to the original code.
     """
 
-    def __init__(
-        self, backend: Any, backend_name: str, capabilities: BackendCapabilities | None = None
-    ):
+    def __init__(self, backend: Any, backend_name: str, capabilities: BackendCapabilities | None = None):
         """
         Initialize the wrapper.
 
@@ -443,24 +442,14 @@ class EnhancedBackendWrapper:
         uptime = time.time() - self._start_time
 
         # Calculate statistics
-        avg_execution_time = (
-            sum(self._execution_times) / len(self._execution_times)
-            if self._execution_times
-            else 0.0
-        )
+        avg_execution_time = sum(self._execution_times) / len(self._execution_times) if self._execution_times else 0.0
         min_execution_time = min(self._execution_times) if self._execution_times else 0.0
         max_execution_time = max(self._execution_times) if self._execution_times else 0.0
 
-        avg_memory_usage = (
-            sum(self._memory_usages) / len(self._memory_usages) if self._memory_usages else 0.0
-        )
+        avg_memory_usage = sum(self._memory_usages) / len(self._memory_usages) if self._memory_usages else 0.0
 
         # Calculate error rate
-        error_rate = (
-            self._failed_simulations / self._total_simulations
-            if self._total_simulations > 0
-            else 0.0
-        )
+        error_rate = self._failed_simulations / self._total_simulations if self._total_simulations > 0 else 0.0
 
         return BackendPerformanceMetrics(
             backend_name=self.backend_name,
@@ -508,16 +497,14 @@ class EnhancedBackendWrapper:
         if OptimizationHint.BENEFITS_FROM_GATE_FUSION in self._capabilities.optimization_hints:
             recommendations.append("Consider gate fusion for better performance")
 
-        if (
-            OptimizationHint.BENEFITS_FROM_CIRCUIT_OPTIMIZATION
-            in self._capabilities.optimization_hints
-        ):
+        if OptimizationHint.BENEFITS_FROM_CIRCUIT_OPTIMIZATION in self._capabilities.optimization_hints:
             recommendations.append("Consider circuit optimization before simulation")
 
         # Check circuit properties
         if circuit.num_qubits > self._capabilities.typical_qubits:
             recommendations.append(
-                f"Circuit has {circuit.num_qubits} qubits, which is larger than typical for this backend ({self._capabilities.typical_qubits})"
+                f"Circuit has {circuit.num_qubits} qubits, which is larger "
+                f"than typical for this backend ({self._capabilities.typical_qubits})"
             )
 
         if circuit.depth() > 100:

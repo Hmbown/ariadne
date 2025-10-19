@@ -222,10 +222,7 @@ class MemoryCacheBackend(CacheBackend):
     def _evict_if_needed(self, new_entry_size: int) -> None:
         """Evict entries if needed to make space."""
         # Check memory limit
-        while (
-            self._current_memory_bytes + new_entry_size > self.max_memory_bytes
-            or len(self._cache) >= self.max_size
-        ):
+        while self._current_memory_bytes + new_entry_size > self.max_memory_bytes or len(self._cache) >= self.max_size:
             if not self._cache:
                 break
 
@@ -408,9 +405,7 @@ class CircuitHasher:
 
             instruction_data = {
                 "name": instruction.name,
-                "params": [
-                    float(p) if isinstance(p, int | float) else str(p) for p in instruction.params
-                ],
+                "params": [float(p) if isinstance(p, int | float) else str(p) for p in instruction.params],
                 "qubits": [circuit.find_bit(q).index for q in qargs],
                 "clbits": [circuit.find_bit(c).index for c in cargs],
             }
@@ -421,9 +416,7 @@ class CircuitHasher:
         return hashlib.sha256(circuit_str.encode()).hexdigest()
 
     @staticmethod
-    def hash_simulation_params(
-        circuit: QuantumCircuit, shots: int, backend: str | None = None
-    ) -> str:
+    def hash_simulation_params(circuit: QuantumCircuit, shots: int, backend: str | None = None) -> str:
         """
         Generate a hash for simulation parameters.
 
@@ -460,9 +453,7 @@ class SimulationCache:
         # Add invalidation rule for backend health
         self.cache.add_invalidation_rule(self._backend_health_rule)
 
-    def get(
-        self, circuit: QuantumCircuit, shots: int, backend: str | None = None
-    ) -> SimulationResult | None:
+    def get(self, circuit: QuantumCircuit, shots: int, backend: str | None = None) -> SimulationResult | None:
         """
         Get a cached simulation result.
 
@@ -591,9 +582,7 @@ class Memoizer:
 
         return decorator
 
-    def _generate_cache_key(
-        self, func: Callable[..., Any], args: tuple[Any, ...], kwargs: Mapping[str, Any]
-    ) -> str:
+    def _generate_cache_key(self, func: Callable[..., Any], args: tuple[Any, ...], kwargs: Mapping[str, Any]) -> str:
         """Generate a cache key for a function call."""
         # Create a deterministic representation of the function call
         key_data = {

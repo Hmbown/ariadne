@@ -55,8 +55,7 @@ class MetalBackend:
             Dictionary of measurement counts
         """
         raise NotImplementedError(
-            "Metal backend implementation pending. "
-            "Please use metal-development branch on Mac hardware."
+            "Metal backend implementation pending. Please use metal-development branch on Mac hardware."
         )
 
     def get_device_info(self) -> dict[str, Any]:
@@ -79,6 +78,5 @@ class JAXBackend:
 
     def __init__(self) -> None:
         raise NotImplementedError(
-            "JAX backend pending implementation. "
-            "Use metal-development branch for Apple Silicon support."
+            "JAX backend pending implementation. Use metal-development branch for Apple Silicon support."
         )

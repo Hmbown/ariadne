@@ -161,9 +161,7 @@ class CircuitFeatureExtractor:
         if circuit.depth() == 0:
             return 1.0
 
-        total_gates = sum(
-            1 for inst, _, _ in circuit.data if inst.name not in ["measure", "barrier", "delay"]
-        )
+        total_gates = sum(1 for inst, _, _ in circuit.data if inst.name not in ["measure", "barrier", "delay"])
 
         return total_gates / circuit.depth() if circuit.depth() > 0 else 1.0
 
@@ -278,9 +276,7 @@ class PerformancePredictor:
         self.feature_extractor = CircuitFeatureExtractor()
         self.model = PerformanceModel()
 
-    def predict_performance(
-        self, circuit: QuantumCircuit, backend: BackendType
-    ) -> PredictionResult:
+    def predict_performance(self, circuit: QuantumCircuit, backend: BackendType) -> PredictionResult:
         """Predict performance for circuit on given backend."""
         features = self.feature_extractor.extract_features(circuit)
 
@@ -337,9 +333,7 @@ class PerformancePredictor:
         elif optimize_for == "memory":
             best_backend = min(predictions.keys(), key=lambda b: predictions[b].predicted_memory_mb)
         elif optimize_for == "success":
-            best_backend = max(
-                predictions.keys(), key=lambda b: predictions[b].predicted_success_rate
-            )
+            best_backend = max(predictions.keys(), key=lambda b: predictions[b].predicted_success_rate)
         else:
             # Default to time optimization
             best_backend = min(predictions.keys(), key=lambda b: predictions[b].predicted_time)

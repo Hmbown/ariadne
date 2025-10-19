@@ -105,9 +105,7 @@ class BackendFallbackManager:
         self._backend_priorities: dict[BackendType, int] = {}
 
         # Fallback functions
-        self._fallback_functions: dict[
-            BackendType, Callable[[QuantumCircuit, int], dict[str, int]]
-        ] = {}
+        self._fallback_functions: dict[BackendType, Callable[[QuantumCircuit, int], dict[str, int]]] = {}
 
         # Statistics
         self._fallback_history: list[FallbackResult] = []
@@ -220,9 +218,7 @@ class BackendFallbackManager:
         # If scenario is specified, use it
         if scenario and scenario in self._fallback_chains:
             chain = self._fallback_chains[scenario]
-            self.logger.debug(
-                f"Using scenario fallback chain for {scenario}: {[b.value for b in chain]}"
-            )
+            self.logger.debug(f"Using scenario fallback chain for {scenario}: {[b.value for b in chain]}")
             return chain
 
         # If circuit is provided, analyze it
@@ -231,7 +227,8 @@ class BackendFallbackManager:
             if circuit.num_qubits > 25:
                 chain = self._fallback_chains["large"]
                 print(
-                    f"DEBUG: Using large circuit fallback chain ({circuit.num_qubits} qubits): {[b.value for b in chain]}"
+                    f"DEBUG: Using large circuit fallback chain "
+                    f"({circuit.num_qubits} qubits): {[b.value for b in chain]}"
                 )
                 self.logger.debug(
                     f"Using large circuit fallback chain ({circuit.num_qubits} qubits): {[b.value for b in chain]}"
@@ -299,13 +296,9 @@ class BackendFallbackManager:
         fallback_chain = fallback_chain[:max_attempts]
 
         print(f"DEBUG: Executing with fallback chain: {[b.value for b in fallback_chain]}")
-        print(
-            f"DEBUG: Registered fallback functions: {[b.value for b in self._fallback_functions.keys()]}"
-        )
+        print(f"DEBUG: Registered fallback functions: {[b.value for b in self._fallback_functions.keys()]}")
         self.logger.info(f"Executing with fallback chain: {[b.value for b in fallback_chain]}")
-        self.logger.debug(
-            f"Registered fallback functions: {[b.value for b in self._fallback_functions.keys()]}"
-        )
+        self.logger.debug(f"Registered fallback functions: {[b.value for b in self._fallback_functions.keys()]}")
 
         # Execute with fallback
         attempts: list[FallbackAttempt] = []
@@ -325,9 +318,7 @@ class BackendFallbackManager:
                     self.logger.debug(f"Using registered fallback function for {backend.value}")
                     result = self._fallback_functions[backend](circuit, shots)
                 else:
-                    self.logger.debug(
-                        f"No fallback function registered for {backend.value}, trying direct simulation"
-                    )
+                    self.logger.debug(f"No fallback function registered for {backend.value}, trying direct simulation")
                     # Try to import and use the backend
                     result = self._simulate_with_backend(backend, circuit, shots)
 
@@ -337,9 +328,7 @@ class BackendFallbackManager:
 
                 # Record successful attempt
                 attempts.append(
-                    FallbackAttempt(
-                        backend=backend, success=success, execution_time=time.time() - attempt_start
-                    )
+                    FallbackAttempt(backend=backend, success=success, execution_time=time.time() - attempt_start)
                 )
 
                 break
@@ -417,14 +406,10 @@ class BackendFallbackManager:
                             attempts[-1].execution_time = time.time() - attempt_start
                             attempts[-1].error_message = None
 
-                            self.logger.info(
-                                f"Reduced shots simulation successful with {backend.value}"
-                            )
+                            self.logger.info(f"Reduced shots simulation successful with {backend.value}")
                             break
                         except Exception as retry_e:
-                            self.logger.warning(
-                                f"Reduced shots retry failed with {backend.value}: {retry_e}"
-                            )
+                            self.logger.warning(f"Reduced shots retry failed with {backend.value}: {retry_e}")
                             continue  # Fall back to next backend
                 elif strategy == FallbackStrategy.ADAPTIVE:
                     # Adapt based on error type
@@ -457,19 +442,16 @@ class BackendFallbackManager:
         # Log summary
         if fallback_result.success:
             self.logger.info(
-                f"Fallback successful: {fallback_result.backend_used.value} after {fallback_result.num_attempts} attempts "
+                f"Fallback successful: {fallback_result.backend_used.value} "
+                f"after {fallback_result.num_attempts} attempts "
                 f"in {total_time:.3f}s"
             )
         else:
-            self.logger.error(
-                f"Fallback failed after {fallback_result.num_attempts} attempts in {total_time:.3f}s"
-            )
+            self.logger.error(f"Fallback failed after {fallback_result.num_attempts} attempts in {total_time:.3f}s")
 
         return fallback_result
 
-    def _simulate_with_backend(
-        self, backend: BackendType, circuit: QuantumCircuit, shots: int
-    ) -> dict[str, int]:
+    def _simulate_with_backend(self, backend: BackendType, circuit: QuantumCircuit, shots: int) -> dict[str, int]:
         """Simulate with a specific backend."""
         # This would be implemented based on available backends
         # For now, raise an error to indicate it needs to be implemented
@@ -508,21 +490,15 @@ class BackendFallbackManager:
             backend = result.successful_backend or result.first_backend
             backend_counts[backend] = backend_counts.get(backend, 0) + 1
 
-        most_common_backend = (
-            max(backend_counts.items(), key=lambda x: x[1])[0] if backend_counts else None
-        )
+        most_common_backend = max(backend_counts.items(), key=lambda x: x[1])[0] if backend_counts else None
 
         # Most common fallback reason
         reason_counts: dict[FallbackReason, int] = {}
         for result in self._fallback_history:
             if result.fallback_reason:
-                reason_counts[result.fallback_reason] = (
-                    reason_counts.get(result.fallback_reason, 0) + 1
-                )
+                reason_counts[result.fallback_reason] = reason_counts.get(result.fallback_reason, 0) + 1
 
-        most_common_reason = (
-            max(reason_counts.items(), key=lambda x: x[1])[0] if reason_counts else None
-        )
+        most_common_reason = max(reason_counts.items(), key=lambda x: x[1])[0] if reason_counts else None
 
         return {
             "total_fallbacks": total_fallbacks,

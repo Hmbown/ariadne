@@ -358,9 +358,7 @@ class PerformanceBenchmarker:
 
         return results
 
-    def run_scaling_benchmark(
-        self, circuit_type: str, backend: str, max_qubits: int = 20
-    ) -> list[BenchmarkResult]:
+    def run_scaling_benchmark(self, circuit_type: str, backend: str, max_qubits: int = 20) -> list[BenchmarkResult]:
         """Run scaling benchmark for a specific circuit type and backend."""
 
         results = []
@@ -464,12 +462,7 @@ class PerformanceBenchmarker:
             end_memory = psutil.virtual_memory().used / (1024 * 1024)
             memory_usage = max(0, end_memory - start_memory)
 
-            cpu_time = (
-                end_cpu_times.user
-                - start_cpu_times.user
-                + end_cpu_times.system
-                - start_cpu_times.system
-            )
+            cpu_time = end_cpu_times.user - start_cpu_times.user + end_cpu_times.system - start_cpu_times.system
             cpu_usage = (cpu_time / execution_time * 100) if execution_time > 0 else 0
 
             # Calculate derived metrics
@@ -606,9 +599,7 @@ class PerformanceBenchmarker:
         """Generate comprehensive benchmark report with visualizations."""
 
         # Create visualizations
-        viz_config = VisualizationConfig(
-            output_dir=self.config.output_dir / "plots", save_plots=True, show_plots=False
-        )
+        viz_config = VisualizationConfig(output_dir=self.config.output_dir / "plots", save_plots=True, show_plots=False)
 
         visualizer = ResultVisualizer(viz_config)
 
@@ -622,9 +613,7 @@ class PerformanceBenchmarker:
         report_file = self.config.output_dir / f"{suite.suite_id}_report.md"
         self._create_text_report(suite, report_file)
 
-    def _create_performance_plots(
-        self, results: list[BenchmarkResult], visualizer: ResultVisualizer
-    ) -> None:
+    def _create_performance_plots(self, results: list[BenchmarkResult], visualizer: ResultVisualizer) -> None:
         """Create performance visualization plots."""
 
         # This would create various performance plots

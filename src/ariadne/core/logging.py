@@ -158,9 +158,7 @@ class AriadneLogger:
 
     def log_simulation_error(self, error: Exception, **kwargs: Any) -> None:
         """Log simulation error."""
-        self.error(
-            "Simulation failed", error_type=type(error).__name__, error_message=str(error), **kwargs
-        )
+        self.error("Simulation failed", error_type=type(error).__name__, error_message=str(error), **kwargs)
 
     def log_backend_unavailable(self, backend: str, reason: str) -> None:
         """Log backend unavailability."""
@@ -236,9 +234,7 @@ def set_log_level(level: int) -> None:
         logger.logger.setLevel(level)
 
 
-def configure_logging(
-    level: int = logging.INFO, format_string: str | None = None, log_file: str | None = None
-) -> None:
+def configure_logging(level: int = logging.INFO, format_string: str | None = None, log_file: str | None = None) -> None:
     """
     Configure global logging settings.
 

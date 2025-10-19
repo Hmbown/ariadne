@@ -59,9 +59,7 @@ def detect_quantum_advantage(circuit: QuantumCircuit) -> dict[str, Any]:
     }
 
 
-def detect_classical_intractability(
-    circuit: QuantumCircuit, analysis: dict[str, Any]
-) -> dict[str, Any]:
+def detect_classical_intractability(circuit: QuantumCircuit, analysis: dict[str, Any]) -> dict[str, Any]:
     """
     Detect if circuit is classically intractable to simulate.
 
@@ -100,10 +98,7 @@ def detect_classical_intractability(
 
     # Combined intractability score
     intractability_score = (
-        0.4 * qubit_factor
-        + 0.2 * depth_factor
-        + 0.2 * entanglement_factor
-        + 0.2 * non_clifford_factor
+        0.4 * qubit_factor + 0.2 * depth_factor + 0.2 * entanglement_factor + 0.2 * non_clifford_factor
     )
 
     # Classify complexity
@@ -129,9 +124,7 @@ def detect_classical_intractability(
     }
 
 
-def detect_quantum_volume_advantage(
-    circuit: QuantumCircuit, analysis: dict[str, Any]
-) -> dict[str, Any]:
+def detect_quantum_volume_advantage(circuit: QuantumCircuit, analysis: dict[str, Any]) -> dict[str, Any]:
     """
     Detect quantum volume advantage over classical systems.
     """
@@ -176,9 +169,7 @@ def detect_quantum_volume_advantage(
     }
 
 
-def detect_entanglement_advantage(
-    circuit: QuantumCircuit, analysis: dict[str, Any]
-) -> dict[str, Any]:
+def detect_entanglement_advantage(circuit: QuantumCircuit, analysis: dict[str, Any]) -> dict[str, Any]:
     """
     Detect advantage from quantum entanglement.
     """
@@ -243,13 +234,10 @@ def analyze_error_threshold(circuit: QuantumCircuit, analysis: dict[str, Any]) -
     total_single_qubit_ops = sum(
         1
         for inst in circuit.data
-        if inst.operation.num_qubits == 1
-        and inst.operation.name not in ["measure", "barrier", "delay"]
+        if inst.operation.num_qubits == 1 and inst.operation.name not in ["measure", "barrier", "delay"]
     )
 
-    estimated_error_rate = (
-        total_single_qubit_ops * single_qubit_error_rate + two_qubit_gates * two_qubit_error_rate
-    )
+    estimated_error_rate = total_single_qubit_ops * single_qubit_error_rate + two_qubit_gates * two_qubit_error_rate
 
     # Error threshold for maintaining advantage
     error_threshold = 0.1  # 10% error threshold for meaningful results

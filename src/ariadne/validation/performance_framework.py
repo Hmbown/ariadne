@@ -170,9 +170,7 @@ class AccuracyValidationTest(ValidationTest):
 
         return test_cases
 
-    def _calculate_fidelity(
-        self, counts: dict[str, int], expected_state: np.ndarray, num_qubits: int
-    ) -> float:
+    def _calculate_fidelity(self, counts: dict[str, int], expected_state: np.ndarray, num_qubits: int) -> float:
         """Calculate fidelity between measurement counts and expected state."""
         # Convert counts to probability distribution
         total_shots = sum(counts.values())
@@ -508,9 +506,7 @@ class ErrorHandlingTest(ValidationTest):
                 except Exception as e:
                     if expected_behavior == "should_fail":
                         passed_tests += 1
-                        test_details[test_name] = (
-                            f"PASS - Properly threw exception: {type(e).__name__}"
-                        )
+                        test_details[test_name] = f"PASS - Properly threw exception: {type(e).__name__}"
                     else:
                         test_details[test_name] = f"FAIL - Unexpected exception: {e}"
 
@@ -668,26 +664,19 @@ class PerformanceValidationFramework:
         # Overall summary
         total_tests = sum(len(backend_results) for backend_results in results.values())
         passed_tests = sum(
-            sum(1 for result in backend_results.values() if result.passed)
-            for backend_results in results.values()
+            sum(1 for result in backend_results.values() if result.passed) for backend_results in results.values()
         )
 
         report_lines.append("## Summary")
         report_lines.append(f"- **Total Tests**: {total_tests}")
-        report_lines.append(
-            f"- **Passed**: {passed_tests} ({passed_tests / total_tests * 100:.1f}%)"
-        )
+        report_lines.append(f"- **Passed**: {passed_tests} ({passed_tests / total_tests * 100:.1f}%)")
         report_lines.append(f"- **Failed**: {total_tests - passed_tests}")
         report_lines.append("")
 
         # Backend summary
         report_lines.append("## Backend Validation Summary")
-        report_lines.append(
-            "| Backend | Accuracy | Stability | Scalability | Error Handling | Overall |"
-        )
-        report_lines.append(
-            "|---------|----------|-----------|-------------|----------------|---------|"
-        )
+        report_lines.append("| Backend | Accuracy | Stability | Scalability | Error Handling | Overall |")
+        report_lines.append("|---------|----------|-----------|-------------|----------------|---------|")
 
         for backend_name, backend_results in results.items():
             scores = {}

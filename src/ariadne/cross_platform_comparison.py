@@ -67,9 +67,7 @@ class SystemInfo:
 
     def __post_init__(self) -> None:
         if not self.python_version:
-            self.python_version = (
-                f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-            )
+            self.python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         if not self.os_version:
             self.os_version = platform.platform()
         if not self.architecture:
@@ -278,10 +276,7 @@ class BenchmarkRunner:
             available.append(BackendType.CUDA_NVIDIA)
 
         # Check for OpenCL
-        if (
-            self.system_info.gpu_info.get("opencl")
-            and importlib.util.find_spec("pyopencl") is not None
-        ):
+        if self.system_info.gpu_info.get("opencl") and importlib.util.find_spec("pyopencl") is not None:
             available.append(BackendType.OPENCL)
 
         # Check for Qiskit Aer
@@ -329,9 +324,7 @@ class BenchmarkRunner:
         for qubits in self.config.qubit_ranges:
             for depth in self.config.circuit_depths:
                 for shots in self.config.shot_counts:
-                    logger.debug(
-                        f"Testing {backend.value}: {qubits}q, depth {depth}, {shots} shots"
-                    )
+                    logger.debug(f"Testing {backend.value}: {qubits}q, depth {depth}, {shots} shots")
 
                     try:
                         result = self._run_single_benchmark(backend, qubits, depth, shots)
@@ -461,9 +454,7 @@ class BenchmarkRunner:
 
         return circuit
 
-    def _execute_circuit(
-        self, backend: BackendType, circuit: QuantumCircuit, shots: int
-    ) -> dict[str, Any]:
+    def _execute_circuit(self, backend: BackendType, circuit: QuantumCircuit, shots: int) -> dict[str, Any]:
         """Execute circuit on specified backend."""
         if backend == BackendType.CPU_NUMPY:
             return self._execute_cpu_numpy(circuit, shots)
@@ -531,9 +522,7 @@ class BenchmarkRunner:
         """Generate comprehensive comparison report."""
 
         # Group results by backend
-        backend_results: dict[BackendType, list[PerformanceResult]] = {
-            backend: [] for backend in backends
-        }
+        backend_results: dict[BackendType, list[PerformanceResult]] = {backend: [] for backend in backends}
         for result in results:
             if result.backend_type in backend_results:
                 backend_results[result.backend_type].append(result)
@@ -563,21 +552,15 @@ class BenchmarkRunner:
         # Generate recommendations
         if summary_stats:
             # Find fastest backend
-            fastest_backend = min(
-                summary_stats.keys(), key=lambda k: summary_stats[k]["avg_execution_time"]
-            )
+            fastest_backend = min(summary_stats.keys(), key=lambda k: summary_stats[k]["avg_execution_time"])
             recommendations.append(f"Fastest overall backend: {fastest_backend}")
 
             # Find highest throughput backend
-            highest_throughput = max(
-                summary_stats.keys(), key=lambda k: summary_stats[k]["max_throughput"]
-            )
+            highest_throughput = max(summary_stats.keys(), key=lambda k: summary_stats[k]["max_throughput"])
             recommendations.append(f"Highest throughput backend: {highest_throughput}")
 
             # Find most memory efficient backend
-            most_efficient = min(
-                summary_stats.keys(), key=lambda k: summary_stats[k]["avg_memory_peak"]
-            )
+            most_efficient = min(summary_stats.keys(), key=lambda k: summary_stats[k]["avg_memory_peak"])
             recommendations.append(f"Most memory efficient backend: {most_efficient}")
 
         report = ComparisonReport(
@@ -596,9 +579,7 @@ class BenchmarkRunner:
             "title": report.title,
             "generated_at": report.generated_at,
             "system_info": {
-                "platform_type": report.results[0].system_info.platform_type.value
-                if report.results
-                else "unknown",
+                "platform_type": report.results[0].system_info.platform_type.value if report.results else "unknown",
                 "cpu_count": report.results[0].system_info.cpu_count if report.results else 0,
                 "memory_total": report.results[0].system_info.memory_total if report.results else 0,
                 "gpu_info": report.results[0].system_info.gpu_info if report.results else {},
@@ -796,9 +777,7 @@ def compare_backend_performance(
     shots: int = 1000,
 ) -> dict[str, Any]:
     """Compare two specific backends on a single circuit configuration."""
-    config = BenchmarkConfig(
-        qubit_ranges=[qubits], circuit_depths=[depth], shot_counts=[shots], iterations_per_test=3
-    )
+    config = BenchmarkConfig(qubit_ranges=[qubits], circuit_depths=[depth], shot_counts=[shots], iterations_per_test=3)
 
     runner = BenchmarkRunner(config)
     report = runner.run_comprehensive_benchmark([backend1, backend2])
@@ -817,9 +796,7 @@ def compare_backend_performance(
             "result2": result2,
             "speedup": speedup,
             "throughput_ratio": throughput_ratio,
-            "winner": backend1.value
-            if result1.execution_time < result2.execution_time
-            else backend2.value,
+            "winner": backend1.value if result1.execution_time < result2.execution_time else backend2.value,
         }
 
     return {"error": "Insufficient results for comparison"}

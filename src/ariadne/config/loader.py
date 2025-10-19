@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 try:
-    import yaml  # type: ignore[import-untyped]
+    import yaml
 
     YAML_AVAILABLE = True
 except ImportError:
@@ -151,9 +151,7 @@ class ProgressiveConfigLoader:
         source = ConfigSource(name=name, data=data, priority=priority, environment=environment)
         self.add_source(source)
 
-    def add_env_source(
-        self, prefix: str = "ARIADNE_", priority: int = 0, required: bool = False
-    ) -> None:
+    def add_env_source(self, prefix: str = "ARIADNE_", priority: int = 0, required: bool = False) -> None:
         """
         Add an environment variable-based configuration source.
 
@@ -184,9 +182,7 @@ class ProgressiveConfigLoader:
         )
         self.add_source(source)
 
-    def load(
-        self, environment: str | None = None, schema_name: str | None = None
-    ) -> dict[str, Any]:
+    def load(self, environment: str | None = None, schema_name: str | None = None) -> dict[str, Any]:
         """
         Load configuration from all sources.
 
@@ -326,7 +322,7 @@ class ProgressiveConfigLoader:
                             return cast(dict[str, Any], data)
                     except ImportError:
                         try:
-                            import toml  # type: ignore[import-untyped]
+                            import toml
 
                             data = toml.load(f)
                             if not isinstance(data, dict):
@@ -445,17 +441,17 @@ class ConfigTemplate:
                     "yaml",
                     "YAML support not available. Install PyYAML.",
                 )
-            return cast(str, yaml.dump(config_data, default_flow_style=False, sort_keys=False))
+            return str(yaml.dump(config_data, default_flow_style=False, sort_keys=False))
         elif format == ConfigFormat.TOML:
             try:
                 import tomli_w
 
-                return cast(str, tomli_w.dumps(config_data))
+                return str(tomli_w.dumps(config_data))
             except ImportError:
                 try:
                     import toml
 
-                    return cast(str, toml.dumps(config_data))
+                    return str(toml.dumps(config_data))
                 except ImportError as exc:
                     raise ConfigLoadError(
                         "format",
@@ -543,9 +539,7 @@ def create_default_template() -> ConfigTemplate:
 
 def create_development_template() -> ConfigTemplate:
     """Create a development configuration template."""
-    template = ConfigTemplate(
-        name="development", description="Development environment configuration"
-    )
+    template = ConfigTemplate(name="development", description="Development environment configuration")
 
     # Backend configuration
     template.add_section(

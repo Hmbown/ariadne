@@ -89,9 +89,7 @@ class PyQuilBackend:
                 counts[bitstring] = counts.get(bitstring, 0) + 1
             return counts
         except Exception as exc:
-            warnings.warn(
-                f"PyQuil simulation unavailable ({exc}), falling back to Qiskit", stacklevel=2
-            )
+            warnings.warn(f"PyQuil simulation unavailable ({exc}), falling back to Qiskit", stacklevel=2)
             return self._simulate_with_qiskit(circuit, shots)
 
     def _simulate_with_qiskit(self, circuit: QuantumCircuit, shots: int) -> dict[str, int]:

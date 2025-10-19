@@ -14,7 +14,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 
 class ConfigFormat(Enum):
@@ -210,13 +210,9 @@ class AriadneConfig:
 
     def get_backend_priority_list(self) -> list[str]:
         """Get backends sorted by priority (highest first)."""
-        enabled_backends = {
-            name: config for name, config in self.backends.items() if config.enabled
-        }
+        enabled_backends = {name: config for name, config in self.backends.items() if config.enabled}
 
-        return sorted(
-            enabled_backends.keys(), key=lambda name: enabled_backends[name].priority, reverse=True
-        )
+        return sorted(enabled_backends.keys(), key=lambda name: enabled_backends[name].priority, reverse=True)
 
     def update_backend_config(self, backend_name: str, **kwargs: Any) -> None:
         """Update configuration for a specific backend."""
@@ -250,9 +246,7 @@ class AriadneConfig:
         """Create configuration from dictionary."""
         # Extract backend configs
         backend_data = data.pop("backends", {})
-        backends = {
-            name: BackendConfig.from_dict(config_data) for name, config_data in backend_data.items()
-        }
+        backends = {name: BackendConfig.from_dict(config_data) for name, config_data in backend_data.items()}
 
         # Extract component configs
         optimization_data = data.pop("optimization", {})

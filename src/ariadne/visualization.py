@@ -128,9 +128,7 @@ class ResultAnalyzer:
 
         # Performance trends
         if len(results) > 1:
-            batch_analysis["performance_trends"] = self._analyze_performance_trends(
-                individual_analyses
-            )
+            batch_analysis["performance_trends"] = self._analyze_performance_trends(individual_analyses)
 
         return batch_analysis
 
@@ -151,9 +149,7 @@ class ResultAnalyzer:
             comparison["performance_comparison"][backend] = {
                 "execution_time": analysis["execution_time"],
                 "shots_per_second": analysis["total_shots"] / max(analysis["execution_time"], 1e-6),
-                "memory_efficiency": analysis.get("resource_estimate", {}).get(
-                    "memory_requirement_mb", 0
-                ),
+                "memory_efficiency": analysis.get("resource_estimate", {}).get("memory_requirement_mb", 0),
             }
 
         # Find best performing backend
@@ -209,9 +205,7 @@ class ResultAnalyzer:
             "std_probability": float(np.std(probabilities)),
             "max_probability": float(max(probabilities)),
             "min_probability": float(min(probabilities)),
-            "coefficient_of_variation": float(
-                np.std(probabilities) / max(float(np.mean(probabilities)), 1e-10)
-            ),
+            "coefficient_of_variation": float(np.std(probabilities) / max(float(np.mean(probabilities)), 1e-10)),
         }
 
     def _analyze_performance_trends(self, analyses: list[dict[str, Any]]) -> dict[str, Any]:
@@ -223,8 +217,7 @@ class ResultAnalyzer:
         trends = {
             "execution_time_trend": np.polyfit(range(len(execution_times)), execution_times, 1)[0],
             "entropy_trend": np.polyfit(range(len(entropies)), entropies, 1)[0],
-            "performance_stability": 1.0
-            / (1.0 + np.std(execution_times) / max(np.mean(execution_times), 1e-6)),
+            "performance_stability": 1.0 / (1.0 + np.std(execution_times) / max(np.mean(execution_times), 1e-6)),
         }
 
         return trends
@@ -242,9 +235,7 @@ class ResultVisualizer:
         self.config = config or VisualizationConfig()
         self.analyzer = ResultAnalyzer(config)
 
-    def create_single_result_plots(
-        self, result: Any, save_prefix: str = "single_result"
-    ) -> list[Path]:
+    def create_single_result_plots(self, result: Any, save_prefix: str = "single_result") -> list[Path]:
         """Create comprehensive plots for a single simulation result."""
 
         saved_files = []
@@ -268,9 +259,7 @@ class ResultVisualizer:
 
         return saved_files
 
-    def create_comparison_plots(
-        self, backend_results: dict[str, Any], save_prefix: str = "comparison"
-    ) -> list[Path]:
+    def create_comparison_plots(self, backend_results: dict[str, Any], save_prefix: str = "comparison") -> list[Path]:
         """Create comparison plots across multiple backends."""
 
         saved_files = []
@@ -287,9 +276,7 @@ class ResultVisualizer:
 
         return saved_files
 
-    def create_batch_analysis_plots(
-        self, batch_analysis: dict[str, Any], save_prefix: str = "batch"
-    ) -> list[Path]:
+    def create_batch_analysis_plots(self, batch_analysis: dict[str, Any], save_prefix: str = "batch") -> list[Path]:
         """Create plots for batch simulation analysis."""
 
         saved_files = []
@@ -405,9 +392,7 @@ class ResultVisualizer:
             if comp in qa_analysis:
                 comp_data = qa_analysis[comp]
                 if isinstance(comp_data, dict):
-                    score = comp_data.get("advantage_score", 0) or comp_data.get(
-                        "intractability_score", 0
-                    )
+                    score = comp_data.get("advantage_score", 0) or comp_data.get("intractability_score", 0)
                 else:
                     score = 0
                 component_scores.append(score)
@@ -521,9 +506,7 @@ class ResultVisualizer:
 
         similarities = []
         for backend in backend_names[1:]:
-            similarity = self._calculate_distribution_similarity(
-                reference_counts, backend_results[backend].counts
-            )
+            similarity = self._calculate_distribution_similarity(reference_counts, backend_results[backend].counts)
             similarities.append(similarity)
 
         axes.bar(backend_names[1:], similarities)
@@ -590,9 +573,7 @@ class ResultVisualizer:
 
         return fig
 
-    def _calculate_distribution_similarity(
-        self, counts1: dict[str, int], counts2: dict[str, int]
-    ) -> float:
+    def _calculate_distribution_similarity(self, counts1: dict[str, int], counts2: dict[str, int]) -> float:
         """Calculate similarity between two probability distributions."""
 
         # Get all unique states
@@ -626,9 +607,7 @@ class ResultVisualizer:
 
 
 # Convenience functions
-def visualize_result(
-    result: Any, save_prefix: str = "result", config: VisualizationConfig | None = None
-) -> list[Path]:
+def visualize_result(result: Any, save_prefix: str = "result", config: VisualizationConfig | None = None) -> list[Path]:
     """Create visualizations for a single simulation result."""
 
     visualizer = ResultVisualizer(config)

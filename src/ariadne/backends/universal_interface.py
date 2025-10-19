@@ -131,9 +131,7 @@ class UniversalBackend(ABC):
         # Simple heuristic based on circuit size
         num_qubits = cast(int, getattr(circuit, "num_qubits", 0))
         depth_attr = getattr(circuit, "depth", None)
-        depth_callable: Callable[[], int] | None = (
-            cast(Callable[[], int], depth_attr) if callable(depth_attr) else None
-        )
+        depth_callable: Callable[[], int] | None = cast(Callable[[], int], depth_attr) if callable(depth_attr) else None
         depth = depth_callable() if depth_callable else 0
         return float(num_qubits) * float(depth) * 0.001
 
@@ -192,9 +190,7 @@ class BackendManager:
                 pass
         return available
 
-    def get_best_backend_for_circuit(
-        self, circuit: QuantumCircuit, criteria: str = "speed"
-    ) -> str | None:
+    def get_best_backend_for_circuit(self, circuit: QuantumCircuit, criteria: str = "speed") -> str | None:
         """Find best backend for given circuit and criteria."""
         available_backends = self.list_available_backends()
 
@@ -235,9 +231,7 @@ class BackendManager:
 
         return best_backend
 
-    def benchmark_all_backends(
-        self, circuit: QuantumCircuit, shots: int = 1000
-    ) -> dict[str, dict[str, Any]]:
+    def benchmark_all_backends(self, circuit: QuantumCircuit, shots: int = 1000) -> dict[str, dict[str, Any]]:
         """Benchmark all available backends on given circuit."""
         import time
 

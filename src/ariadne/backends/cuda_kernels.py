@@ -239,9 +239,7 @@ class CUDAKernels:
             logger.error(f"Failed to compile CUDA kernels: {e}")
             self.kernels = {}
 
-    def apply_single_qubit_gate(
-        self, state: cp.ndarray, gate: cp.ndarray, target_qubit: int
-    ) -> cp.ndarray:
+    def apply_single_qubit_gate(self, state: cp.ndarray, gate: cp.ndarray, target_qubit: int) -> cp.ndarray:
         """Apply single qubit gate using custom CUDA kernel."""
         if not self._compiled or "single_qubit_gate" not in self.kernels:
             return self._fallback_single_qubit_gate(state, gate, target_qubit)
@@ -301,9 +299,7 @@ class CUDAKernels:
         block_size = 256
         grid_size = (n_states + block_size - 1) // block_size
 
-        self.kernels["measure_probabilities"](
-            (grid_size,), (block_size,), (state, probabilities, n_states)
-        )
+        self.kernels["measure_probabilities"]((grid_size,), (block_size,), (state, probabilities, n_states))
 
         return probabilities
 
@@ -324,9 +320,7 @@ class CUDAKernels:
 
         return state
 
-    def calculate_expectation_value(
-        self, state: cp.ndarray, operator_diagonal: cp.ndarray
-    ) -> complex:
+    def calculate_expectation_value(self, state: cp.ndarray, operator_diagonal: cp.ndarray) -> complex:
         """Calculate expectation value using custom CUDA kernel."""
         if not self._compiled or "expectation_value" not in self.kernels:
             return float(cp.real(cp.vdot(state, operator_diagonal * state)))
@@ -344,9 +338,7 @@ class CUDAKernels:
 
         return complex(cp.sum(partial_results))
 
-    def _fallback_single_qubit_gate(
-        self, state: cp.ndarray, gate: cp.ndarray, target_qubit: int
-    ) -> cp.ndarray:
+    def _fallback_single_qubit_gate(self, state: cp.ndarray, gate: cp.ndarray, target_qubit: int) -> cp.ndarray:
         """Fallback implementation for single qubit gates."""
         int(np.log2(len(state)))
         n_states = len(state)

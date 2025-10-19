@@ -125,14 +125,8 @@ class EnhancedSimulationResult:
 
         if observable == "Z":
             # For single-qubit Z observable
-            prob_0 = (
-                sum(count for state, count in self.counts.items() if state.endswith("0"))
-                / total_shots
-            )
-            prob_1 = (
-                sum(count for state, count in self.counts.items() if state.endswith("1"))
-                / total_shots
-            )
+            prob_0 = sum(count for state, count in self.counts.items() if state.endswith("0")) / total_shots
+            prob_1 = sum(count for state, count in self.counts.items() if state.endswith("1")) / total_shots
             return prob_0 - prob_1
 
         return 0.0  # Placeholder for complex observables
@@ -150,9 +144,7 @@ class EnhancedSimulationResult:
             "backend_used": self.backend_used,
             "circuit_analysis": self.circuit_analysis,
             "quantum_advantage": self.quantum_advantage,
-            "resource_estimate": self.resource_estimate.__dict__
-            if self.resource_estimate
-            else None,
+            "resource_estimate": self.resource_estimate.__dict__ if self.resource_estimate else None,
             "backend_performance": self.backend_performance,
             "optimization_applied": self.optimization_applied,
             "warnings": self.warnings,
@@ -195,9 +187,7 @@ class QuantumSimulator:
         self.total_execution_time = 0.0
         self.backend_usage: dict[str, int] = {}
 
-    def simulate(
-        self, circuit: QuantumCircuit, options: SimulationOptions | None = None
-    ) -> EnhancedSimulationResult:
+    def simulate(self, circuit: QuantumCircuit, options: SimulationOptions | None = None) -> EnhancedSimulationResult:
         """
         Simulate quantum circuit with comprehensive analysis.
 
@@ -341,9 +331,7 @@ class QuantumSimulator:
         options = SimulationOptions(optimization_level=level)
         return self._optimize_circuit(circuit, options)
 
-    def estimate_resources(
-        self, circuit: QuantumCircuit, include_fault_tolerant: bool = False
-    ) -> ResourceEstimate:
+    def estimate_resources(self, circuit: QuantumCircuit, include_fault_tolerant: bool = False) -> ResourceEstimate:
         """Estimate resources required for circuit execution."""
 
         return estimate_circuit_resources(
@@ -376,9 +364,7 @@ class QuantumSimulator:
         if options.timeout_seconds and options.timeout_seconds <= 0:
             raise ValueError("Timeout must be positive")
 
-    def _optimize_circuit(
-        self, circuit: QuantumCircuit, options: SimulationOptions
-    ) -> QuantumCircuit:
+    def _optimize_circuit(self, circuit: QuantumCircuit, options: SimulationOptions) -> QuantumCircuit:
         """Apply circuit optimization based on specified level."""
 
         if options.optimization_level == OptimizationLevel.NONE:
@@ -410,9 +396,7 @@ class QuantumSimulator:
         # Since QuantumRouter is removed, we skip this direct manipulation.
         pass
 
-    def _execute_simulation(
-        self, circuit: QuantumCircuit, options: SimulationOptions
-    ) -> SimulationResult:
+    def _execute_simulation(self, circuit: QuantumCircuit, options: SimulationOptions) -> SimulationResult:
         """Execute simulation with configured options."""
 
         # Use top-level simulate function for intelligent backend selection
@@ -443,9 +427,7 @@ class QuantumSimulator:
             else:
                 os.environ["ARIADNE_ROUTING_PREFER_DDSIM"] = prev_ddsim
 
-    def _execute_fallback_simulation(
-        self, circuit: QuantumCircuit, options: SimulationOptions
-    ) -> SimulationResult:
+    def _execute_fallback_simulation(self, circuit: QuantumCircuit, options: SimulationOptions) -> SimulationResult:
         """Execute simulation with basic fallback."""
 
         # Force Qiskit backend as ultimate fallback
@@ -476,9 +458,7 @@ class QuantumSimulator:
             metadata={"fallback": True, "shots": options.shots},
         )
 
-    def _apply_error_mitigation(
-        self, result: SimulationResult, options: SimulationOptions
-    ) -> SimulationResult:
+    def _apply_error_mitigation(self, result: SimulationResult, options: SimulationOptions) -> SimulationResult:
         """Apply error mitigation techniques."""
 
         # Placeholder for error mitigation implementation
@@ -524,9 +504,7 @@ class QuantumSimulator:
         backend = result.backend_used
         self.backend_usage[backend] = self.backend_usage.get(backend, 0) + 1
 
-    def _generate_visualizations(
-        self, result: EnhancedSimulationResult, options: SimulationOptions
-    ) -> None:
+    def _generate_visualizations(self, result: EnhancedSimulationResult, options: SimulationOptions) -> None:
         """Generate result visualizations."""
 
         # Placeholder for visualization generation

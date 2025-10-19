@@ -135,9 +135,7 @@ def _simulate_tensor_network(circuit: QuantumCircuit, shots: int) -> dict[str, i
     try:
         return _real_tensor_network_simulation(circuit, shots)
     except ImportError as exc:
-        raise BackendUnavailableError(
-            "tensor_network", "Tensor network dependencies are not installed"
-        ) from exc
+        raise BackendUnavailableError("tensor_network", "Tensor network dependencies are not installed") from exc
     except Exception as exc:  # pragma: no cover - graceful fallback path
         logger.log_backend_unavailable("tensor_network", str(exc))
         warnings.warn(
@@ -364,9 +362,7 @@ def _simulate_metal(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
         raise SimulationError(f"Metal simulation failed: {exc}", backend="metal") from exc
 
 
-def _sample_statevector_counts(
-    circuit: QuantumCircuit, shots: int, seed: int | None = None
-) -> dict[str, int]:
+def _sample_statevector_counts(circuit: QuantumCircuit, shots: int, seed: int | None = None) -> dict[str, int]:
     if shots < 0:
         raise ValueError("shots must be non-negative")
     if shots == 0:
@@ -395,9 +391,7 @@ def _sample_statevector_counts(
 # Core Execution Logic
 
 
-def _execute_simulation(
-    circuit: QuantumCircuit, shots: int, routing_decision: RoutingDecision
-) -> SimulationResult:
+def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: RoutingDecision) -> SimulationResult:
     """Execute simulation based on a routing decision, including fallback logic."""
     logger = get_logger("router")
     resource_manager = get_resource_manager()
@@ -408,9 +402,7 @@ def _execute_simulation(
     # Check resource availability
     can_handle, reason = check_circuit_feasibility(circuit, backend_name)
     if not can_handle:
-        raise ResourceExhaustionError(
-            "memory", 0, resource_manager.get_resources().available_memory_mb
-        )
+        raise ResourceExhaustionError("memory", 0, resource_manager.get_resources().available_memory_mb)
 
     # Initialize result tracking
     fallback_reason = None
@@ -419,9 +411,7 @@ def _execute_simulation(
 
     # Set up logging for backend selection
     logger.set_circuit_context(circuit)
-    logger.log_routing_decision(
-        circuit, backend_name, routing_decision.confidence_score, "Selected by router"
-    )
+    logger.log_routing_decision(circuit, backend_name, routing_decision.confidence_score, "Selected by router")
 
     # Reserve resources
     try:
@@ -469,9 +459,7 @@ def _execute_simulation(
             counts = _simulate_qiskit(circuit, shots)
             backend = BackendType.QISKIT
             backend_name = "qiskit"
-            warnings_list.append(
-                f"Unknown backend {backend.value} selected, falling back to Qiskit."
-            )
+            warnings_list.append(f"Unknown backend {backend.value} selected, falling back to Qiskit.")
 
     except Exception as exc:
         # Log the specific failure for debugging
@@ -518,9 +506,7 @@ def _execute_simulation(
     )
 
 
-def simulate(
-    circuit: QuantumCircuit, shots: int = 1024, backend: str | None = None
-) -> SimulationResult:
+def simulate(circuit: QuantumCircuit, shots: int = 1024, backend: str | None = None) -> SimulationResult:
     """Convenience wrapper that routes and executes ``circuit``."""
     logger = get_logger("router")
 
@@ -574,9 +560,7 @@ def simulate(
     else:
         # Use Enhanced Router for optimal selection
         try:
-            routing_decision = enhanced_router.select_optimal_backend(
-                circuit, strategy=RouterType.HYBRID_ROUTER
-            )
+            routing_decision = enhanced_router.select_optimal_backend(circuit, strategy=RouterType.HYBRID_ROUTER)
         except Exception as exc:
             logger.error(f"Router failed to select backend: {exc}")
             raise SimulationError(f"Router failed: {exc}") from exc

@@ -266,9 +266,7 @@ class PennyLaneBackend:
         # For now, measure all qubits in computational basis
         return [qml.sample(qml.PauliZ(i)) for i in range(circuit.num_qubits)]
 
-    def _execute_with_shots(
-        self, qnode: Callable[..., Any], circuit: QuantumCircuit, shots: int
-    ) -> dict[str, int]:
+    def _execute_with_shots(self, qnode: Callable[..., Any], circuit: QuantumCircuit, shots: int) -> dict[str, int]:
         """Execute QNode with finite shots."""
         # Create parameter values (zeros for now if no parameters)
         num_params = len(circuit.parameters)
@@ -283,9 +281,7 @@ class PennyLaneBackend:
         # Convert samples to counts
         return self._samples_to_counts(samples, circuit.num_qubits, shots)
 
-    def _execute_exact(
-        self, qnode: Callable[..., Any], circuit: QuantumCircuit, shots: int
-    ) -> dict[str, int]:
+    def _execute_exact(self, qnode: Callable[..., Any], circuit: QuantumCircuit, shots: int) -> dict[str, int]:
         """Execute QNode with exact simulation."""
         # For exact simulation, we'll use the state vector and sample from it
         return self._execute_with_shots(qnode, circuit, shots)
@@ -373,9 +369,7 @@ class PennyLaneBackend:
                 import pennylane as qml
 
                 info["pennylane_version"] = qml.__version__
-                info["device_capabilities"] = (
-                    self.device.capabilities() if hasattr(self.device, "capabilities") else {}
-                )
+                info["device_capabilities"] = self.device.capabilities() if hasattr(self.device, "capabilities") else {}
             except Exception:
                 pass
 
@@ -561,9 +555,7 @@ def create_pennylane_backend(
     Returns:
         Configured PennyLaneBackend instance
     """
-    return PennyLaneBackend(
-        device_name=device_name, shots=shots, enable_ml_features=enable_ml_features
-    )
+    return PennyLaneBackend(device_name=device_name, shots=shots, enable_ml_features=enable_ml_features)
 
 
 def benchmark_pennylane_ml(
@@ -607,9 +599,7 @@ def benchmark_pennylane_ml(
 
                 # Time the optimization
                 start_time = time.time()
-                optimized_params, cost_history = vqc.optimize(
-                    cost_function, num_iterations=num_iterations
-                )
+                optimized_params, cost_history = vqc.optimize(cost_function, num_iterations=num_iterations)
                 optimization_time = time.time() - start_time
 
                 results[key] = {
