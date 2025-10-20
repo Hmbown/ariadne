@@ -1,6 +1,6 @@
 [project]
 name = "ariadne-router"
-description = "Intelligent quantum circuit routing system with automatic backend selection and performance optimization"
+description = "Zero-config quantum simulator bundle for education, benchmarking & CI"
 readme = "README.md"
 requires-python = ">=3.11"
 dynamic = ["version"]
@@ -8,7 +8,7 @@ license = "Apache-2.0"
 authors = [
   { name = "Hunter Bown", email = "hunter@shannonlabs.dev" }
 ]
-keywords = ["quantum", "simulator", "qasm3", "quantum-computing", "apple-silicon", "cuda", "jax", "metal", "intelligent-routing", "ariadne", "quantum-routing"]
+keywords = ["quantum", "simulator", "education", "benchmarking", "reproducibility", "ci-cd", "quantum-algorithms"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",

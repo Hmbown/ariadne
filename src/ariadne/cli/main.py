@@ -171,7 +171,7 @@ class AriadneCLI:
 
         # Execute command
         try:
-            cmd_method = getattr(self, f"_cmd_{parsed_args.command}")
+            cmd_method = getattr(self, f"_cmd_{parsed_args.command.replace('-', '_')}")
             result: int = cmd_method(parsed_args)
             return result
         except KeyboardInterrupt:
@@ -221,6 +221,9 @@ Examples:
 
         # Benchmark command
         self._add_benchmark_command(subparsers)
+
+        # Benchmark suite command
+        self._add_benchmark_suite_command(subparsers)
 
         return parser
 
@@ -316,6 +319,36 @@ Examples:
         )
 
         parser.add_argument("--iterations", type=int, default=5, help="Number of benchmark iterations (default: 5)")
+
+        parser.add_argument("--output", help="Output file for benchmark results (JSON format)")
+
+    def _add_benchmark_suite_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add the benchmark-suite command."""
+        # Get available algorithms for help text
+        try:
+            from ..algorithms import list_algorithms
+
+            available_algorithms = list_algorithms()
+        except Exception:
+            available_algorithms = ["bell", "qaoa", "vqe", "stabilizer"]
+
+        parser = subparsers.add_parser(
+            "benchmark-suite",
+            help="Run comprehensive benchmark suite",
+            description="Run comprehensive benchmark suite across algorithms and backends",
+        )
+
+        parser.add_argument(
+            "--algorithms",
+            help=f"Comma-separated list of algorithms to test (e.g., bell,qaoa,vqe,qft,grover,qpe,steane). Available: {', '.join(available_algorithms)}",
+        )
+
+        parser.add_argument(
+            "--backends",
+            help="Comma-separated list of backends to test (e.g., auto,stim,qiskit,mps)",
+        )
+
+        parser.add_argument("--shots", type=int, default=1000, help="Number of measurement shots (default: 1000)")
 
         parser.add_argument("--output", help="Output file for benchmark results (JSON format)")
 
@@ -640,6 +673,82 @@ Examples:
                 print(f"{backend}: {stats['avg_time']:.4f}s avg, {stats['throughput']:.0f} shots/s")
 
         return 0
+
+    def _cmd_benchmark_suite(self, args: argparse.Namespace) -> int:
+        """Execute the benchmark-suite command."""
+        from ariadne.benchmarking import export_benchmark_report
+
+        # Parse algorithms
+        try:
+            from ..algorithms import list_algorithms
+
+            available_algorithms = list_algorithms()
+            algorithms = available_algorithms[:4]  # Use first 4 as default
+        except Exception:
+            # Fallback to original algorithms if module not available
+            algorithms = ["bell", "qaoa", "vqe", "stabilizer"]  # default
+
+        if args.algorithms:
+            algorithms = [alg.strip() for alg in args.algorithms.split(",")]
+
+        # Parse backends
+        backends = ["auto", "stim", "qiskit", "mps"]  # default
+        if args.backends:
+            backends = [backend.strip() for backend in args.backends.split(",")]
+
+        print("Running benchmark suite...")
+        print(f"Algorithms: {', '.join(algorithms)}")
+        print(f"Backends: {', '.join(backends)}")
+        print(f"Shots: {args.shots}")
+        print("=" * 50)
+
+        progress = ProgressIndicator("Running benchmark suite")
+        progress.start()
+
+        try:
+            # Generate benchmark report
+            report = export_benchmark_report(algorithms, backends, args.shots, "json")
+            progress.finish("complete")
+
+            # Display summary
+            print("\nBenchmark Results Summary:")
+            print("-" * 40)
+
+            for alg_name, alg_data in report["results"].items():
+                circuit_info = alg_data["circuit_info"]
+                print(f"\n{alg_name.upper()} ({circuit_info['qubits']} qubits, {circuit_info['depth']} depth):")
+
+                successful_backends = []
+                failed_backends = []
+
+                for backend_name, backend_data in alg_data["backends"].items():
+                    if backend_data["success"]:
+                        execution_time = backend_data["execution_time"]
+                        throughput = backend_data["throughput"]
+                        successful_backends.append(f"{backend_name} ({execution_time:.3f}s, {throughput:.0f} shots/s)")
+                    else:
+                        failed_backends.append(f"{backend_name} ({backend_data.get('error', 'Unknown')})")
+
+                if successful_backends:
+                    print("  ✓ Working:", ", ".join(successful_backends))
+                if failed_backends:
+                    print("  ✗ Failed:", ", ".join(failed_backends))
+
+            # Save results if requested
+            if args.output:
+                import json
+
+                with open(args.output, "w") as f:
+                    json.dump(report, f, indent=2, default=str)
+                print(f"\nResults saved to: {args.output}")
+
+            return 0
+
+        except Exception as e:
+            progress.finish("failed")
+            if self.logger:
+                self.logger.error(f"Benchmark suite failed: {e}")
+            return 1
 
     def _load_circuit(self, path: str) -> QuantumCircuit:
         """Load a quantum circuit from file."""

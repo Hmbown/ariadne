@@ -1,8 +1,6 @@
 <div align="center">
 
-# Ariadne
-
-**Intelligent Quantum Circuit Routing**
+# Ariadne – Zero-config quantum simulator bundle for education, benchmarking & CI
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -25,15 +23,14 @@
 
 ## Overview
 
-> **In plain language:** Ariadne is a smart helper that looks at your quantum project and picks the machine that fits best, so you do not have to guess. You load a circuit, ask Ariadne to run it, and it quietly checks what hardware or simulator you have, chooses the match, runs the job, and keeps notes so you can repeat it later. This matters because it saves teams from trial-and-error testing, keeps results consistent, and lets newcomers focus on ideas instead of setup. Ready for the deeper dive? Jump to [Getting Started](#-getting-started), [Core API](#-core-api), or [Performance](#-performance).
+> **In plain language:** Run Bell, QAOA, VQE, QFT, Grover, QPE, stabilizer, error correction, quantum ML and 15+ canonical circuits on any laptop, any OS, same code. Automatically picks Stim, Qiskit, MPS, Metal, CUDA so students and CI never break.
 
-Quantum development teams must balance diverse hardware constraints, simulator capabilities, and performance profiles. Ariadne automates that decision-making loop by analyzing each circuit and routing it to the most appropriate backend while preserving reproducibility and auditability. The platform eliminates manual benchmarking across numerous simulators and keeps workflows consistent across environments.
+Ariadne is a zero-configuration quantum simulator bundle that automatically routes your circuits to the optimal backend. Whether you're teaching quantum computing, running benchmarks across platforms, or setting up CI pipelines, Ariadne ensures reproducible results without the complexity of manual backend selection.
 
-**Designed for**
-- **Researchers** who need to iterate on algorithms quickly with deterministic, explainable routing decisions.
-- **Developers** who integrate quantum workloads into larger systems and require predictable fallbacks.
-- **Students** who want a single entry point for exploring multiple simulators without vendor-specific setup.
-- **Enterprise teams** that demand governed execution paths, configurable policies, and transparent performance trade-offs.
+**Who needs this?**
+- University instructors who want one pip install that works on macOS, Linux, WSL.
+- Researchers who need citable, reproducible cross-simulator benchmarks.
+- DevOps teams that want multi-backend regression tests in GitHub Actions.
 
 Routing logic is deterministic and driven by measurable circuit characteristics, ensuring that every decision can be reproduced and audited when requirements evolve.
 
@@ -87,7 +84,8 @@ print(f"Unique outcomes: {len(result.counts)}")
 ## 🧰 Use Cases
 
 - **Education and workshops**
-  - Run canonical circuits (Bell/GHZ/Clifford, shallow variational) without choosing simulators. Ariadne routes to `stim`/`MPS`/`Qiskit`/`Metal` as appropriate.
+  - Run 15+ canonical algorithms (Bell, GHZ, QFT, Grover, QPE, Steane code, QSVM, etc.) without choosing simulators. Ariadne routes to `stim`/`MPS`/`Qiskit`/`Metal` as appropriate.
+  - Comprehensive education notebooks with mathematical background and implementation details.
   - One command demo: `python examples/quickstart.py`.
 
 - **Research prototyping**
@@ -113,6 +111,9 @@ print(f"Unique outcomes: {len(result.counts)}")
 |---|---|---|
 | Pure Clifford (e.g., GHZ, stabilizers) | `stim` | Specialized, extremely fast stabilizer simulation |
 | Low entanglement, shallow depth | `MPS` | Efficient tensor-network representation |
+| High entanglement (QFT, QPE) | `Tensor Network` | Efficient contraction for complex circuits |
+| Quantum search (Grover) | `Qiskit` | Balanced performance for moderate complexity |
+| Error correction (Steane) | `Qiskit` | Robust for stabilizer-heavy circuits |
 | General circuits on Apple Silicon | `Metal` | Leverage JAX/Metal when available |
 | General circuits (portable) | `Qiskit` | Robust CPU statevector/density matrix |
 
@@ -126,6 +127,7 @@ And CLI:
 
 ```bash
 ariadne simulate path/to/circuit.qasm --shots 1000
+ariadne benchmark-suite --algorithms qft,grover,qpe,steane
 ariadne status --detailed
 ```
 
@@ -158,6 +160,39 @@ The following backends are detected and routed to when available. Many are optio
 - PennyLane (`pennylane`) — via `src/ariadne/backends/pennylane_backend.py`
 - Qulacs (`qulacs`) — via `src/ariadne/backends/qulacs_backend.py`
 - Experimental: PyQuil (`pyquil`), Braket (`braket`), Q# (`qsharp`), OpenCL (`opencl`)
+
+### Supported Quantum Algorithms
+
+Ariadne now supports 15+ quantum algorithms with standardized interfaces:
+
+**Foundational Algorithms:**
+- Bell States — Maximally entangled two-qubit states
+- GHZ States — Multi-qubit Greenberger-Horne-Zeilinger states
+- Quantum Fourier Transform (QFT) — Basis for many quantum algorithms
+
+**Search Algorithms:**
+- Grover's Search — Quadratic speedup for unstructured search
+- Bernstein-Vazirani — Linear speedup for hidden string problems
+
+**Optimization Algorithms:**
+- QAOA — Quantum Approximate Optimization Algorithm
+- VQE — Variational Quantum Eigensolver
+
+**Error Correction:**
+- Steane Code — [[7,1,3]] CSS quantum error correction code
+- Surface Code — Topological error correction (simplified)
+
+**Quantum Machine Learning:**
+- QSVM — Quantum Support Vector Machine
+- VQC — Variational Quantum Classifier
+- Quantum Neural Network — Parameterized quantum circuits
+
+**Specialized Algorithms:**
+- Quantum Phase Estimation (QPE) — Eigenphase estimation
+- Deutsch-Jozsa — Constant vs balanced function discrimination
+- Simon's Algorithm — Period finding with exponential speedup
+- Quantum Walk — Quantum analogue of classical random walk
+- Amplitude Amplification — General technique for algorithm speedup
 
 Backends are implemented under `src/ariadne/backends/` and selected through the router in `src/ariadne/router.py` and the decision tree in `src/ariadne/route/routing_tree.py`.
 
@@ -545,9 +580,11 @@ ariadne benchmark --circuit circuit.qasm --shots 1000 --iterations 5 --output re
 
 1. **Start with automatic routing** (`simulate()` without backend parameter) - it usually makes the best choice
 2. **Use `explain_routing()`** to understand why a backend was selected
-3. **Run benchmarks** on your specific hardware to profile performance
-4. **Trust the routing tree** - it's been validated against 45+ different circuit patterns
-5. **For reproducibility**, save results and use explicit backend selection if needed
+3. **Explore the algorithm library** - try `from ariadne.algorithms import list_algorithms`
+4. **Run education notebooks** - comprehensive learning materials for each algorithm
+5. **Run benchmarks** on your specific hardware to profile performance
+6. **Trust the routing tree** - it's been validated against 45+ different circuit patterns
+7. **For reproducibility**, save results and use explicit backend selection if needed
 
 ### Quality Assurance
 
