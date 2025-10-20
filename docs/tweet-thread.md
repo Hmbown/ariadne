@@ -14,8 +14,8 @@ Students & researchers never have to worry about backend setup again! 🧵⬇️
 
 Different backends, conflicting dependencies, platform-specific issues... Students spend more time debugging environments than learning quantum algorithms.
 
-Ariadne solves this with ONE command:
-`pip install ariadne-router`
+Ariadne installs with one command:
+`pip install ariadne-quantum-router`
 
 That's it. It just works. 🎉
 
@@ -77,6 +77,6 @@ Niche: #QuantumEducation #Simulator #CI_CD #ReproducibleResearch
 - "Tag a quantum computing professor who needs this!"
 
 ## Call to Action Variations
-- "Try it now: `pip install ariadne-router && python -c 'from ariadne import simulate; print(simulate(...))'`"
+- "Try it now: `pip install ariadne-quantum-router && python -c 'from ariadne import simulate; print(simulate(...))'`"
 - "Star the repo to support accessible quantum education!"
 - "Share with your quantum computing students and colleagues!"

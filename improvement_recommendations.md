@@ -47,7 +47,7 @@ docs/
 
 ## Quick Setup for Teaching
 ```bash
-pip install ariadne-router
+pip install ariadne-quantum-router
 python -c "from ariadne import simulate; print('Ready for class!')"
 ```
 
@@ -377,7 +377,7 @@ Educational Context:
 
 ### Package Naming Consistency
 **Current Inconsistency:**
-- Install: `pip install ariadne-router`
+- Install: `pip install ariadne-quantum-router`
 - Import: `import ariadne`
 - CLI: `ariadne` (matches import, not install)
 
@@ -393,7 +393,7 @@ name = "ariadne"  # Change from "ariadne-router"
 """
 Ariadne Quantum Simulator
 
-Install: pip install ariadne-router
+Install: pip install ariadne-quantum-router
 Import: import ariadne
 Usage: from ariadne import simulate
 """

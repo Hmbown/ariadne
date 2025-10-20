@@ -253,6 +253,11 @@ class EnhancedQuantumRouter:
                 BackendType.DDSIM,
                 lambda _circ: os.getenv("ARIADNE_ROUTING_PREFER_DDSIM") == "1",
             ),
+            # Prefer PennyLane for parametrized/variational circuits (priority over structural backends)
+            (
+                BackendType.PENNYLANE,
+                lambda circ: hasattr(circ, "parameters") and len(circ.parameters) > 0,
+            ),
             # Prefer MPS if either the MPS analyzer or topology suggests it
             (
                 BackendType.MPS,
@@ -263,12 +268,7 @@ class EnhancedQuantumRouter:
                 BackendType.TENSOR_NETWORK,
                 lambda circ: should_use_tensor_network(circ),
             ),
-            # Prefer PennyLane for parametrized/variational circuits
-            (
-                BackendType.PENNYLANE,
-                lambda circ: hasattr(circ, "parameters") and len(circ.parameters) > 0,
-            ),
-            # Prefer PennyLane for ML/optimization families when available
+            # Prefer PennyLane for ML/optimization families when available (after structural checks)
             (
                 BackendType.PENNYLANE,
                 lambda circ: _belongs_to_families(circ, {"machine_learning", "optimization"}),

@@ -7,12 +7,12 @@ This guide provides everything you need to integrate Ariadne into CI/CD pipeline
 Ariadne installs consistently across all platforms:
 
 ```bash
-pip install ariadne-router
+pip install ariadne-quantum-router
 ```
 
 For minimal dependencies in containerized environments:
 ```bash
-pip install ariadne-router --no-deps
+pip install ariadne-quantum-router --no-deps
 ```
 
 ## CI/CD Integration
@@ -39,7 +39,7 @@ jobs:
 
     - name: Install Ariadne
       run: |
-        pip install ariadne-router
+        pip install -e .[advanced,viz]
 
     - name: Run quantum tests
       run: |
@@ -53,7 +53,7 @@ jobs:
 FROM python:3.11-slim
 
 # Install Ariadne with minimal dependencies
-RUN pip install ariadne-router
+RUN pip install ariadne-quantum-router
 
 # Copy your quantum code
 COPY . /app

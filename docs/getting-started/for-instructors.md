@@ -7,12 +7,12 @@ This guide provides everything you need to start using Ariadne in your quantum c
 Ariadne installs with a single pip command that works across all platforms:
 
 ```bash
-pip install ariadne-router
+pip install ariadne-quantum-router
 ```
 
 For Apple Silicon Macs, add hardware acceleration:
 ```bash
-pip install ariadne-router[apple]
+pip install ariadne-quantum-router[apple]
 ```
 
 ## Quick Classroom Demo

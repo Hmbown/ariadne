@@ -57,12 +57,12 @@ This guide provides detailed installation instructions for the Ariadne quantum r
 
 **Important Note**: There is a difference between the package name for installation and the import name:
 
-- **Installation package**: `ariadne-router` (used with pip)
+- **Installation package**: `ariadne-quantum-router` (used with pip)
 - **Python import**: `ariadne` (used in Python code)
 
 ```bash
 # Install the package
-pip install ariadne-router
+pip install ariadne-quantum-router
 
 # Use in Python
 import ariadne
@@ -95,7 +95,7 @@ This naming convention distinguishes the Ariadne quantum package from other pote
 
 Once published to PyPI:
 ```bash
-pip install ariadne-router
+pip install ariadne-quantum-router
 ```
 
 ### Method 3: Install with Optional Dependencies
@@ -104,19 +104,19 @@ For specific hardware acceleration or features:
 
 ```bash
 # Basic installation
-pip install ariadne-router
+pip install ariadne-quantum-router
 
 # With Apple Silicon acceleration
-pip install ariadne-router[apple]
+pip install ariadne-quantum-router[apple]
 
 # With CUDA acceleration
-pip install ariadne-router[cuda]
+pip install ariadne-quantum-router[cuda]
 
 # With visualization tools
-pip install ariadne-router[viz]
+pip install ariadne-quantum-router[viz]
 
 # With all optional dependencies
-pip install ariadne-router[apple,cuda,viz]
+pip install ariadne-quantum-router[apple,cuda,viz]
 ```
 
 ## Platform-Specific Instructions

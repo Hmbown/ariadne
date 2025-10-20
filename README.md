@@ -1,36 +1,36 @@
 <div align="center">
 
-# Ariadne: "Google Maps" for Quantum Circuits
+# Ariadne: Intelligent Cross‑Simulator Routing for Quantum Circuits
 
-> **Zero-config automatic routing** to the right simulator—Stim, MPS/TN, CUDA/JAX-Metal, or Aer—behind a single `simulate()` call.
+Streamlined, zero‑configuration simulation with explainable backend selection across Stim, tensor networks (MPS/TN), Aer, JAX‑Metal, and CUDA — all behind a single `simulate()` call.
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CI/CD Pipeline](https://img.shields.io/github/actions/workflow/status/Hmbown/ariadne/ci.yml?branch=main&label=CI%2FCD&style=for-the-badge)](https://github.com/Hmbown/ariadne/actions/workflows/ci.yml)
-[![codecov](https://img.shields.io/codecov/c/github/Hmbown/ariadne/main?style=for-the-badge)](https://codecov.io/gh/Hmbown/ariadne)
+[![CI/CD Pipeline](https://img.shields.io/github/actions/workflow/status/Hmbown/ariadne/ci.yml?branch=main&label=CI%2FCD)](https://github.com/Hmbown/ariadne/actions/workflows/ci.yml)
+[![codecov](https://img.shields.io/codecov/c/github/Hmbown/ariadne/main)](https://codecov.io/gh/Hmbown/ariadne)
 [![Code Style](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![PyPI version](https://badge.fury.io/py/ariadne-router.svg)](https://badge.fury.io/py/ariadne-router)
-[![Pytest](https://img.shields.io/badge/tested%20with-pytest-0-9.svg?logo=pytest)](https://pytest.org)
+[![PyPI version](https://img.shields.io/pypi/v/ariadne-quantum-router.svg)](https://pypi.org/project/ariadne-quantum-router/)
+[![Pytest](https://img.shields.io/badge/tested%20with-pytest-yes.svg?logo=pytest)](https://pytest.org)
 
 </div>
 
 ---
 
-## What Ariadne Does Differently
+## Overview
 
-**Ariadne isn't just another simulator.** It's **cross-ecosystem intelligent routing** that automatically chooses across multiple quantum simulation libraries, not just within one framework:
+**Ariadne provides cross‑ecosystem intelligent routing**, automatically selecting among multiple quantum simulation libraries rather than a single framework:
 
 - **Qiskit Aer (auto)**: Chooses among Aer's internal methods (statevector, density matrix, stabilizer, MPS)
 - **Ariadne**: Chooses across **multiple ecosystems** (Stim, quimb/cotengra TN/MPS, Qiskit, Cirq, DDSIM, PennyLane, CUDA, JAX-Metal) with explainable routing
 
-**Value Proposition:**
-* **Zero-config**: `simulate(qc)` just works on macOS/Linux/WSL and in CI
-* **Faster by design**: Clifford → Stim; low-entanglement → MPS/TN; otherwise smart fallbacks
-* **Explainable**: `explain_routing(qc)` shows *why* a backend was chosen
+Key properties:
+- Zero‑configuration: `simulate(qc)` runs consistently on macOS/Linux/WSL and in CI
+- Performance‑aware: Clifford → Stim; low‑entanglement → MPS/TN; robust general fallback
+- Explainable: `explain_routing(qc)` summarizes the decision
 
 > **Note**: This is **simulator backend routing**, not hardware/qubit routing. For hardware qubit mapping, see [QMAP](https://arxiv.org/abs/2301.11935)/AlphaRouter.
 
-## 30-Second Demo
+## Quick Demo
 
 ```python
 from ariadne import simulate, explain_routing
@@ -48,34 +48,28 @@ print(f"Time: {result.execution_time:.3f}s")    # → 0.042s
 print(explain_routing(qc))                      # → "Routing to Stim: Pure Clifford circuit detected..."
 ```
 
-**Why this works**: Large Clifford circuits would crash regular Qiskit, but Ariadne automatically routes to Stim for fast stabilizer simulation.
+Rationale: large Clifford circuits are efficiently handled by Stim; Ariadne routes accordingly.
 
-## Who Uses Ariadne
+## Typical Use Cases
 
-**1) Teaching & workshops (frictionless setup)**
-- One pip install, one API, same code on macOS/Linux/WSL
-- Students don't need to understand simulators before getting results
-- 15+ ready-to-run canonical algorithms
+Education and workshops
+- One package, one API; consistent execution in mixed environments
+- Canonical algorithms with supporting notebooks
 
-**2) Cross-simulator research prototyping**
-- Rapid iteration with automatic routing and opt-in override (`backend='mps'`)
+Cross‑simulator prototyping
+- Automatic routing with optional override (`backend='mps'`)
 - Transparent decision logs (`explain_routing()`)
-- Try Stim for stabilizer circuits, MPS/TN for low-entanglement without retooling code
 
-**3) CI/DevOps for quantum codebases**
-- "Works on my machine" goes away when tests automatically pick best available backend
-- Graceful degradation when optional backends aren't present in GitHub Actions
+CI/regression testing
+- Works across macOS/Linux/Windows with graceful fallbacks
 
-**4) Benchmarking & feasibility checks**
-- Push Clifford circuits to Stim (where it shines)
-- Push low-entanglement workloads to MPS/TN
-- Surface comparative routing matrix
+Benchmarking & feasibility
+- Push Clifford to Stim and low‑entanglement to MPS/TN; compare alternatives
 
-**5) Apple Silicon & CUDA acceleration**
-- Hardware-aware routing (JAX-Metal on M-series, CUDA via CuPy)
-- Meaningful speedups where present, clean CPU fallback
+Hardware acceleration
+- Apple Silicon via JAX‑Metal; CUDA via CuPy where available
 
-## 🚦 Quick Links
+## Quick Links
 
 - **Instructors** → [Classroom setup + notebooks](docs/getting-started/for-instructors.md)
 - **Researchers** → [Routing heuristics & override API](docs/getting-started/for-researchers.md)
@@ -101,49 +95,39 @@ print(f"Execution time: {result.execution_time:.4f}s")
 print(f"Unique outcomes: {len(result.counts)}")
 ```
 
-[📖 Documentation](docs/index.md) • [💡 Examples](examples/README.md) • [🚀 Quick Start](#-getting-started) • [🧠 Core API](#-core-api) • [📊 Performance](#-performance)
+[📖 Documentation](docs/index.md) • [Examples](examples/README.md) • [Quick Start](#quick-demo) • [Core API](#overview) • [Performance](#routing-overview)
 
 ---
 
-## ✨ Key Features
+## Features
 
-- **🧠 Intelligent Routing** - Automatically selects optimal backend based on circuit properties
-- **⚡ Stim Auto-Detection** - Routes pure Clifford circuits to Stim for large-scale simulation
-- **🍎 Apple Silicon Acceleration** - JAX-Metal backend for M-series chip optimization
-- **🚀 CUDA Support** - NVIDIA GPU acceleration when available
-- **🔄 Zero Configuration** - `simulate(circuit, shots)` works without manual backend selection
-- **🔢 Universal Fallback** - Always returns results, even when specialized backends fail
-- **📊 Transparent Decisions** - Inspect and validate every routing decision
-- **🔌 Extensible** - Modular backend interface for community contributions
+- Intelligent routing based on circuit properties
+- Stim auto‑detection for Clifford circuits
+- Apple Silicon (JAX‑Metal) and CUDA acceleration where available
+- Zero configuration default usage; simple override when needed
+- Transparent decisions via `explain_routing`
+- Extensible backend interface
 
 ---
 
-## 🧰 Use Cases
+## Use Cases
 
-**Education & Workshops**
-- Run 15+ canonical algorithms without manual simulator selection
-- Comprehensive education notebooks with mathematical background
-- One-command demo: `python examples/quickstart.py`
+Education & workshops
+- Canonical algorithms without manual simulator selection
+- Notebooks with mathematical background
 
-**Research Prototyping**
-- Iterate with `simulate(qc, shots)` - Ariadne picks best backend automatically
-- Override when needed: `simulate(qc, backend='mps')`
+Research prototyping
+- Iterate with automatic routing; override as needed
 
-**CI/Regression Testing**
-- Same tests run across macOS/Linux/Windows
-- Graceful fallback for missing backends with decision logging
+CI/regression testing
+- Consistent behavior across macOS/Linux/Windows
 
-**Benchmarking & Feasibility**
-- Large stabilizer circuits route to Stim (when statevector fails)
-- Low-entanglement circuits route to MPS for speed/memory benefits
-
-**Apple Silicon Optimization**
-- Metal backend for general-purpose circuits on M-series Macs
-- Automatic fallback to CPU when needed
+Benchmarking & feasibility
+- Route stabilizer circuits to Stim; low‑entanglement to MPS
 
 ---
 
-## 🧭 Routing Overview
+## Routing Overview
 
 | Circuit Type | Backend | Reason |
 |---|---|---|
@@ -180,7 +164,7 @@ python examples/routing_matrix.py --shots 256 --generate-image docs/source/_stat
 
 ---
 
-## 🔌 Supported Backends
+## Supported Backends
 
 Ariadne automatically detects and routes to available backends:
 
@@ -196,7 +180,7 @@ Ariadne automatically detects and routes to available backends:
 - **Qulacs** (`qulacs`) - Via `src/ariadne/backends/qulacs_backend.py`
 - **Experimental**: PyQuil, Braket, Q#, OpenCL
 
-> **Learn more**: [Stim documentation](https://github.com/quantumlib/Stim) explains why it excels at Clifford circuits. [quimb documentation](https://quimb.readthedocs.io/) covers tensor network methods for low-entanglement circuits.
+Learn more: [Stim](https://github.com/quantumlib/Stim) for Clifford circuits; [quimb](https://quimb.readthedocs.io/) for tensor‑network methods.
 
 ### Supported Algorithms
 
@@ -213,7 +197,7 @@ Backends are implemented in `src/ariadne/backends/` and selected via routing log
 
 ---
 
-## 🎯 Transparent Decision Making
+## Transparent Decision Making
 
 Ariadne provides complete transparency into routing decisions:
 
@@ -236,8 +220,8 @@ print(explanation)
 print(show_routing_tree())
 ```
 
-**Example routing decisions:**
-- **30-40 qubit GHZ/Clifford** → **Stim** (stabilizer simulation)
+Example routing decisions:
+- 30–40‑qubit GHZ/Clifford → Stim (stabilizer simulation)
 - **Low-entanglement VQE/QAOA** → **MPS/TN** (efficient tensor networks)
 - **General circuit** → **Aer CPU** (reliable fallback)
 
@@ -487,22 +471,20 @@ pre-commit install
 pytest tests/ -v
 ```
 
-📖 **Detailed setup: [Comprehensive Installation Guide](docs/comprehensive_installation.md#development-setup)**
+Detailed setup: [Comprehensive Installation Guide](docs/comprehensive_installation.md#development-setup)
 
 ---
 
-## 💬 Community
+## Community
 
 - **GitHub Discussions:** [Ask questions and share ideas](https://github.com/Hmbown/ariadne/discussions)
 - **Issue Tracker:** [Report bugs and request features](https://github.com/Hmbown/ariadne/issues)
 
 ---
 
-## ✅ Quick Verification
+## Quick Verification
 
-Ariadne has been comprehensively tested with 45 tests achieving 97.7% pass rate.
-
-**Installation Check:**
+Installation check:
 ```bash
 # Verify installation
 python3 -c "from ariadne import simulate; print('✓ Ready to go!')"
@@ -514,25 +496,18 @@ python3 examples/quickstart.py
 ariadne status
 ```
 
-**Performance Highlights:**
-- Stim: ~100,000 shots/s (Clifford circuits)
-- Qiskit: ~60,000 shots/s (general fallback)
-- JAX Metal: 179-226k shots/s (Apple Silicon)
-- Tensor Network: ~200-4,600 shots/s (low-entanglement)
-
-**Usage Tips:**
-- Start with automatic routing (`simulate()` without backend parameter)
+Usage tips:
+- Start with automatic routing (`simulate()` without a backend parameter)
 - Use `explain_routing()` to understand backend selection
 - Explore the algorithm library: `from ariadne.algorithms import list_algorithms`
-- Run education notebooks for comprehensive learning
 
 ---
 
-## 📜 License
+## License
 
 Ariadne is released under the [Apache 2.0 License](LICENSE).
 
-**Project Policies:**
+Project policies:
 - [CHANGELOG](CHANGELOG.md)
 - [SECURITY](SECURITY.md)
 - [CODE OF CONDUCT](CODE_OF_CONDUCT.md)

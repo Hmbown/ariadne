@@ -52,7 +52,7 @@ Both workflows use **Trusted Publishing** (OIDC), which is more secure than API 
 1. Go to https://pypi.org/manage/account/publishing/
 2. Click "Add a new pending publisher"
 3. Fill in the details:
-   - **PyPI Project Name**: `ariadne-router`
+   - **PyPI Project Name**: `ariadne-quantum-router`
    - **Owner**: `Hmbown`
    - **Repository name**: `ariadne`
    - **Workflow name**: `release.yml`
@@ -119,9 +119,9 @@ After fixes:
 
 ## Package Information
 
-- **Name**: `ariadne-router`
-- **PyPI URL**: https://pypi.org/p/ariadne-router
-- **Installation**: `pip install ariadne-router`
+- **Name**: `ariadne-quantum-router`
+- **PyPI URL**: https://pypi.org/project/ariadne-quantum-router/
+- **Installation**: `pip install ariadne-quantum-router`
 
 ## Additional Notes
 

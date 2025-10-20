@@ -3,11 +3,21 @@
 from typing import Any, cast
 
 import numpy as np
-import quimb.tensor as tn
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
 from .universal_interface import BackendCapability, BackendMetrics, UniversalBackend
+
+# Optional quimb import. We lazy-import in simulate() to avoid hard failures when
+# the environment has incompatible binary deps (e.g., numpy/numba ABI issues).
+_QUIMB_AVAILABLE = False
+_tn = None
+try:  # pragma: no cover - import-time check only
+    import quimb.tensor as _tn  # type: ignore[assignment]
+
+    _QUIMB_AVAILABLE = True
+except Exception:  # Broad except to handle binary import errors gracefully
+    _QUIMB_AVAILABLE = False
 
 
 class MPSBackend(UniversalBackend):
@@ -55,17 +65,18 @@ class MPSBackend(UniversalBackend):
             if len(qargs) > 2:
                 return self._simulate_with_statevector(circuit, shots)
 
+        # If quimb is unavailable (or failed to import), fall back to statevector
+        # simulation which is well-supported for small-to-medium circuits.
+        if not _QUIMB_AVAILABLE:
+            return self._simulate_with_statevector(circuit, shots)
+
         n_qubits = circuit.num_qubits
         max_bond = self.max_bond_dimension
 
-        # print(f"Simulating circuit with MPS backend (max_bond_dimension={max_bond})...")
-
-        # 1. Initialize the MPS in the |0...0> state
-        # The physical dimension is 2 (qubit), and the bond dimension is 1 (unentangled)
         # Initialize the MPS from the dense |0...0> state vector
         zero_state = np.zeros(2**n_qubits, dtype=complex)
         zero_state[0] = 1.0
-        mps = tn.MatrixProductState.from_dense(
+        mps = _tn.MatrixProductState.from_dense(
             zero_state,
         )
 

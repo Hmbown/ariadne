@@ -154,13 +154,17 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
     - name: Install dependencies
       run: |
-        pip install ariadne-router[all] matplotlib
+        python -m pip install --upgrade pip
+        pip install -e ".[advanced,viz]" matplotlib
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          pip install -e ".[apple]" || true
+        fi
 
     - name: Run performance benchmark
       shell: bash

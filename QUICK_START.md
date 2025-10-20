@@ -7,12 +7,12 @@ Get up and running with Ariadne in minutes!
 Install Ariadne using pip:
 
 ```bash
-pip install ariadne-router
+pip install ariadne-quantum-router
 ```
 
 For hardware acceleration on Apple Silicon:
 ```bash
-pip install ariadne-router[apple]
+pip install ariadne-quantum-router[apple]
 ```
 
 ## Your First Simulation

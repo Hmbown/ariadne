@@ -27,19 +27,19 @@ Ariadne is a zero-configuration quantum simulator bundle that automatically rout
 
 ### Basic Installation
 ```bash
-pip install ariadne-router
+pip install ariadne-quantum-router
 ```
 
 ### With Hardware Acceleration
 ```bash
 # For Apple Silicon
-pip install ariadne-router[apple]
+pip install ariadne-quantum-router[apple]
 
 # For CUDA
-pip install ariadne-router[cuda]
+pip install ariadne-quantum-router[cuda]
 
 # For all optional dependencies
-pip install ariadne-router[apple,cuda,viz]
+pip install ariadne-quantum-router[apple,cuda,viz]
 ```
 
 ### Developer Installation

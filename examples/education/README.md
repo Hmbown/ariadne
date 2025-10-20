@@ -1,6 +1,6 @@
 # Ariadne Quantum Algorithm Education
 
-Instructors & students – runs on any laptop
+Materials for instructors and students — cross‑platform
 
 This directory contains comprehensive educational materials for quantum algorithms, designed to work seamlessly with Ariadne's unified algorithm module. Each notebook includes mathematical background, implementation details, and cross-backend performance analysis.
 
@@ -36,9 +36,9 @@ Each education notebook follows a consistent structure:
 
 ### Prerequisites
 ```bash
-pip install ariadne-router
+pip install ariadne-quantum-router
 # Optional: install hardware acceleration extras
-pip install ariadne-router[apple,cuda]
+pip install ariadne-quantum-router[apple,cuda]
 ```
 
 ### Running Notebooks

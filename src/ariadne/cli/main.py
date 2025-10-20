@@ -956,12 +956,12 @@ Examples:
             algorithms = ["bell", "qaoa", "vqe", "stabilizer"]  # default
 
         if args.algorithms:
-            algorithms = [alg.strip() for alg in args.algorithms.split(",")]
+            algorithms = [alg.strip() for alg in args.algorithms.split(",") if alg.strip()]
 
         # Parse backends
         backends = ["auto", "stim", "qiskit", "mps"]  # default
         if args.backends:
-            backends = [backend.strip() for backend in args.backends.split(",")]
+            backends = [backend.strip() for backend in args.backends.split(",") if backend.strip()]
 
         print("Running benchmark suite...")
         print(f"Algorithms: {', '.join(algorithms)}")

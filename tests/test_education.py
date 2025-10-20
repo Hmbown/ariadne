@@ -83,7 +83,7 @@ def test_education_dashboard():
     # Test showing algorithm list (this displays HTML, just make sure it doesn't crash)
     try:
         dashboard.show_algorithm_list()
-    except:
+    except Exception:
         # This might fail in non-IPython environments, which is OK
         pass
 
@@ -94,7 +94,7 @@ def test_education_dashboard():
         test_algs = [alg for alg in algorithms if alg in available]
         if len(test_algs) >= 1:  # At least one algorithm should be available
             dashboard.compare_algorithms_interactive(test_algs)
-    except:
+    except Exception:
         # This might fail in non-IPython environments, which is OK
         pass
 
