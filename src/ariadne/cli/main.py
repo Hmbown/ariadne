@@ -225,6 +225,12 @@ Examples:
         # Benchmark suite command
         self._add_benchmark_suite_command(subparsers)
 
+        # Educational command
+        self._add_education_command(subparsers)
+
+        # Learning resource command
+        self._add_learning_command(subparsers)
+
         return parser
 
     def _add_simulate_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
@@ -351,6 +357,69 @@ Examples:
         parser.add_argument("--shots", type=int, default=1000, help="Number of measurement shots (default: 1000)")
 
         parser.add_argument("--output", help="Output file for benchmark results (JSON format)")
+
+    def _add_education_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add the education command for learning quantum algorithms."""
+        try:
+            from ..algorithms import list_algorithms
+
+            available_algorithms = list_algorithms()
+        except Exception:
+            available_algorithms = ["bell", "ghz", "qft", "grover", "qpe", "vqe", "qaoa"]
+
+        parser = subparsers.add_parser(
+            "education",
+            help="Educational tools for learning quantum algorithms",
+            description="Interactive educational tools for learning quantum algorithms and concepts",
+        )
+
+        education_subparsers = parser.add_subparsers(dest="education_action", help="Education actions")
+
+        # Algorithm demo command
+        demo_parser = education_subparsers.add_parser("demo", help="Run algorithm demos")
+        demo_parser.add_argument(
+            "algorithm",
+            choices=available_algorithms,
+            help=f"Algorithm to demonstrate: {', '.join(available_algorithms)}",
+        )
+        demo_parser.add_argument("--qubits", type=int, default=3, help="Number of qubits for the demonstration")
+        demo_parser.add_argument("--verbose", action="store_true", help="Show detailed execution information")
+
+        # Learning quizzes
+        quiz_parser = education_subparsers.add_parser("quiz", help="Take quantum computing quizzes")
+        quiz_parser.add_argument(
+            "topic", choices=["gates", "algorithms", "applications", "hardware"], help="Topic for the quiz"
+        )
+
+        # Circuit visualization
+        viz_parser = education_subparsers.add_parser("visualize", help="Visualize quantum circuits")
+        viz_parser.add_argument("circuit_file", help="Path to circuit file to visualize")
+        viz_parser.add_argument(
+            "--format", choices=["text", "image", "latex"], default="text", help="Visualization format"
+        )
+
+    def _add_learning_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add the learning command for educational resources."""
+        parser = subparsers.add_parser(
+            "learning",
+            help="Learning resources and tools",
+            description="Access educational materials and learning resources",
+        )
+
+        learning_subparsers = parser.add_subparsers(dest="learning_action", help="Learning actions")
+
+        # List available learning materials
+        list_parser = learning_subparsers.add_parser("list", help="List available learning resources")
+        list_parser.add_argument(
+            "--category",
+            choices=["tutorials", "algorithms", "papers", "videos", "all"],
+            default="all",
+            help="Category of resources to list",
+        )
+
+        # Get detailed information about a resource
+        info_parser = learning_subparsers.add_parser("info", help="Get detailed information about a learning resource")
+        info_parser.add_argument("resource_name", help="Name of the learning resource")
 
     def _cmd_simulate(self, args: argparse.Namespace) -> int:
         """Execute the simulate command."""
@@ -749,6 +818,220 @@ Examples:
             if self.logger:
                 self.logger.error(f"Benchmark suite failed: {e}")
             return 1
+
+    def _cmd_education(self, args: argparse.Namespace) -> int:
+        """Execute the education command."""
+        if args.education_action == "demo":
+            return self._cmd_education_demo(args)
+        elif args.education_action == "quiz":
+            return self._cmd_education_quiz(args)
+        elif args.education_action == "visualize":
+            return self._cmd_education_visualize(args)
+        else:
+            if self.logger:
+                self.logger.error(f"Unknown education action: {args.education_action}")
+            print(f"Unknown education action: {args.education_action}")
+            return 1
+
+    def _cmd_education_demo(self, args: argparse.Namespace) -> int:
+        """Execute the education demo command."""
+        try:
+            # Import the algorithm module to get circuit
+            from ..algorithms import get_algorithm_circuit
+
+            print(f"Running {args.algorithm} demo with {args.qubits} qubits...")
+
+            # Create the algorithm circuit
+            circuit = get_algorithm_circuit(args.algorithm, args.qubits)
+
+            if circuit is None:
+                print(f"Algorithm {args.algorithm} not found or not implemented")
+                return 1
+
+            print(f"\nAlgorithm: {args.algorithm.upper()}")
+            print(f"Circuit has {circuit.num_qubits} qubits and depth {circuit.depth()}")
+
+            if args.verbose:
+                print(f"Circuit:\n{circuit.draw()}")
+
+            # Simulate the circuit
+            from ..router import simulate
+
+            result = simulate(circuit, shots=100)
+
+            print("\nSimulation Results:")
+            print(f"  Backend used: {result.backend_used.value}")
+            print(f"  Execution time: {result.execution_time:.4f}s")
+            print(f"  Sample counts: {dict(list(result.counts.items())[:5])}")
+
+            if len(result.counts) > 5:
+                print(f"  ... and {len(result.counts) - 5} more outcomes")
+
+            return 0
+
+        except ImportError:
+            print(f"Algorithm {args.algorithm} is not available in this installation")
+            return 1
+        except Exception as e:
+            if self.logger:
+                self.logger.error(f"Education demo failed: {e}")
+            print(f"Demo failed: {e}")
+            return 1
+
+    def _cmd_education_quiz(self, args: argparse.Namespace) -> int:
+        """Execute the education quiz command."""
+        print(f"Starting quiz on {args.topic}...")
+
+        # For now, just show placeholder information
+        quizzes = {
+            "gates": [
+                {"question": "Which gate creates superposition?", "options": ["X", "H", "Z", "S"], "answer": "H"},
+                {
+                    "question": "What does the CNOT gate do?",
+                    "options": ["Creates entanglement", "Rotates phase", "Clones qubits", "Measures qubits"],
+                    "answer": "Creates entanglement",
+                },
+            ],
+            "algorithms": [
+                {
+                    "question": "Which algorithm provides quadratic speedup for unstructured search?",
+                    "options": ["Shor's", "Grover's", "QFT", "VQE"],
+                    "answer": "Grover's",
+                }
+            ],
+            "applications": [
+                {
+                    "question": "Which application shows quantum advantage in optimization?",
+                    "options": ["Cryptography", "Machine Learning", "QAOA", "All of the above"],
+                    "answer": "QAOA",
+                }
+            ],
+            "hardware": [
+                {
+                    "question": "Which quantum computing platform uses superconducting qubits?",
+                    "options": ["IonQ", "IBM", "Rigetti", "All of the above"],
+                    "answer": "All of the above",
+                }
+            ],
+        }
+
+        if args.topic not in quizzes:
+            print(f"Unknown quiz topic: {args.topic}")
+            return 1
+
+        quiz = quizzes[args.topic]
+        score = 0
+
+        print(f"\nQuiz on {args.topic.upper()} - {len(quiz)} questions\n")
+
+        for i, q in enumerate(quiz):
+            print(f"Q{i+1}: {q['question']}")
+            for j, opt in enumerate(q["options"]):
+                print(f"  {j+1}. {opt}")
+
+            # For simplicity, just show the answer (in a real implementation would ask user)
+            correct_idx = q["options"].index(q["answer"]) + 1
+            print(f"  Correct answer: {correct_idx}. {q['answer']}\n")
+
+        print("Quiz completed! (This is a demo - in a real implementation, you would answer questions)")
+        return 0
+
+    def _cmd_education_visualize(self, args: argparse.Namespace) -> int:
+        """Execute the education visualization command."""
+        try:
+            from qiskit import QuantumCircuit
+
+            # Load circuit
+            circuit_path = Path(args.circuit_file)
+            if not circuit_path.exists():
+                print(f"Circuit file not found: {args.circuit_file}")
+                return 1
+
+            if circuit_path.suffix == ".qasm":
+                circuit = QuantumCircuit.from_qasm_file(str(circuit_path))
+            else:
+                print(f"Unsupported file format: {circuit_path.suffix}")
+                return 1
+
+            print(f"Visualizing circuit: {circuit_path.name}")
+            print(f"Qubits: {circuit.num_qubits}, Depth: {circuit.depth()}")
+
+            if args.format == "text":
+                print(f"\nCircuit diagram:\n{circuit.draw()}")
+            elif args.format == "latex":
+                print("LaTeX output not implemented in this demo")
+            elif args.format == "image":
+                print("Image output not implemented in this demo")
+
+            return 0
+        except Exception as e:
+            if self.logger:
+                self.logger.error(f"Education visualization failed: {e}")
+            print(f"Visualization failed: {e}")
+            return 1
+
+    def _cmd_learning(self, args: argparse.Namespace) -> int:
+        """Execute the learning command."""
+        if args.learning_action == "list":
+            return self._cmd_learning_list(args)
+        elif args.learning_action == "info":
+            return self._cmd_learning_info(args)
+        else:
+            if self.logger:
+                self.logger.error(f"Unknown learning action: {args.learning_action}")
+            print(f"Unknown learning action: {args.learning_action}")
+            return 1
+
+    def _cmd_learning_list(self, args: argparse.Namespace) -> int:
+        """Execute the learning list command."""
+        resources = {
+            "tutorials": [
+                {"name": "quantum_basics", "title": "Quantum Computing Basics", "level": "Beginner"},
+                {"name": "variational_algorithms", "title": "Variational Quantum Algorithms", "level": "Intermediate"},
+                {"name": "error_correction", "title": "Quantum Error Correction", "level": "Advanced"},
+            ],
+            "algorithms": [
+                {"name": "bell_state", "title": "Bell State Creation and Analysis", "type": "Algorithm"},
+                {"name": "qft_detailed", "title": "Quantum Fourier Transform - Deep Dive", "type": "Algorithm"},
+            ],
+            "papers": [
+                {
+                    "name": "shor_quantum",
+                    "title": "Polynomial-Time Algorithms for Prime Factorization",
+                    "authors": "P. Shor",
+                }
+            ],
+            "videos": [{"name": "intro_quantum", "title": "Introduction to Quantum Computing", "duration": "45 min"}],
+        }
+
+        categories = [args.category] if args.category != "all" else list(resources.keys())
+
+        print("Ariadne Learning Resources:")
+        print("=" * 50)
+
+        for cat in categories:
+            if cat in resources:
+                print(f"\n{cat.upper()}:")
+                for resource in resources[cat]:
+                    name = resource.get("name", "Unknown")
+                    title = resource.get("title", "Untitled")
+                    print(f"  - {name}: {title}")
+
+                    # Show additional details based on resource type
+                    for key, value in resource.items():
+                        if key not in ["name", "title"]:
+                            print(f"      {key}: {value}")
+                    print()
+
+        return 0
+
+    def _cmd_learning_info(self, args: argparse.Namespace) -> int:
+        """Execute the learning info command."""
+        # In a real implementation, this would fetch detailed info about a specific resource
+        print(f"Detailed information for resource: {args.resource_name}")
+        print("This would provide detailed information about the learning resource.")
+        print("In a full implementation, this would retrieve content from documentation/resources.")
+        return 0
 
     def _load_circuit(self, path: str) -> QuantumCircuit:
         """Load a quantum circuit from file."""
