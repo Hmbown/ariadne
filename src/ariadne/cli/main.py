@@ -226,7 +226,6 @@ Examples:
         self._add_simulate_command(subparsers)
         self._add_config_command(subparsers)
         self._add_status_command(subparsers)
-        self._add_benchmark_original_command(subparsers)  # This is now the original
         self._add_benchmark_suite_command(subparsers)
         self._add_education_command(subparsers)
         self._add_learning_command(subparsers)
@@ -536,6 +535,61 @@ Examples:
         info_parser = learning_subparsers.add_parser("info", help="Get detailed information about a learning resource")
         info_parser.add_argument("resource_name", help="Name of the learning resource")
 
+    def _cmd_run(self, args: argparse.Namespace) -> int:
+        """Execute the run command (unified simulation)."""
+        # This is essentially the same as simulate but with better UX
+        return self._cmd_simulate(args)
+
+    def _cmd_explain(self, args: argparse.Namespace) -> int:
+        """Execute the explain command (routing transparency)."""
+        progress = ProgressIndicator("Loading circuit")
+        progress.start()
+
+        try:
+            # Load circuit
+            circuit = self._load_circuit(args.circuit)
+            progress.update(f" ({circuit.num_qubits} qubits, {circuit.depth()} depth)")
+            progress.finish("loaded")
+        except Exception as e:
+            progress.finish("failed")
+            if self.logger:
+                self.logger.error(f"Failed to load circuit: {e}")
+            return 1
+
+        try:
+            from ariadne import explain_routing
+
+            print(f"\nRouting Analysis for {args.circuit}:")
+            print("=" * 50)
+
+            explanation = explain_routing(circuit)
+            print(explanation)
+
+            if args.verbose:
+                print("\nDetailed Technical Analysis:")
+                print("-" * 30)
+                # Add more technical details in verbose mode
+                print("Circuit properties:")
+                print(f"  Qubits: {circuit.num_qubits}")
+                print(f"  Depth: {circuit.depth()}")
+                print(f"  Operations: {circuit.count_ops()}")
+
+                # Check if it's Clifford
+                try:
+                    from qiskit.quantum_info import Clifford
+
+                    Clifford.from_circuit(circuit)
+                    print("  Type: Clifford (stabilizer)")
+                except Exception:
+                    print("  Type: Non-Clifford (general)")
+
+            return 0
+
+        except Exception as e:
+            if self.logger:
+                self.logger.error(f"Routing explanation failed: {e}")
+            return 1
+
     def _cmd_simulate(self, args: argparse.Namespace) -> int:
         """Execute the simulate command."""
         progress = ProgressIndicator("Loading circuit")
@@ -588,6 +642,10 @@ Examples:
             if len(result.counts) > 5:
                 print(f"  ... and {len(result.counts) - 5} more")
 
+            # Show fallback reason if present
+            if result.fallback_reason:
+                print(f"  Note: {result.fallback_reason}")
+
             # Save results if requested
             if args.output:
                 self._save_results(result, args.output)
@@ -597,8 +655,33 @@ Examples:
 
         except Exception as e:
             progress.finish("failed")
-            if self.logger:
-                self.logger.error(f"Simulation failed: {e}")
+
+            # Provide friendly error messages for missing backends
+            error_message = str(e).lower()
+            if "cuda" in error_message and ("not available" in error_message or "not found" in error_message):
+                print("\n❌ CUDA backend not available")
+                print("💡 To enable CUDA support:")
+                print("   pip install ariadne-quantum-router[cuda]")
+                print("   (Requires NVIDIA GPU with CUDA drivers)")
+            elif "metal" in error_message and ("not available" in error_message or "not found" in error_message):
+                print("\n❌ JAX-Metal backend not available")
+                print("💡 To enable JAX-Metal support:")
+                print("   pip install ariadne-quantum-router[apple]")
+                print("   (Requires Apple Silicon Mac: M1/M2/M3/M4)")
+            elif "mps" in error_message or "tensor" in error_message:
+                print("\n❌ Tensor network backend not available")
+                print("💡 To enable tensor network support:")
+                print("   pip install quimb cotengra")
+            elif "stim" in error_message:
+                print("\n❌ Stim backend not available")
+                print("💡 To enable Stim support:")
+                print("   pip install stim")
+            else:
+                if self.logger:
+                    self.logger.error(f"Simulation failed: {e}")
+                print(f"\n❌ Simulation failed: {e}")
+
+            print("\n💡 Try using automatic backend selection (remove --backend flag)")
             return 1
 
     def _cmd_config(self, args: argparse.Namespace) -> int:

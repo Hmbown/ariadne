@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2] - 2025-10-20
+
+### Added
+
+- **"Google Maps" Positioning**: Enhanced README with clear "Google Maps for Quantum Circuits" tagline and better differentiation from Qiskit Aer
+- **PyPI Name Clarity**: Changed package name to `ariadne-quantum-router` to avoid conflict with GraphQL Ariadne library
+- **Enhanced CLI Error Handling**: Added friendly error messages for missing optional backends with install instructions (CUDA, JAX-Metal, MPS/TN, Stim)
+- **New CLI Commands**: Added `ariadne run` and `ariadne explain` commands for better user experience
+- **Routing Transparency**: Enhanced `explain_routing()` visibility throughout documentation and examples
+- **Repeatable Benchmark Demo**: Added `examples/routing_demo_notebook.py` to validate README claims with real benchmarks
+- **README Example Validator**: Added `examples/validate_readme_examples.py` to ensure all documentation examples work
+- **Enhanced Quickstart**: Updated `examples/quickstart.py` to showcase key routing decisions from README
+
+### Changed
+
+- **Package Name**: From `ariadne-router` to `ariadne-quantum-router` in pyproject.toml
+- **README Structure**: Improved positioning with clear value proposition, use cases, and external references
+- **CLI User Experience**: Better error messages guide users to install missing optional dependencies
+- **Documentation Links**: Added references to Stim and quimb documentation, QMAP paper for hardware routing distinction
+
+### Fixed
+
+- **CLI Duplicate Commands**: Resolved conflicting benchmark subparser issue
+- **Linting Issues**: Fixed f-string formatting in CLI module
+- **Import Validation**: Ensured all README code examples work correctly
+
 ## [0.2.0] - 2025-10-17
 
 ### Added

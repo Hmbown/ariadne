@@ -1,6 +1,8 @@
 <div align="center">
 
-# Ariadne – Zero-config quantum simulator bundle
+# Ariadne: "Google Maps" for Quantum Circuits
+
+> **Zero-config automatic routing** to the right simulator—Stim, MPS/TN, CUDA/JAX-Metal, or Aer—behind a single `simulate()` call.
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -14,27 +16,72 @@
 
 ---
 
-## Overview
+## What Ariadne Does Differently
 
-> **Run 15+ quantum algorithms** (Bell, QAOA, VQE, QFT, Grover, QPE, stabilizer, error correction, quantum ML) **on any laptop or OS** with the same code. Ariadne automatically selects the optimal backend (Stim, Qiskit, MPS, Metal, CUDA) so students and CI pipelines never break.
+**Ariadne isn't just another simulator.** It's **cross-ecosystem intelligent routing** that automatically chooses across multiple quantum simulation libraries, not just within one framework:
 
-Ariadne automatically routes quantum circuits to the optimal backend, eliminating manual simulator selection. Whether you're teaching quantum computing, running cross-platform benchmarks, or setting up CI pipelines, Ariadne ensures reproducible results without configuration complexity.
+- **Qiskit Aer (auto)**: Chooses among Aer's internal methods (statevector, density matrix, stabilizer, MPS)
+- **Ariadne**: Chooses across **multiple ecosystems** (Stim, quimb/cotengra TN/MPS, Qiskit, Cirq, DDSIM, PennyLane, CUDA, JAX-Metal) with explainable routing
 
-**Ideal for:**
-- **Education**: One pip install that works across macOS, Linux, and WSL
-- **Research**: Reproducible cross-simulator benchmarks
-- **DevOps**: Multi-backend regression testing in GitHub Actions
+**Value Proposition:**
+* **Zero-config**: `simulate(qc)` just works on macOS/Linux/WSL and in CI
+* **Faster by design**: Clifford → Stim; low-entanglement → MPS/TN; otherwise smart fallbacks
+* **Explainable**: `explain_routing(qc)` shows *why* a backend was chosen
+
+> **Note**: This is **simulator backend routing**, not hardware/qubit routing. For hardware qubit mapping, see [QMAP](https://arxiv.org/abs/2301.11935)/AlphaRouter.
+
+## 30-Second Demo
+
+```python
+from ariadne import simulate, explain_routing
+from qiskit import QuantumCircuit
+
+# 40-qubit GHZ (stabilizer circuit)
+qc = QuantumCircuit(40, 40)
+qc.h(0)
+[qc.cx(i, i+1) for i in range(39)]
+qc.measure_all()
+
+result = simulate(qc, shots=1000)
+print(f"Backend: {result.backend_used}")        # → BackendType.STIM
+print(f"Time: {result.execution_time:.3f}s")    # → 0.042s
+print(explain_routing(qc))                      # → "Routing to Stim: Pure Clifford circuit detected..."
+```
+
+**Why this works**: Large Clifford circuits would crash regular Qiskit, but Ariadne automatically routes to Stim for fast stabilizer simulation.
+
+## Who Uses Ariadne
+
+**1) Teaching & workshops (frictionless setup)**
+- One pip install, one API, same code on macOS/Linux/WSL
+- Students don't need to understand simulators before getting results
+- 15+ ready-to-run canonical algorithms
+
+**2) Cross-simulator research prototyping**
+- Rapid iteration with automatic routing and opt-in override (`backend='mps'`)
+- Transparent decision logs (`explain_routing()`)
+- Try Stim for stabilizer circuits, MPS/TN for low-entanglement without retooling code
+
+**3) CI/DevOps for quantum codebases**
+- "Works on my machine" goes away when tests automatically pick best available backend
+- Graceful degradation when optional backends aren't present in GitHub Actions
+
+**4) Benchmarking & feasibility checks**
+- Push Clifford circuits to Stim (where it shines)
+- Push low-entanglement workloads to MPS/TN
+- Surface comparative routing matrix
+
+**5) Apple Silicon & CUDA acceleration**
+- Hardware-aware routing (JAX-Metal on M-series, CUDA via CuPy)
+- Meaningful speedups where present, clean CPU fallback
 
 ## 🚦 Quick Links
 
-- [Documentation Hub](docs/index.md) - Complete documentation with persona-based guides
-- [For Instructors](docs/getting-started/for-instructors.md) - Classroom setup and education tools
-- [For Researchers](docs/getting-started/for-researchers.md) - Advanced features and benchmarking
-- [For DevOps](docs/getting-started/for-devops.md) - CI/CD integration and production deployment
+- **Instructors** → [Classroom setup + notebooks](docs/getting-started/for-instructors.md)
+- **Researchers** → [Routing heuristics & override API](docs/getting-started/for-researchers.md)
+- **DevOps** → [GitHub Actions template](docs/getting-started/for-devops.md)
 
 ### First Simulation
-
-Ariadne automatically routes circuits to optimal simulators without code changes:
 
 ```python
 from ariadne import simulate
@@ -138,9 +185,9 @@ python examples/routing_matrix.py --shots 256 --generate-image docs/source/_stat
 Ariadne automatically detects and routes to available backends:
 
 - **Qiskit CPU simulator** (`qiskit`) - Always available baseline
-- **Stim stabilizer simulator** (`stim`) - Specialized for Clifford circuits
-- **Matrix Product State** (`mps`) via `quimb`
-- **Tensor Network** (`tensor_network`) via `cotengra`/`quimb`
+- **[Stim](https://github.com/quantumlib/Stim) stabilizer simulator** (`stim`) - Specialized for Clifford circuits
+- **Matrix Product State** (`mps`) via **[quimb](https://github.com/quimb/quimb)**
+- **Tensor Network** (`tensor_network`) via **[cotengra](https://github.com/johnniegraham/cotengra)**/quimb
 - **JAX Metal** (`jax_metal`) - Apple Silicon acceleration
 - **CUDA** (`cuda`) - GPU acceleration via `cupy`
 - **DDSIM** (`ddsim`) - Alternative simulator via `mqt.ddsim`
@@ -148,6 +195,8 @@ Ariadne automatically detects and routes to available backends:
 - **PennyLane** (`pennylane`) - Via `src/ariadne/backends/pennylane_backend.py`
 - **Qulacs** (`qulacs`) - Via `src/ariadne/backends/qulacs_backend.py`
 - **Experimental**: PyQuil, Braket, Q#, OpenCL
+
+> **Learn more**: [Stim documentation](https://github.com/quantumlib/Stim) explains why it excels at Clifford circuits. [quimb documentation](https://quimb.readthedocs.io/) covers tensor network methods for low-entanglement circuits.
 
 ### Supported Algorithms
 
@@ -181,10 +230,18 @@ qc.measure_all()
 # Get detailed routing explanation
 explanation = explain_routing(qc)
 print(explanation)
+# Output: "Routing to Qiskit: General 2-qubit circuit, moderate complexity..."
 
 # Visualize the routing tree
 print(show_routing_tree())
 ```
+
+**Example routing decisions:**
+- **30-40 qubit GHZ/Clifford** → **Stim** (stabilizer simulation)
+- **Low-entanglement VQE/QAOA** → **MPS/TN** (efficient tensor networks)
+- **General circuit** → **Aer CPU** (reliable fallback)
+
+All with `explain_routing()` outputs showing the reasoning.
 
 ---
 
@@ -194,7 +251,21 @@ print(show_routing_tree())
 
 **PyPI package:**
 ```bash
-pip install ariadne-router
+pip install ariadne-quantum-router
+```
+
+> **Note**: The package is `ariadne-quantum-router` to avoid conflict with the popular [GraphQL Ariadne library](https://github.com/mirumee/ariadne).
+
+**Hardware acceleration extras:**
+```bash
+# Apple Silicon (M1/M2/M3/M4)
+pip install ariadne-quantum-router[apple]
+
+# NVIDIA GPU (CUDA)
+pip install ariadne-quantum-router[cuda]
+
+# All optional dependencies
+pip install ariadne-quantum-router[apple,cuda,viz]
 ```
 
 **Developer setup:**
@@ -204,19 +275,31 @@ cd ariadne
 pip install -e .
 ```
 
-**Hardware acceleration extras:**
+📖 **Detailed installation: [Comprehensive Installation Guide](docs/comprehensive_installation.md)**
+
+### Call-to-Action
+
+**Run the quickstart and post your routing tree!**
+
 ```bash
-# Apple Silicon (M1/M2/M3/M4)
-pip install -e .[apple]
-
-# NVIDIA GPU (CUDA)
-pip install -e .[cuda]
-
-# All optional dependencies
-pip install -e .[apple,cuda,viz]
+python examples/quickstart.py
 ```
 
-📖 **Detailed installation: [Comprehensive Installation Guide](docs/comprehensive_installation.md)**
+### CLI Examples
+
+```bash
+# Basic simulation with automatic backend selection
+ariadne simulate circuit.qasm --shots 1000
+
+# Comprehensive benchmark across algorithms
+ariadne benchmark-suite --algorithms qft,grover,qpe,steane
+
+# System status with backend health
+ariadne status --detailed
+
+# Explain routing decision
+ariadne explain circuit.qasm
+```
 
 ### Quickstart Demo
 
