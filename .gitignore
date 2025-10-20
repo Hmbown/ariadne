@@ -31,6 +31,12 @@ benchmarks/*_benchmark_results.json
 bullshit_check_prompt.md
 firebase-debug.log
 
+# Internal development documentation
+ALGORITHM_EXPANSION_SUMMARY.md
+REPOSITIONING_SUMMARY.md
+performance_validation_report.md
+docs/RELEASE_VALIDATION_SUMMARY.md
+
 # IDE and editor files
 .vscode/
 .idea/

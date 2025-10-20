@@ -18,6 +18,10 @@ Comprehensive documentation for the Ariadne Intelligent Quantum Router.
 - [Circuit Analysis](concepts/analysis.md) - How circuits are analyzed and classified
 - [Performance Optimization](concepts/optimization.md) - Getting the best performance
 
+### Quantum Algorithms
+- [Algorithm Catalog](algorithms.md) - Complete list of implemented quantum algorithms
+- [Education Materials](../examples/education/README.md) - Interactive notebooks and tutorials
+
 ### Backend Integration
 - [Backend Interface](backends/interface.md) - Universal backend interface specification
 - [Stim Integration](backends/stim.md) - Clifford circuit acceleration
