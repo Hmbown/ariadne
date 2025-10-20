@@ -5,6 +5,13 @@ from ._version import __version__
 __all__ = ["__version__"]
 
 # Configuration system data classes
+# Education tools - now more integrated
+from .algorithms import (
+    AlgorithmParameters,
+    get_algorithm,
+    get_algorithms_by_category,
+    list_algorithms,
+)
 from .config import (
     AnalysisConfig,
     AriadneConfig,
@@ -30,6 +37,19 @@ from .core import (
     configure_logging,
     get_logger,
     get_resource_manager,
+)
+from .education import (
+    InteractiveCircuitBuilder,
+    LearningStep,
+)
+from .education_integration import (
+    build_and_simulate_circuit,
+    demo_bell_state,
+    demo_ghz_state,
+    demo_grover,
+    demo_qft,
+    explore_algorithm_step_by_step,
+    run_educational_simulation,
 )
 
 # Enhanced router
@@ -106,6 +126,20 @@ __all__ = [
     "get_logger",
     "get_resource_manager",
     "configure_logging",
+    # Education tools
+    "list_algorithms",
+    "get_algorithm",
+    "get_algorithms_by_category",
+    "AlgorithmParameters",
+    "InteractiveCircuitBuilder",
+    "LearningStep",
+    "run_educational_simulation",
+    "build_and_simulate_circuit",
+    "explore_algorithm_step_by_step",
+    "demo_bell_state",
+    "demo_ghz_state",
+    "demo_qft",
+    "demo_grover",
 ]
 
 # Add optional backends if available

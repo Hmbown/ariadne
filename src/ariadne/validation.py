@@ -81,7 +81,7 @@ def validate_backend(backend: str | None) -> None:
         BackendType(backend.lower())
     except ValueError:
         valid_backends = [bt.value for bt in BackendType]
-        raise ValueError(f"Invalid backend '{backend}'. Valid options: {valid_backends}")
+        raise ValueError(f"Invalid backend '{backend}'. Valid options: {valid_backends}") from None
 
 
 def validate_circuit(circuit: QuantumCircuit) -> None:
@@ -108,7 +108,7 @@ def validate_circuit(circuit: QuantumCircuit) -> None:
         # Try basic operations to ensure circuit is valid
         circuit.size()  # This will raise an error if circuit is malformed
     except Exception as e:
-        raise ValueError(f"Circuit validation failed: {e}")
+        raise ValueError(f"Circuit validation failed: {e}") from e
 
 
 def safe_execute(func):
@@ -145,14 +145,14 @@ def safe_execute(func):
 
             logger = logging.getLogger(__name__)
             logger.error(f"Qiskit error in {func.__name__}: {e}")
-            raise AriadneError(f"Qiskit error: {e}")
+            raise AriadneError(f"Qiskit error: {e}") from e
         except Exception as e:
             # Handle unexpected errors
             import logging
 
             logger = logging.getLogger(__name__)
             logger.error(f"Unexpected error in {func.__name__}: {e}")
-            raise AriadneError(f"Unexpected error: {e}")
+            raise AriadneError(f"Unexpected error: {e}") from e
 
     return wrapper
 

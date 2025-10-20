@@ -21,7 +21,7 @@ def test_enhanced_benchmark_suite():
     assert len(results) == 2  # 2 iterations
     for result in results:
         assert result.algorithm == "bell"
-        assert result.success == True  # Should succeed for Bell state
+        assert result.success  # Should succeed for Bell state
         assert result.qubits == 2
         assert result.shots == 100
         assert result.execution_time >= 0
@@ -33,7 +33,7 @@ def test_enhanced_benchmark_suite():
     )
 
     assert len(comparison) == 2  # 2 backends
-    for backend, result in comparison.items():
+    for _backend, result in comparison.items():
         assert result.algorithm == "bell"
         assert result.qubits == 2
         assert result.shots == 100

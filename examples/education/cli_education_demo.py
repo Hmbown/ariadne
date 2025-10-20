@@ -4,10 +4,10 @@ Ariadne CLI Educational Features Demo
 This script demonstrates the educational features of the Ariadne CLI.
 """
 
-import subprocess
-import sys
 import os
+import subprocess
 from pathlib import Path
+
 
 def run_cli_command(cmd):
     """Run a CLI command and return output."""
@@ -66,7 +66,7 @@ measure q[1] -> c[1];
         f.write(circuit_content)
 
     try:
-        stdout, stderr, code = run_cli_command(f"python -m ariadne.cli.main education demo bell --qubits 2")
+        stdout, stderr, code = run_cli_command("python -m ariadne.cli.main education demo bell --qubits 2")
         print(stdout)
         if stderr:
             print(f"ERROR: {stderr}")

@@ -4,12 +4,9 @@ Ariadne Advanced Benchmarking Tutorial
 This example demonstrates advanced benchmarking capabilities in Ariadne.
 """
 
-from ariadne.enhanced_benchmarking import (
-    EnhancedBenchmarkSuite,
-    run_comprehensive_benchmark,
-    compare_backends
-)
 from ariadne.education import AlgorithmExplorer
+from ariadne.enhanced_benchmarking import EnhancedBenchmarkSuite, compare_backends, run_comprehensive_benchmark
+
 
 def demo_advanced_benchmarking():
     """Demonstrate advanced benchmarking capabilities."""
@@ -25,7 +22,6 @@ def demo_advanced_benchmarking():
 
     # Run benchmarks for different algorithms
     algorithms = ['bell', 'ghz']
-    backends = ['auto', 'qiskit']
     qubit_counts = [2, 3, 4]
 
     print("Running benchmarks...")
@@ -118,8 +114,8 @@ def demo_advanced_benchmarking():
     print("-" * 20)
 
     # Export results to JSON
-    import tempfile
     import os
+    import tempfile
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
         temp_path = f.name
@@ -129,7 +125,7 @@ def demo_advanced_benchmarking():
         print(f"Results exported to JSON: {temp_path}")
 
         # Read and show first part of exported results
-        with open(temp_path, 'r') as f:
+        with open(temp_path) as f:
             import json
             results = json.load(f)
             print(f"Exported {len(results)} benchmark results")

@@ -495,11 +495,17 @@ def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: R
     elif backend == BackendType.CUDA and not is_cuda_available():
         warnings_list.append("CUDA backend selected but CUDA not available")
 
+    # Generate routing explanation
+    from .route.routing_tree import explain_routing
+
+    routing_explanation = explain_routing(circuit)
+
     return SimulationResult(
         counts=counts,
         backend_used=backend,
         execution_time=elapsed,
         routing_decision=routing_decision,
+        routing_explanation=routing_explanation,
         metadata={"shots": shots},
         fallback_reason=fallback_reason,
         warnings=warnings_list if warnings_list else None,
@@ -516,6 +522,9 @@ def simulate(circuit: QuantumCircuit, shots: int = 1024, backend: str | None = N
 
     # Handle empty circuit case
     if circuit.num_qubits <= 0:
+        from .route.routing_tree import explain_routing
+
+        routing_explanation = explain_routing(circuit)
         return SimulationResult(
             counts={"": shots} if shots > 0 else {},
             backend_used=BackendType.QISKIT,  # Mock backend
@@ -528,6 +537,7 @@ def simulate(circuit: QuantumCircuit, shots: int = 1024, backend: str | None = N
                 channel_capacity_match=1.0,
                 alternatives=[],
             ),
+            routing_explanation=routing_explanation,
             metadata={"shots": shots},
         )
 

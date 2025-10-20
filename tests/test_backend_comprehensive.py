@@ -21,7 +21,7 @@ class TestBackendAvailability:
 
         # The health checker may not have run checks yet, so just verify it exists
         # and can return metrics (even if empty initially)
-        all_metrics = health_checker.get_all_backend_metrics()
+        health_checker.get_all_backend_metrics()
 
         # The health checker should be initialized (even if not all backends are registered yet)
         assert health_checker is not None
@@ -31,7 +31,7 @@ class TestBackendAvailability:
         health_checker = get_health_checker()
 
         # Check that we can get a list of healthy backends
-        available = health_checker.get_healthy_backends()
+        health_checker.get_healthy_backends()
         # This could be empty list if no checks have been performed yet
 
         # Check that we can get all metrics (even if empty)

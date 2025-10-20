@@ -5,14 +5,7 @@ This notebook demonstrates how to use Ariadne's educational tools to learn quant
 """
 
 # Import required modules
-from ariadne.education import (
-    InteractiveCircuitBuilder,
-    AlgorithmExplorer,
-    QuantumConceptExplorer,
-    EducationDashboard,
-    explore_quantum_concept,
-    run_algorithm_exploration
-)
+from ariadne.education import AlgorithmExplorer, EducationDashboard, InteractiveCircuitBuilder, explore_quantum_concept
 from ariadne.enhanced_benchmarking import EnhancedBenchmarkSuite
 
 print("=" * 60)
@@ -54,7 +47,7 @@ print(f"Available algorithms: {available_algorithms[:10]}...")  # Show first 10
 
 # Explore a specific algorithm
 if 'bell' in available_algorithms:
-    print(f"\nLearning about the Bell algorithm:")
+    print("\nLearning about the Bell algorithm:")
     info = explorer.get_algorithm_info('bell')
     print(f"Description: {info['metadata'].description}")
     print(f"Complexity: {info['metadata'].complexity}")
@@ -103,7 +96,7 @@ print("\n7. INTERACTIVE CIRCUIT WALKTHROUGH")
 print("-" * 37)
 
 # Step-by-step walkthrough
-for i, step in enumerate(builder.history):
+for _i, step in enumerate(builder.history):
     print(f"\nStep {step.step_number}: {step.title}")
     print(f"Description: {step.description}")
     print("Circuit at this step:")

@@ -9,7 +9,6 @@ in JSON format for citable, reproducible cross-simulator benchmarks.
 import json
 import time
 from datetime import datetime
-from pathlib import Path
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -42,7 +41,7 @@ def create_benchmark_circuits():
     for i in range(8):
         qaoa.h(i)
     # QAOA layers
-    for layer in range(2):
+    for _layer in range(2):
         # Problem Hamiltonian
         for i in range(7):
             qaoa.cx(i, i + 1)
@@ -115,7 +114,7 @@ def run_cross_platform_benchmark(algorithms=None, backends=None, shots=1000):
     if backends is None:
         backends = ['auto', 'stim', 'qiskit', 'mps', 'tensor_network']
 
-    print(f"Running cross-platform benchmark...")
+    print("Running cross-platform benchmark...")
     print(f"Algorithms: {algorithms}")
     print(f"Backends: {backends}")
     print(f"Shots per simulation: {shots}")
@@ -190,9 +189,9 @@ def run_cross_platform_benchmark(algorithms=None, backends=None, shots=1000):
                 # Use specific backend
                 backend_result = benchmark_circuit(circuit, backend, shots)
                 if backend_result['success']:
-                    print(f"OK")
+                    print("OK")
                 else:
-                    print(f"FAILED")
+                    print("FAILED")
 
             results['results'][alg_name]['backends'][backend] = backend_result
 

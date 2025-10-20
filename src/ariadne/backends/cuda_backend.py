@@ -488,8 +488,6 @@ class CUDABackend:
         self, targets: Sequence[int], chunk_offset: int, chunk_qubits: int, total_qubits: int
     ) -> bool:
         """Check if an operation affects a specific chunk."""
-        chunk_offset + (2**chunk_qubits) - 1
-
         # For simplicity, assume operation affects chunk if any target qubit
         # corresponds to bits that vary within the chunk range
         for qubit in targets:

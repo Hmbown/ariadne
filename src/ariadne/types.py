@@ -59,5 +59,6 @@ class SimulationResult:
     execution_time: float
     routing_decision: RoutingDecision
     metadata: dict[str, Any]
+    routing_explanation: str | None = None  # Explanation of routing decision
     fallback_reason: str | None = None  # Reason for backend fallback
     warnings: list[str] | None = None  # Any warnings during execution

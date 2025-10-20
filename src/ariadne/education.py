@@ -7,14 +7,15 @@ simulations.
 """
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 from IPython.display import HTML, display
 from qiskit import QuantumCircuit
 
-from ariadne import simulate
-from ariadne.algorithms import AlgorithmParameters, get_algorithm, list_algorithms
-from ariadne.core import get_logger
+from .algorithms import AlgorithmParameters, get_algorithm, list_algorithms
+from .core import get_logger
+from .router import simulate
 
 # Set up logging
 logger = get_logger(__name__)
@@ -63,7 +64,7 @@ class InteractiveCircuitBuilder:
         qubit_idx: int,
         step_title: str = "Hadamard Gate",
         description: str = "Apply a Hadamard gate to create superposition",
-    ):
+    ) -> "InteractiveCircuitBuilder":
         """
         Add a Hadamard gate to the circuit.
 
@@ -104,7 +105,7 @@ class InteractiveCircuitBuilder:
         target_idx: int,
         step_title: str = "CNOT Gate",
         description: str = "Apply a CNOT gate to create entanglement",
-    ):
+    ) -> "InteractiveCircuitBuilder":
         """
         Add a CNOT gate to the circuit.
 
@@ -153,7 +154,7 @@ class InteractiveCircuitBuilder:
         angle: float,
         step_title: str = "Rotation Gate",
         description: str = "Apply a rotation gate",
-    ):
+    ) -> "InteractiveCircuitBuilder":
         """
         Add a rotation gate to the circuit.
 
@@ -208,7 +209,7 @@ class InteractiveCircuitBuilder:
         classical_idx: int,
         step_title: str = "Measurement",
         description: str = "Measure the qubit",
-    ):
+    ) -> "InteractiveCircuitBuilder":
         """
         Add a measurement operation.
 
@@ -348,14 +349,14 @@ class AlgorithmExplorer:
     Provides an interface to explore different quantum algorithms with explanations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the algorithm explorer."""
         self.available_algorithms = list_algorithms()
 
     def list_algorithms(self) -> list[str]:
         """Get list of available algorithms."""
         try:
-            from ariadne.algorithms import list_algorithms as get_available_algorithms
+            from .algorithms import list_algorithms as get_available_algorithms
 
             self.available_algorithms = get_available_algorithms()
             logger.info(f"Retrieved {len(self.available_algorithms)} available algorithms")
@@ -365,7 +366,7 @@ class AlgorithmExplorer:
 
         return self.available_algorithms
 
-    def get_algorithm_info(self, algorithm_name: str) -> dict:
+    def get_algorithm_info(self, algorithm_name: str) -> dict[str, Any]:
         """
         Get detailed information about an algorithm.
 
@@ -406,7 +407,7 @@ class AlgorithmExplorer:
             logger.error(f"Failed to get information for algorithm {algorithm_name}: {e}")
             raise
 
-    def compare_algorithms(self, algorithm_names: list[str]) -> dict:
+    def compare_algorithms(self, algorithm_names: list[str]) -> dict[str, Any]:
         """
         Compare multiple algorithms.
 
@@ -523,7 +524,7 @@ class QuantumConceptExplorer:
     Interactive explorer for fundamental quantum computing concepts.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the concept explorer."""
         self.concepts = {
             "superposition": self._explore_superposition,
@@ -598,12 +599,12 @@ class EducationDashboard:
     Comprehensive dashboard for quantum education with various tools.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the education dashboard."""
         self.algorithm_explorer = AlgorithmExplorer()
         self.concept_explorer = QuantumConceptExplorer()
 
-    def show_algorithm_list(self):
+    def show_algorithm_list(self) -> None:
         """Display all available algorithms in a formatted way."""
         algorithms = self.algorithm_explorer.list_algorithms()
 
@@ -614,7 +615,7 @@ class EducationDashboard:
 
         display(HTML(html))
 
-    def compare_algorithms_interactive(self, algorithm_names: list[str]):
+    def compare_algorithms_interactive(self, algorithm_names: list[str]) -> None:
         """Create an interactive comparison of algorithms."""
         comparison = self.algorithm_explorer.compare_algorithms(algorithm_names)
 
@@ -630,7 +631,7 @@ class EducationDashboard:
         html += "</table>\n"
         display(HTML(html))
 
-    def run_learning_path(self, algorithm_name: str, n_qubits: int = 3):
+    def run_learning_path(self, algorithm_name: str, n_qubits: int = 3) -> None:
         """Run a step-by-step learning path for an algorithm."""
         steps = self.algorithm_explorer.create_learning_path(algorithm_name, n_qubits)
 
@@ -677,7 +678,7 @@ def explore_quantum_concept(concept_name: str) -> InteractiveCircuitBuilder:
     return explorer.explore_concept(concept_name)
 
 
-def run_algorithm_exploration(algorithm_name: str, n_qubits: int = 3):
+def run_algorithm_exploration(algorithm_name: str, n_qubits: int = 3) -> None:
     """
     Run an interactive exploration of a quantum algorithm.
 
@@ -689,7 +690,7 @@ def run_algorithm_exploration(algorithm_name: str, n_qubits: int = 3):
     dashboard.run_learning_path(algorithm_name, n_qubits)
 
 
-def compare_algorithms(algorithm_names: list[str]):
+def compare_algorithms(algorithm_names: list[str]) -> None:
     """
     Compare properties of multiple algorithms.
 

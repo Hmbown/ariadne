@@ -210,28 +210,143 @@ Examples:
         # Add subcommands
         subparsers = parser.add_subparsers(dest="command", help="Available commands", metavar="COMMAND")
 
-        # Simulate command
+        # Run command (unified simulation)
+        self._add_run_command(subparsers)
+
+        # Explain command (routing transparency)
+        self._add_explain_command(subparsers)
+
+        # Benchmark command (performance analysis)
+        self._add_benchmark_new_command(subparsers)
+
+        # Learn command (educational tools)
+        self._add_learn_command(subparsers)
+
+        # Backward compatibility - keep original commands with deprecation warnings
         self._add_simulate_command(subparsers)
-
-        # Config command
         self._add_config_command(subparsers)
-
-        # Status command
         self._add_status_command(subparsers)
-
-        # Benchmark command
-        self._add_benchmark_command(subparsers)
-
-        # Benchmark suite command
+        self._add_benchmark_original_command(subparsers)  # This is now the original
         self._add_benchmark_suite_command(subparsers)
-
-        # Educational command
         self._add_education_command(subparsers)
-
-        # Learning resource command
         self._add_learning_command(subparsers)
 
         return parser
+
+    def _add_run_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add the run command (unified simulation)."""
+        parser = subparsers.add_parser(
+            "run",
+            help="Run a quantum circuit simulation",
+            description="Simulate a quantum circuit with automatic backend selection",
+            epilog="Examples:\n  ariadne run circuit.qasm\n  ariadne run circuit.qasm --shots 10000\n  ariadne run circuit.qasm --backend qiskit",
+        )
+
+        parser.add_argument("circuit", help="Path to quantum circuit file (QASM or QPY format)")
+
+        parser.add_argument("--shots", type=int, default=1024, help="Number of measurement shots (default: 1024)")
+
+        parser.add_argument(
+            "--backend",
+            choices=CLI_BACKEND_CHOICES,
+            help="Backend to use for simulation (default: auto-select)",
+        )
+
+        parser.add_argument("--output", help="Output file for results (JSON format)")
+
+        parser.add_argument("--config", help="Configuration file path")
+
+        parser.add_argument("--explain", action="store_true", help="Show routing explanation")
+
+    def _add_explain_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add the explain command (routing transparency)."""
+        parser = subparsers.add_parser(
+            "explain",
+            help="Explain quantum circuit routing decision",
+            description="Get detailed explanation of why a circuit would be routed to a specific backend",
+        )
+
+        parser.add_argument("circuit", help="Path to quantum circuit file (QASM or QPY format)")
+
+        parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed technical explanation")
+
+    def _add_benchmark_new_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add the new simplified benchmark command (performance analysis)."""
+        parser = subparsers.add_parser(
+            "benchmark",
+            help="Run performance benchmarks",
+            description="Run performance benchmarks for backends",
+        )
+
+        parser.add_argument("--circuit", help="Path to quantum circuit file for benchmarking")
+
+        parser.add_argument("--shots", type=int, default=1000, help="Number of measurement shots (default: 1000)")
+
+        parser.add_argument(
+            "--backend",
+            choices=CLI_BACKEND_CHOICES,
+            help="Backend to benchmark (default: all available)",
+        )
+
+        parser.add_argument("--iterations", type=int, default=5, help="Number of benchmark iterations (default: 5)")
+
+        parser.add_argument("--output", help="Output file for benchmark results (JSON format)")
+
+    def _add_benchmark_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add the benchmark command (performance analysis)."""
+        parser = subparsers.add_parser(
+            "benchmark",
+            help="Run performance benchmarks",
+            description="Run performance benchmarks for backends",
+        )
+
+        parser.add_argument("--circuit", help="Path to quantum circuit file for benchmarking")
+
+        parser.add_argument("--shots", type=int, default=1000, help="Number of measurement shots (default: 1000)")
+
+        parser.add_argument(
+            "--backend",
+            choices=CLI_BACKEND_CHOICES,
+            help="Backend to benchmark (default: all available)",
+        )
+
+        parser.add_argument("--iterations", type=int, default=5, help="Number of benchmark iterations (default: 5)")
+
+        parser.add_argument("--output", help="Output file for benchmark results (JSON format)")
+
+    def _add_learn_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add the learn command (educational tools)."""
+        try:
+            from ..algorithms import list_algorithms
+
+            available_algorithms = list_algorithms()
+        except Exception:
+            available_algorithms = ["bell", "ghz", "qft", "grover", "qpe", "steane"]
+
+        parser = subparsers.add_parser(
+            "learn",
+            help="Interactive learning tools",
+            description="Educational tools for learning quantum algorithms and concepts",
+        )
+
+        learn_subparsers = parser.add_subparsers(dest="learn_action", help="Learning actions")
+
+        # Algorithm demo command
+        demo_parser = learn_subparsers.add_parser("demo", help="Run algorithm demos")
+        demo_parser.add_argument(
+            "algorithm",
+            choices=available_algorithms,
+            help=f"Algorithm to demonstrate: {', '.join(available_algorithms)}",
+            nargs="?",  # Make it optional so we can show help
+        )
+        demo_parser.add_argument("--qubits", type=int, default=3, help="Number of qubits for the demonstration")
+        demo_parser.add_argument("--verbose", action="store_true", help="Show detailed execution information")
+
+        # Learning quizzes
+        quiz_parser = learn_subparsers.add_parser("quiz", help="Take quantum computing quizzes")
+        quiz_parser.add_argument(
+            "topic", choices=["gates", "algorithms", "applications", "hardware"], help="Topic for the quiz", nargs="?"
+        )
 
     def _add_simulate_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the simulate command."""
@@ -306,8 +421,8 @@ Examples:
 
         parser.add_argument("--detailed", action="store_true", help="Show detailed status information")
 
-    def _add_benchmark_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
-        """Add the benchmark command."""
+    def _add_benchmark_original_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add the original benchmark command."""
         parser = subparsers.add_parser(
             "benchmark",
             help="Run performance benchmarks",
@@ -837,12 +952,16 @@ Examples:
         """Execute the education demo command."""
         try:
             # Import the algorithm module to get circuit
-            from ..algorithms import get_algorithm_circuit
+            from ..algorithms import get_algorithm
+            from ..algorithms.base import AlgorithmParameters
 
             print(f"Running {args.algorithm} demo with {args.qubits} qubits...")
 
-            # Create the algorithm circuit
-            circuit = get_algorithm_circuit(args.algorithm, args.qubits)
+            # Create the algorithm circuit using proper instantiation
+            algorithm_class = get_algorithm(args.algorithm)
+            params = AlgorithmParameters(n_qubits=args.qubits)
+            algorithm_instance = algorithm_class(params)
+            circuit = algorithm_instance.create_circuit()
 
             if circuit is None:
                 print(f"Algorithm {args.algorithm} not found or not implemented")
@@ -920,7 +1039,6 @@ Examples:
             return 1
 
         quiz = quizzes[args.topic]
-        score = 0
 
         print(f"\nQuiz on {args.topic.upper()} - {len(quiz)} questions\n")
 

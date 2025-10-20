@@ -38,7 +38,7 @@ class BenchmarkResult:
     unique_outcomes: int = 0
     timestamp: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.timestamp:
             self.timestamp = datetime.now().isoformat()
         if self.success and self.execution_time > 0:
@@ -60,7 +60,7 @@ class ScalabilityResult:
 class EnhancedBenchmarkSuite:
     """Enhanced benchmark suite for Ariadne quantum simulators."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the enhanced benchmark suite."""
         self.results: list[BenchmarkResult] = []
 
@@ -70,7 +70,7 @@ class EnhancedBenchmarkSuite:
         """Benchmark a single algorithm with specified parameters."""
         results = []
 
-        for i in range(iterations):
+        for _i in range(iterations):
             try:
                 # Get the algorithm class and create circuit
                 algorithm_class = get_algorithm(algorithm_name)
@@ -306,7 +306,7 @@ class EnhancedBenchmarkSuite:
 
         return "\n".join(report)
 
-    def plot_backend_comparison(self, save_path: str | None = None):
+    def plot_backend_comparison(self, save_path: str | None = None) -> None:
         """Create a visualization comparing backend performance."""
         if not self.results:
             print("No benchmark results to visualize.")
@@ -344,7 +344,10 @@ class EnhancedBenchmarkSuite:
         # Success rate by backend
         plt.subplot(2, 2, 3)
         success_rate = df.groupby("backend")["success"].mean()
-        plt.bar(success_rate.index, success_rate.values)
+        # Convert to lists for type compatibility with matplotlib
+        backend_names = list(success_rate.index)
+        success_values = list(success_rate.values)
+        plt.bar(backend_names, success_values)
         plt.title("Success Rate by Backend")
         plt.xticks(rotation=45)
         plt.ylabel("Success Rate")
@@ -362,7 +365,7 @@ class EnhancedBenchmarkSuite:
             plt.savefig(save_path)
         plt.show()
 
-    def export_results(self, filepath: str, format: str = "json"):
+    def export_results(self, filepath: str, format: str = "json") -> None:
         """Export benchmark results to file."""
         if format.lower() == "json":
             # Convert results to serializable format
@@ -385,9 +388,9 @@ class EnhancedBenchmarkSuite:
 class CrossValidationSuite:
     """Suite for cross-validation of quantum simulation results."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize cross-validation suite."""
-        self.validation_results = []
+        self.validation_results: list[Any] = []
 
     def validate_backend_consistency(
         self, circuit: QuantumCircuit, backends: list[str], shots: int = 1000, tolerance: float = 0.05
@@ -431,17 +434,23 @@ class CrossValidationSuite:
         reference_counts = results[reference_backend]["counts"]
 
         all_consistent = True
-        differences = {}
+        differences: dict[str, float] = {}
 
         for backend in successful_backends[1:]:
             comparison_counts = results[backend]["counts"]
+
+            # Type guard: ensure counts are dictionaries
+            if not isinstance(reference_counts, dict) or not isinstance(comparison_counts, dict):
+                differences[backend] = 1.0  # Maximum difference if not dicts
+                all_consistent = False
+                continue
 
             # Calculate distribution similarity
             all_keys = set(reference_counts.keys()) | set(comparison_counts.keys())
             total_ref = sum(reference_counts.values())
             total_comp = sum(comparison_counts.values())
 
-            max_diff = 0
+            max_diff = 0.0
             for key in all_keys:
                 ref_prob = reference_counts.get(key, 0) / total_ref
                 comp_prob = comparison_counts.get(key, 0) / total_comp
@@ -501,13 +510,12 @@ def run_comprehensive_benchmark(
 
 
 # Convenience functions
-def quick_performance_test():
+def quick_performance_test() -> EnhancedBenchmarkSuite:
     """Run a quick performance test with common algorithms and backends."""
     suite = EnhancedBenchmarkSuite()
 
     # Common algorithms to test
     algorithms = ["bell", "ghz", "qft"]
-    backends = ["auto", "qiskit"]  # Using only backends that are likely available
     qubit_counts = [2, 3, 4]
 
     print("Running quick performance test...")
@@ -523,7 +531,7 @@ def quick_performance_test():
     return suite
 
 
-def compare_backends(algorithm: str, qubits: int, backends: list[str]):
+def compare_backends(algorithm: str, qubits: int, backends: list[str]) -> dict[str, BenchmarkResult]:
     """Compare performance of different backends on a specific algorithm."""
     suite = EnhancedBenchmarkSuite()
 
