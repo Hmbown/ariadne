@@ -48,6 +48,7 @@ docs/RELEASE_VALIDATION_SUMMARY.md
 # Environment
 .env
 venv/
+.venv/
 env/
 ENV/
 

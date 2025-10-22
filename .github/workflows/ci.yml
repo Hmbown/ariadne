@@ -56,6 +56,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
+      env:
+        PLATFORM: ${{ runner.os }}
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.11", "3.12"]
@@ -73,57 +75,112 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Install dependencies
+        shell: pwsh
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev,viz]"
+          if ($env:PLATFORM -eq "windows") {
+            pip install -e ".[dev,viz]"
+          } else {
+            pip install -e ".[dev,viz]"
+          }
+          # Windows CUDA check
+          if ($env:PLATFORM -eq "windows" -and (Test-Path "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA")) {
+            pip install -e ".[cuda]"
+          }
       - name: Install Apple Silicon dependencies
-        if: runner.os == 'macOS' && matrix.python-version == '3.11'
-        run: pip install -e ".[apple]"
+        if: runner.os == 'macOS'
+        run: |
+          pip install -e ".[apple]"
+          # Verify Metal
+          python -c "import jax; print(jax.devices())"
       - name: Run tests
-        run: pytest tests/ -v --tb=short -n auto
+        shell: pwsh
+        run: |
+          if ($env:PLATFORM -eq "windows") {
+            # Fix path separators
+            $env:PYTHONPATH = ($env:PYTHONPATH -replace '\\', '/')
+            pytest tests/ -v --tb=short -n auto --cov=src/ariadne --cov-report=xml --cov-fail-under=60
+          } else {
+            pytest tests/ -v --tb=short -n auto --cov=src/ariadne --cov-report=xml --cov-fail-under=60
+          }
       - name: Upload coverage to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
         uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
+          flags: ${{ runner.os }}-${{ matrix.python-version }}
+          name: codecov-${{ runner.os }}-${{ matrix.python-version }}
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ runner.os }}-${{ matrix.python-version }}
+          path: |
+            .coverage
+            tests/results/
+            pytest.xml
+      - name: Cross-Platform Perf Check
+        run: |
+          python benchmarks/quick_check.py --platform ${{ runner.os }}
+        if: matrix.python-version == '3.11' && runner.os == 'ubuntu-latest'
       - name: Run pre-commit hooks
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
         run: pre-commit run --all-files
 
   test-notebooks:
-    name: Test Jupyter Notebooks
+    name: Validate Examples & Notebooks
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install -e ".[dev,viz]"
-          pip install nbconvert ipykernel jupyter
-      - name: Test notebooks
+          pip install nbconvert ipykernel jupyter pytest
+      - name: Validate Python Examples
+        run: |
+          set -e
+          for script in examples/*.py; do
+            echo "Running $script"
+            timeout 60 python "$script" || { echo "Failed: $script"; exit 1; }
+          done
+      - name: Execute Notebooks
         run: |
           set -e
           for notebook in examples/*.ipynb; do
-            echo "Testing $notebook"
-            jupyter nbconvert --to notebook --execute "$notebook" --ExecutePreprocessor.timeout=600
+            echo "Executing $notebook"
+            jupyter nbconvert --to notebook --execute "$notebook" --ExecutePreprocessor.timeout=300 --allow-errors=false
           done
+      - name: Upload Example Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: example-outputs
+          path: |
+            examples/*.ipynb  # Executed versions
+            examples/*.png    # Generated plots
+
+  windows-cuda:
+    name: Windows CUDA Tests
+    runs-on: windows-latest
+    if: contains(runner.labels, 'gpu')  # Use GPU runner if available
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Install CUDA deps
+        run: |
+          choco install cuda  # Chocolatey for CUDA
+          pip install -e ".[cuda,dev]"
+      - name: Run CUDA tests
+        run: pytest tests/test_cuda_backend.py -v
 
   performance-benchmarks:
     name: Performance Benchmarks

@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Ariadne with all optional dependencies
-RUN pip install --no-cache-dir ariadne-quantum-router[viz] jupyterlab
+RUN pip install --no-cache-dir ariadne-router[viz] jupyterlab
 
 # Copy education notebooks
 COPY examples/education/*.ipynb /workspace/notebooks/

@@ -36,9 +36,9 @@ Each education notebook follows a consistent structure:
 
 ### Prerequisites
 ```bash
-pip install ariadne-quantum-router
+pip install ariadne-router
 # Optional: install hardware acceleration extras
-pip install ariadne-quantum-router[apple,cuda]
+pip install ariadne-router[apple,cuda]
 ```
 
 ### Running Notebooks

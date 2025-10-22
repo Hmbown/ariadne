@@ -3,7 +3,7 @@
 Quick installation commands for common use cases.
 
 ## Package Naming Note
-- **Install with**: `pip install ariadne-quantum-router`
+- **Install with**: `pip install ariadne-router`
 - **Import in Python**: `import ariadne`
 
 ## Quick Install

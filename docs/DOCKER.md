@@ -165,6 +165,7 @@ python scripts/compare_benchmarks.py results/current.json results/baseline.json
 | `ARIADNE_MEMORY_LIMIT_MB` | `2048` | Memory limit for large circuits |
 | `ARIADNE_ENABLE_BENCHMARKS` | `false` | Enable performance profiling |
 | `ARIADNE_CACHE_DIR` | `/tmp/ariadne_cache` | Circuit analysis cache location |
+| `ARIADNE_DISABLE_RESOURCE_CHECKS` | `false` | Skip feasibility/reservation checks (useful in CI) |
 
 ### Volume Mounts
 | Mount Point | Purpose | Example |

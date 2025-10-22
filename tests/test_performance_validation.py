@@ -269,9 +269,10 @@ class TestCrossPlatformComparison:
 class TestPerformanceStability:
     """Test performance stability and consistency."""
 
-    @pytest.mark.xfail(reason="Performance is known to be variable in CI environments")
+    @pytest.mark.timeout(30)
     def test_execution_time_consistency(self) -> None:
         """Test that execution times are consistent across runs."""
+        np.random.seed(42)
         from ariadne.backends.cpu_backend import CPUBackend
 
         backend = CPUBackend()
@@ -295,9 +296,8 @@ class TestPerformanceStability:
         std_time = statistics.stdev(execution_times)
         coefficient_of_variation = std_time / mean_time
 
-        # Execution times should be reasonably consistent (CV < 65%)
-        # Further relaxed threshold due to system variability and measurement noise
-        assert coefficient_of_variation < 0.65, f"Execution times too variable: CV={coefficient_of_variation}"
+        # Execution times should be reasonably consistent (CV < 50%)
+        assert coefficient_of_variation < 0.50, f"Execution times too variable: CV={coefficient_of_variation}"
 
     def test_memory_stability(self) -> None:
         """Test that memory usage is stable across multiple runs."""

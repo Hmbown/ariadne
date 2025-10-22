@@ -11,12 +11,24 @@ from qiskit import QuantumCircuit
 
 @dataclass
 class TensorNetworkOptions:
-    """Configuration for the tensor network contraction."""
+    """Configuration for the tensor network contraction and sampling.
+
+    Attributes:
+        max_bond_dim: Optional maximum bond dimension for contraction.
+        max_time: Optimizer time budget in seconds.
+        max_repeats: Number of optimizer repeats.
+        seed: RNG seed for reproducible sampling.
+        bitstring_order: Output bitstring order for counts. "qiskit" (default)
+            returns little-endian bitstrings matching Qiskit's convention.
+            "msb" returns most-significant-bit-first strings that match the
+            natural integer-to-binary mapping.
+    """
 
     max_bond_dim: int | None = None
     max_time: float = 10.0
     max_repeats: int = 32
     seed: int | None = None
+    bitstring_order: str = "qiskit"
 
 
 class TensorNetworkBackend:
@@ -113,7 +125,11 @@ class TensorNetworkBackend:
 
         counts: dict[str, int] = {}
         for outcome in outcomes:
-            # Match the bitstring convention used in tests (no reversal)
-            bitstring = format(int(outcome), f"0{num_qubits}b")
+            bits = format(int(outcome), f"0{num_qubits}b")
+            if (self._options.bitstring_order or "qiskit").lower() == "qiskit":
+                # Qiskit's little-endian bitstring convention requires reversing
+                bitstring = bits[::-1]
+            else:
+                bitstring = bits
             counts[bitstring] = counts.get(bitstring, 0) + 1
         return counts

@@ -7,20 +7,20 @@ This guide provides everything you need to leverage Ariadne for quantum research
 Ariadne installs with a single pip command:
 
 ```bash
-pip install ariadne-quantum-router
+pip install ariadne-router
 ```
 
 For specialized hardware acceleration:
 
 ```bash
 # Apple Silicon
-pip install ariadne-quantum-router[apple]
+pip install ariadne-router[apple]
 
 # NVIDIA GPU
-pip install ariadne-quantum-router[cuda]
+pip install ariadne-router[cuda]
 
 # All optional dependencies
-pip install ariadne-quantum-router[apple,cuda,viz]
+pip install ariadne-router[apple,cuda,viz]
 ```
 
 ## Core Research Workflow

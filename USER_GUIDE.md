@@ -1,207 +1,125 @@
-# Ariadne Quantum Simulator Documentation
+# Ariadne User Guide
+
+Welcome to the Ariadne User Guide! This guide provides a deep dive into the advanced features of Ariadne. For a quick introduction, please see the [README.md](README.md) and the [QUICK_START.md](QUICK_START.md).
 
 ## Table of Contents
-1. [Introduction](#introduction)
-2. [Installation](#installation)
-3. [Core Features](#core-features)
-4. [Educational Tools](#educational-tools)
-5. [Benchmarking Tools](#benchmarking-tools)
-6. [CLI Usage](#cli-usage)
-7. [API Reference](#api-reference)
-8. [Examples](#examples)
-9. [Troubleshooting](#troubleshooting)
+1. [Advanced Simulation Control](#advanced-simulation-control)
+2. [Educational Tools](#educational-tools)
+3. [Benchmarking Tools](#benchmarking-tools)
+4. [Command-Line Interface (CLI)](#command-line-interface-cli)
+5. [API Reference](#api-reference)
+6. [How-To Guides](#how-to-guides)
 
-## Introduction
+---
 
-Ariadne is a zero-configuration quantum simulator bundle that automatically routes your circuits to the optimal backend. Whether you're teaching quantum computing, running benchmarks across platforms, or setting up CI pipelines, Ariadne ensures reproducible results without the complexity of manual backend selection.
+## 1. Advanced Simulation Control
 
-### Key Features
-- **Intelligent Routing**: Mathematical analysis of circuit properties automatically selects the optimal backend
-- **Auto-Detection**: Pure Clifford circuits are automatically routed to Stim
-- **Hardware Acceleration**: Support for Apple Silicon, CUDA, and other specialized hardware
-- **Zero Configuration**: Single function call handles all backend complexity
-- **Universal Fallback**: Always returns a result even when specialized backends fail
-- **Transparent Decisions**: Every routing decision can be inspected and validated
+Ariadne provides fine-grained control over the simulation process.
 
-## Installation
+### Forcing a Backend
 
-### Basic Installation
-```bash
-pip install ariadne-quantum-router
-```
+You can bypass Ariadne's automatic routing and force a specific backend:
 
-### With Hardware Acceleration
-```bash
-# For Apple Silicon
-pip install ariadne-quantum-router[apple]
-
-# For CUDA
-pip install ariadne-quantum-router[cuda]
-
-# For all optional dependencies
-pip install ariadne-quantum-router[apple,cuda,viz]
-```
-
-### Developer Installation
-```bash
-git clone https://github.com/Hmbown/ariadne.git
-cd ariadne
-pip install -e .
-```
-
-## Core Features
-
-### Basic Usage
 ```python
 from ariadne import simulate
 from qiskit import QuantumCircuit
 
-# Create any circuit - let Ariadne handle the rest
-qc = QuantumCircuit(20, 20)
-qc.h(range(10))
-for i in range(9):
-    qc.cx(i, i + 1)
+qc = QuantumCircuit(2, 2)
+qc.h(0)
+qc.cx(0, 1)
 qc.measure_all()
 
-# One simple call that handles all backend complexity
-result = simulate(qc, shots=1000)
-print(f"Backend used: {result.backend_used}")
-print(f"Execution time: {result.execution_time:.4f}s")
-print(f"Unique outcomes: {len(result.counts)}")
+# Force the use of the Qiskit backend
+result = simulate(qc, shots=1000, backend='qiskit')
 ```
 
-### Manual Backend Selection
+### Custom Routing Strategies
+
+You can also choose from a variety of routing strategies to suit your needs:
+
 ```python
-# Force specific backend if needed
-result = simulate(circuit, shots=1000, backend='qiskit')
+from ariadne import ComprehensiveRoutingTree, RoutingStrategy
+
+router = ComprehensiveRoutingTree()
+decision = router.route_circuit(circuit, strategy=RoutingStrategy.MEMORY_EFFICIENT)
 ```
 
-### Routing Explanation
+Available strategies include `SPEED_FIRST`, `ACCURACY_FIRST`, `MEMORY_EFFICIENT`, and more.
+
+### Tensor Network Bitstring Ordering
+
+When using the tensor-network backend, you can control the bitstring ordering in the returned counts.
+
 ```python
-from ariadne import explain_routing, show_routing_tree
+from ariadne.backends.tensor_network_backend import TensorNetworkBackend, TensorNetworkOptions
 
-# Get detailed explanation of routing decision
-explanation = explain_routing(qc)
-print(explanation)
-
-# Visualize entire routing tree
-print(show_routing_tree())
+tn = TensorNetworkBackend(TensorNetworkOptions(bitstring_order="qiskit"))  # or "msb"
+counts = tn.simulate(qc, shots=1024)
 ```
 
-## Educational Tools
+The default is `"qiskit"` (little-endian), matching Qiskit’s Statevector sampling.
 
-Ariadne includes powerful educational tools to help learn quantum algorithms and concepts.
+### Disabling Resource Checks (CI/Constrained Hosts)
+
+If the resource manager reports overly conservative memory on your host or CI, you can disable feasibility/reservation checks:
+
+- Environment variable: set `ARIADNE_DISABLE_RESOURCE_CHECKS=1`
+- Programmatic toggle:
+  ```python
+  from ariadne.config import get_config
+  get_config().analysis.enable_resource_estimation = False
+  ```
+
+This is useful for small circuits (e.g., 7-qubit codes) where checks might erroneously block execution.
+
+---
+
+## 2. Educational Tools
+
+Ariadne includes a suite of educational tools for learning quantum computing.
 
 ### Interactive Circuit Builder
+
+Build quantum circuits step-by-step with explanations:
+
 ```python
 from ariadne.education import InteractiveCircuitBuilder
 
-# Create a 2-qubit circuit builder
 builder = InteractiveCircuitBuilder(2, "Bell State")
-builder.add_hadamard(0, "Hadamard Gate", "Creates superposition")
-builder.add_cnot(0, 1, "CNOT Gate", "Creates entanglement")
-builder.add_measurement(0, 0, "Measurement", "Measure qubit 0")
-builder.add_measurement(1, 1, "Measurement", "Measure qubit 1")
+builder.add_hadamard(0, "Create Superposition", "Apply H gate to qubit 0")
+builder.add_cnot(0, 1, "Create Entanglement", "Apply CNOT to entangle qubits")
 
-# View the circuit
 print(builder.get_circuit().draw())
-
-# Access history of steps
-for step in builder.history:
-    print(f"Step {step.step_number}: {step.title}")
-    print(f"Description: {step.description}")
 ```
 
 ### Algorithm Explorer
+
+Explore a library of over 15 quantum algorithms:
+
 ```python
 from ariadne.education import AlgorithmExplorer
 
-# Initialize explorer
 explorer = AlgorithmExplorer()
+print(explorer.list_algorithms())
 
-# List available algorithms
-algorithms = explorer.list_algorithms()
-print(f"Available algorithms: {algorithms}")
-
-# Get detailed information about an algorithm
 info = explorer.get_algorithm_info('bell')
-print(f"Description: {info['metadata'].description}")
-print(f"Educational content: {info['educational_content']}")
-print(f"Circuit properties: {info['circuit_properties']}")
-
-# Create a learning path
-learning_path = explorer.create_learning_path('bell', n_qubits=2)
-for step in learning_path:
-    print(f"Step {step.step_number}: {step.title}")
-    print(step.description)
+print(info['metadata'].description)
 ```
 
-### Quantum Concept Explorer
-```python
-from ariadne.education import explore_quantum_concept
+---
 
-# Explore fundamental quantum concepts
-superposition_builder = explore_quantum_concept('superposition')
-entanglement_builder = explore_quantum_concept('entanglement')
-interference_builder = explore_quantum_concept('interference')
+## 3. Benchmarking Tools
 
-# Print the circuits for each concept
-print("Superposition Circuit:")
-print(superposition_builder.get_circuit().draw())
+Ariadne provides powerful tools for performance analysis.
 
-print("Entanglement Circuit:")
-print(entanglement_builder.get_circuit().draw())
-```
+### Backend Comparison
 
-### Education Dashboard
-```python
-from ariadne.education import EducationDashboard
+Compare the performance of different backends for a given circuit:
 
-# Initialize dashboard
-dashboard = EducationDashboard()
-
-# Show available algorithms
-dashboard.show_algorithm_list()
-
-# Compare multiple algorithms
-dashboard.compare_algorithms_interactive(['bell', 'ghz'])
-
-# Run a learning path
-dashboard.run_learning_path('bell', n_qubits=2)
-```
-
-## Benchmarking Tools
-
-Ariadne provides comprehensive benchmarking capabilities for performance analysis.
-
-### Enhanced Benchmark Suite
 ```python
 from ariadne.enhanced_benchmarking import EnhancedBenchmarkSuite
 
-# Initialize benchmark suite
-suite = EnhancedBenchmarkSuite()
-
-# Benchmark a single algorithm
-results = suite.benchmark_single_algorithm(
-    algorithm_name='bell',
-    qubit_count=2,
-    backend_name='auto',
-    shots=1000,
-    iterations=3
-)
-
-# Analyze results
-for result in results:
-    if result.success:
-        print(f"Time: {result.execution_time:.4f}s")
-        print(f"Throughput: {result.throughput:.2f} shots/s")
-    else:
-        print(f"Failed: {result.error_message}")
-```
-
-### Backend Comparison
-```python
-# Compare performance across different backends
+site = EnhancedBenchmarkSuite()
 comparison = suite.benchmark_backend_comparison(
     algorithm_name='bell',
     qubit_count=2,
@@ -210,216 +128,56 @@ comparison = suite.benchmark_backend_comparison(
 )
 
 for backend, result in comparison.items():
-    if result.success:
-        print(f"{backend}: {result.execution_time:.4f}s, {result.throughput:.2f} shots/s")
-    else:
-        print(f"{backend}: FAILED")
+    if result.counts:
+        print(f"{backend}: {result.execution_time:.4f}s")
 ```
 
 ### Scalability Testing
+
+Test how a backend's performance scales with the number of qubits:
+
 ```python
-# Test how performance scales with qubit count
 scalability_result = suite.scalability_test(
     algorithm_name='bell',
-    qubit_range=(2, 8, 2),  # From 2 to 8 qubits in steps of 2
+    qubit_range=(2, 8, 2),
     backend_name='auto',
     shots=1000
 )
 
-print(f"Qubits: {scalability_result.qubit_counts}")
-print(f"Execution times: {scalability_result.execution_times}")
-print(f"Throughputs: {scalability_result.throughputs}")
+print(f"Qubit Counts: {scalability_result.qubit_counts}")
+print(f"Execution Times: {scalability_result.execution_times}")
 ```
 
-### Cross-Validation
-```python
-from ariadne.enhanced_benchmarking import CrossValidationSuite
-from ariadne.algorithms import get_algorithm
-from ariadne.algorithms.base import AlgorithmParameters
+---
 
-# Create a test circuit
-alg_class = get_algorithm('bell')
-circuit = alg_class(AlgorithmParameters(n_qubits=2)).create_circuit()
+## 4. Command-Line Interface (CLI)
 
-# Validate consistency across backends
-validator = CrossValidationSuite()
-validation_result = validator.validate_backend_consistency(
-    circuit=circuit,
-    backends=['auto', 'qiskit'],
-    shots=1000,
-    tolerance=0.05
-)
+Ariadne's CLI provides access to all of its features from the command line.
 
-print(f"Consistent: {validation_result['consistent']}")
-print(f"Message: {validation_result['message']}")
-```
+- `ariadne simulate <file>`: Simulate a quantum circuit from a QASM file.
+- `ariadne explain <file>`: Get a routing explanation for a circuit.
+- `ariadne benchmark <file>`: Run a performance benchmark for a circuit.
+- `ariadne status`: Check the status of available backends.
+- `ariadne education`: Access educational tools and demos.
 
-### Performance Reports
-```python
-# Generate comprehensive performance report
-report = suite.generate_performance_report()
-print(report)
+For a full list of commands and options, use `ariadne --help`.
 
-# Export results to file
-suite.export_results('benchmark_results.json', format='json')
-suite.export_results('benchmark_results.csv', format='csv')
-```
+---
 
-### Comprehensive Benchmarking
-```python
-from ariadne.enhanced_benchmarking import run_comprehensive_benchmark
+## 5. API Reference
 
-# Run comprehensive benchmark across algorithms, backends, and qubit counts
-suite = run_comprehensive_benchmark(
-    algorithms=['bell', 'ghz'],
-    backends=['auto', 'qiskit'],
-    qubit_counts=[2, 3, 4],
-    shots=100
-)
-```
+For detailed information on Ariadne's classes and functions, please refer to the source code and docstrings.
 
-## CLI Usage
+---
 
-Ariadne provides a comprehensive command-line interface for all functionality.
+## 6. How-To Guides
 
-### Basic Simulation
-```bash
-# Basic simulation
-ariadne simulate path/to/circuit.qasm --shots 1000
+This section provides guides for common advanced tasks.
 
-# Force specific backend
-ariadne simulate path/to/circuit.qasm --shots 1000 --backend qiskit
+### How to Add a Custom Backend
 
-# Save results
-ariadne simulate path/to/circuit.qasm --shots 1000 --output results.json
-```
+To add a new backend, you need to create a new class that inherits from `ariadne.backends.base.QuantumBackend` and implement the `simulate` method. Then, register your backend with the `BackendRegistry`.
 
-### System Status
-```bash
-# Check status of all backends
-ariadne status
+### How to Create a Custom Routing Strategy
 
-# Check status of specific backend
-ariadne status --backend stim
-
-# Detailed status information
-ariadne status --detailed
-```
-
-### Configuration Management
-```bash
-# Create configuration templates
-ariadne config create --template production --format yaml --output config.yaml
-
-# Validate configuration
-ariadne config validate config.yaml
-
-# Show current configuration
-ariadne config show
-```
-
-### Benchmarking
-```bash
-# Run performance benchmarks
-ariadne benchmark --circuit path/to/circuit.qasm --shots 1000 --iterations 5
-
-# Run comprehensive benchmark suite
-ariadne benchmark-suite --algorithms bell,ghz,qft --backends auto,stim,qiskit --shots 1000
-
-# Benchmark with output file
-ariadne benchmark-suite --algorithms bell --output benchmark_results.json
-```
-
-### Educational Commands
-```bash
-# Show available educational commands
-ariadne education --help
-
-# Run algorithm demonstration
-ariadne education demo bell --qubits 2 --verbose
-
-# Take a quiz
-ariadne education quiz gates
-
-# Visualize a circuit
-ariadne education visualize path/to/circuit.qasm --format text
-
-# Show learning resources
-ariadne learning list --category tutorials
-
-# Get information about a specific resource
-ariadne learning info bell_state
-```
-
-## API Reference
-
-### Main Functions
-- `simulate(circuit, shots=1000, backend=None)`: Main simulation function with automatic routing
-- `explain_routing(circuit)`: Detailed explanation of routing decision
-- `show_routing_tree()`: Visualize the routing decision tree
-- `get_config_manager()`: Get the global configuration manager
-
-### Educational Functions
-- `InteractiveCircuitBuilder(n_qubits, title)`: Interactive circuit builder
-- `AlgorithmExplorer()`: Explore quantum algorithms
-- `explore_quantum_concept(concept_name)`: Explore quantum concepts
-- `EducationDashboard()`: Comprehensive education dashboard
-
-### Benchmarking Functions
-- `EnhancedBenchmarkSuite()`: Enhanced benchmark suite
-- `CrossValidationSuite()`: Cross-validation of results
-- `run_comprehensive_benchmark()`: Run comprehensive benchmarks
-
-## Examples
-
-### Complete Example: Learning Quantum Algorithms
-```python
-from ariadne.education import (
-    InteractiveCircuitBuilder,
-    AlgorithmExplorer,
-    QuantumConceptExplorer
-)
-from ariadne.enhanced_benchmarking import EnhancedBenchmarkSuite
-
-# Learn about quantum concepts
-concept_builder = QuantumConceptExplorer().explore_concept('entanglement')
-print("Entanglement Circuit:")
-print(concept_builder.get_circuit().draw())
-
-# Explore algorithms
-explorer = AlgorithmExplorer()
-info = explorer.get_algorithm_info('bell')
-print(f"Bell State: {info['metadata'].description}")
-
-# Create custom circuit
-builder = InteractiveCircuitBuilder(2, "Custom Circuit")
-builder.add_hadamard(0)
-builder.add_cnot(0, 1)
-
-# Benchmark performance
-suite = EnhancedBenchmarkSuite()
-results = suite.benchmark_single_algorithm('bell', 2, 'auto', 100)
-if results and results[0].success:
-    print(f"Simulation time: {results[0].execution_time:.4f}s")
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Backend Not Available**: Some backends require additional dependencies. Check that you've installed the appropriate extras.
-
-2. **Performance Issues**: For large circuits, consider using specialized backends:
-   - Clifford circuits: Use `stim` backend
-   - Low-entanglement circuits: Use `mps` backend
-   - High-entanglement circuits: Use tensor network backends
-
-3. **Memory Issues**: Large statevector simulations can require significant memory. Consider using MPS or tensor network backends for large circuits with limited entanglement.
-
-4. **Routing Issues**: If automatic routing doesn't select the expected backend, check `explain_routing(circuit)` to understand the decision.
-
-### Getting Help
-- Check the examples directory for working code
-- Use `ariadne --help` for CLI commands
-- Report issues on the GitHub repository
-- Use the discussion forum for questions
+To create a custom routing strategy, you can create a new function that takes a `QuantumCircuit` as input and returns a `RoutingDecision` object.

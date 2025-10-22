@@ -1,0 +1,11 @@
+qiskit
+qiskit-aer
+stim
+quimb
+cotengra
+opt_einsum
+numpy
+scipy
+networkx
+matplotlib
+PyYAML

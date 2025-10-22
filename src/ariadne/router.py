@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import warnings
 from time import perf_counter
 from typing import Any
@@ -11,6 +12,7 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
 from .backends.tensor_network_backend import TensorNetworkBackend
+from .config import get_config
 from .core import (
     BackendUnavailableError,
     CircuitTooLargeError,
@@ -399,10 +401,16 @@ def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: R
     backend = routing_decision.recommended_backend
     backend_name = backend.value
 
+    # Resource checks can be disabled via config or env var for small/local runs
+    cfg = get_config()
+    disable_checks_env = os.getenv("ARIADNE_DISABLE_RESOURCE_CHECKS", "").lower() in {"1", "true", "yes"}
+    do_resource_checks = bool(getattr(cfg.analysis, "enable_resource_estimation", True)) and not disable_checks_env
+
     # Check resource availability
-    can_handle, reason = check_circuit_feasibility(circuit, backend_name)
-    if not can_handle:
-        raise ResourceExhaustionError("memory", 0, resource_manager.get_resources().available_memory_mb)
+    if do_resource_checks:
+        can_handle, reason = check_circuit_feasibility(circuit, backend_name)
+        if not can_handle:
+            raise ResourceExhaustionError("memory", 0, resource_manager.get_resources().available_memory_mb)
 
     # Initialize result tracking
     fallback_reason = None
@@ -413,12 +421,13 @@ def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: R
     logger.set_circuit_context(circuit)
     logger.log_routing_decision(circuit, backend_name, routing_decision.confidence_score, "Selected by router")
 
-    # Reserve resources
-    try:
-        reserved_resources = resource_manager.reserve_resources(circuit, backend_name)
-    except ResourceExhaustionError as exc:
-        logger.error(f"Failed to reserve resources: {exc}")
-        raise exc
+    # Reserve resources (optional)
+    if do_resource_checks:
+        try:
+            reserved_resources = resource_manager.reserve_resources(circuit, backend_name)
+        except ResourceExhaustionError as exc:
+            logger.error(f"Failed to reserve resources: {exc}")
+            raise exc
 
     start = perf_counter()
 
@@ -483,7 +492,7 @@ def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: R
     elapsed = perf_counter() - start
 
     # Release resources
-    if reserved_resources:
+    if reserved_resources and do_resource_checks:
         resource_manager.release_resources(reserved_resources)
 
     # Log completion

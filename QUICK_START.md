@@ -1,148 +1,82 @@
-# Ariadne Quick Start Guide
+# Ariadne Quick Start
 
-Get up and running with Ariadne in minutes!
+This guide will get you up and running with Ariadne in just a few minutes.
 
-## Installation
+## 1. Installation
 
-Install Ariadne using pip:
+Install Ariadne from PyPI:
 
 ```bash
-pip install ariadne-quantum-router
+pip install ariadne-router
 ```
 
-For hardware acceleration on Apple Silicon:
+For hardware acceleration, install the appropriate extras:
+
 ```bash
-pip install ariadne-quantum-router[apple]
+# For Apple Silicon (M1/M2/M3/M4)
+pip install ariadne-router[apple]
+
+# For NVIDIA GPUs (CUDA)
+pip install ariadne-router[cuda]
 ```
 
-## Your First Simulation
+## 2. Your First Simulation
 
-Start with a simple Bell state simulation:
+Create a file named `intro.py` and add the following code:
 
 ```python
-from ariadne import simulate
+from ariadne import simulate, explain_routing
 from qiskit import QuantumCircuit
 
-# Create a Bell state circuit
-qc = QuantumCircuit(2, 2)
-qc.h(0)           # Hadamard gate on qubit 0
-qc.cx(0, 1)       # CNOT gate from qubit 0 to 1
-qc.measure_all()  # Measure all qubits
+# Create a 40-qubit GHZ circuit
+qc = QuantumCircuit(40, 40)
+qc.h(0)
+for i in range(39):
+    qc.cx(i, i + 1)
+qc.measure_all()
 
-# Simulate the circuit - Ariadne chooses the optimal backend
+# Simulate the circuit
 result = simulate(qc, shots=1000)
 
-print(f"Backend used: {result.backend_used}")
-print(f"Execution time: {result.execution_time:.4f}s")
-print(f"Measurement results: {dict(list(result.counts.items())[:5])}")
+# See the results
+print(f"Backend Used: {result.backend_used}")
+print(f"Execution Time: {result.execution_time:.4f}s")
+print(f"Routing Explanation: {explain_routing(qc)}")
 ```
 
-## Understanding the Routing
-
-See why Ariadne chose a specific backend:
-
-```python
-from ariadne import explain_routing
-
-explanation = explain_routing(qc)
-print(explanation)
-```
-
-## Educational Exploration
-
-Try out the educational tools:
-
-```python
-from ariadne.education import InteractiveCircuitBuilder
-
-# Build a circuit step-by-step with explanations
-builder = InteractiveCircuitBuilder(2, "Bell State")
-builder.add_hadamard(0, "Create Superposition",
-                    "Apply H gate to qubit 0 to create |+⟩ state")
-builder.add_cnot(0, 1, "Create Entanglement",
-                "Apply CNOT to entangle qubits 0 and 1")
-
-print("Your circuit:")
-print(builder.get_circuit().draw())
-
-# Simulate your circuit
-from ariadne import simulate
-result = simulate(builder.get_circuit(), shots=1000)
-print(f"Simulation completed in {result.execution_time:.4f}s")
-```
-
-## Algorithm Exploration
-
-Explore quantum algorithms:
-
-```python
-from ariadne.education import AlgorithmExplorer
-
-explorer = AlgorithmExplorer()
-print("Available algorithms:", explorer.list_algorithms()[:5])  # First 5
-
-# Learn about a specific algorithm
-info = explorer.get_algorithm_info('bell')
-print(f"Bell algorithm: {info['metadata'].description}")
-```
-
-## Performance Comparison
-
-Compare different backends:
-
-```python
-from ariadne.enhanced_benchmarking import EnhancedBenchmarkSuite
-
-suite = EnhancedBenchmarkSuite()
-
-# Compare performance across backends
-comparison = suite.benchmark_backend_comparison(
-    algorithm_name='bell',
-    qubit_count=2,
-    backends=['auto', 'qiskit'],
-    shots=1000
-)
-
-for backend, result in comparison.items():
-    if result.success:
-        print(f"{backend}: {result.execution_time:.4f}s, {result.throughput:.2f} shots/s")
-```
-
-## CLI Quick Start
-
-Ariadne also provides a powerful command-line interface:
+Run the script from your terminal:
 
 ```bash
-# Simulate a circuit
+python intro.py
+```
+
+You'll see that Ariadne automatically routes the simulation to the `stim` backend, which is highly optimized for this type of circuit.
+
+## 3. Understanding the Routing
+
+Ariadne's magic is in its intelligent routing. The `explain_routing` function tells you exactly why a particular backend was chosen. For the example above, the explanation will indicate that a Clifford circuit was detected, making `stim` the ideal choice.
+
+## 4. Using the CLI
+
+Ariadne also comes with a powerful command-line interface.
+
+First, save your quantum circuit to a QASM file named `my_circuit.qasm`.
+
+Then, you can use the `ariadne` command to simulate it:
+
+```bash
 ariadne simulate my_circuit.qasm --shots 1000
+```
 
-# Check system status
-ariadne status
+You can also use the CLI to get a routing explanation:
 
-# Run educational demos
-ariadne education demo bell --qubits 2
-
-# Run benchmarks
-ariadne benchmark-suite --algorithms bell,ghz --shots 100
-
-# Get help
-ariadne --help
-ariadne education --help
+```bash
+ariadne explain my_circuit.qasm
 ```
 
 ## Next Steps
 
-1. **Explore algorithms**: Check out `ariadne.education.AlgorithmExplorer` for 15+ quantum algorithms
-2. **Try different circuits**: Experiment with GHZ states, QFT, Grover's algorithm
-3. **Benchmark performance**: Use `ariadne.enhanced_benchmarking` to compare backends
-4. **Create custom circuits**: Use `InteractiveCircuitBuilder` to build step-by-step
-5. **Visualize results**: Generate performance reports with `generate_performance_report()`
+Now that you've had a taste of Ariadne, here are a few things you can try:
 
-## Troubleshooting
-
-- **For large Clifford circuits**: Ariadne automatically uses Stim for optimal performance
-- **For hardware acceleration**: Make sure you have the right extras installed (`[apple]` or `[cuda]`)
-- **For algorithm details**: Use `explain_routing()` to understand backend selection
-- **For performance issues**: Try using specialized backends instead of auto-routing
-
-Ready for more? Check out the comprehensive user guide in `USER_GUIDE.md`!
+-   **Experiment with different circuits:** Try creating a circuit with non-Clifford gates and see how the routing changes.
+-   **Explore the `USER_GUIDE.md`:** For a more in-depth look at Ariadne's features, including advanced routing strategies and performance benchmarking.

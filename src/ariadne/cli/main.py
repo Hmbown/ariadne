@@ -661,12 +661,12 @@ Examples:
             if "cuda" in error_message and ("not available" in error_message or "not found" in error_message):
                 print("\n❌ CUDA backend not available")
                 print("💡 To enable CUDA support:")
-                print("   pip install ariadne-quantum-router[cuda]")
+                print("   pip install ariadne-router[cuda]")
                 print("   (Requires NVIDIA GPU with CUDA drivers)")
             elif "metal" in error_message and ("not available" in error_message or "not found" in error_message):
                 print("\n❌ JAX-Metal backend not available")
                 print("💡 To enable JAX-Metal support:")
-                print("   pip install ariadne-quantum-router[apple]")
+                print("   pip install ariadne-router[apple]")
                 print("   (Requires Apple Silicon Mac: M1/M2/M3/M4)")
             elif "mps" in error_message or "tensor" in error_message:
                 print("\n❌ Tensor network backend not available")
