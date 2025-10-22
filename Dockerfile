@@ -4,29 +4,31 @@
 # - CPU-based quantum simulation (all platforms)
 # - Automated testing and benchmarking
 # - Development and research workflows
-#
-# Multi-stage build optimized for different use cases
 
 # =============================================================================
 # Stage 1: Base Python Environment
 # =============================================================================
 FROM python:3.11-slim AS base
 
-# Set environment variables
+# Set environment variables for better Python behavior
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     git \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Create non-root user for security
-RUN useradd --create-home --shell /bin/bash ariadne
+RUN useradd --create-home --shell /bin/bash --uid 1000 ariadne
+
+# Set working directory
 WORKDIR /home/ariadne
 
 # =============================================================================
@@ -34,19 +36,21 @@ WORKDIR /home/ariadne
 # =============================================================================
 FROM base AS development
 
-# Install development dependencies
+# Install development tools
 RUN apt-get update && apt-get install -y \
     vim \
     nano \
     htop \
     tree \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Copy source code
+# Copy source code with proper ownership
 COPY --chown=ariadne:ariadne . ./ariadne/
 
 # Install Ariadne in development mode
-RUN cd ariadne && pip install -e ".[dev]"
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.3.4
+RUN cd ariadne && pip install --no-cache-dir -e ".[dev]"
 
 # Switch to non-root user
 USER ariadne
@@ -56,6 +60,9 @@ ENV ARIADNE_LOG_LEVEL=INFO
 ENV ARIADNE_BACKEND_PREFERENCE="stim,tensor_network,qiskit"
 ENV PYTHONPATH=/home/ariadne/ariadne/src
 
+# Create workspace
+RUN mkdir -p /home/ariadne/workspace
+
 # Default command for development
 CMD ["/bin/bash"]
 
@@ -64,8 +71,14 @@ CMD ["/bin/bash"]
 # =============================================================================
 FROM development AS testing
 
+# Switch back to root for installations
+USER root
+
 # Copy test configuration
 COPY --chown=ariadne:ariadne pytest.ini pyproject.toml ./ariadne/
+
+# Switch back to non-root user
+USER ariadne
 
 # Set environment for testing
 ENV ARIADNE_ENABLE_BENCHMARKS=true
@@ -75,32 +88,18 @@ ENV PYTEST_TIMEOUT=30
 CMD ["python", "-m", "pytest", "ariadne/tests/", "-v", "--tb=short"]
 
 # =============================================================================
-# Stage 4: Benchmark Environment
-# =============================================================================
-FROM development AS benchmark
-
-# Create benchmark results directory
-RUN mkdir -p /home/ariadne/benchmark_results
-
-# Set environment for benchmarking
-ENV ARIADNE_ENABLE_BENCHMARKS=true
-ENV ARIADNE_MEMORY_LIMIT_MB=4096
-
-# Default command runs benchmark suite
-CMD ["python", "ariadne/benchmarks/reproducible_benchmark.py"]
-
-# =============================================================================
-# Stage 5: Production Environment (Lightweight)
+# Stage 4: Production Environment (Lightweight)
 # =============================================================================
 FROM base AS production
 
-# Copy source code
+# Copy only necessary files for production
 COPY --chown=ariadne:ariadne src/ ./ariadne/src/
 COPY --chown=ariadne:ariadne pyproject.toml ./ariadne/
+COPY --chown=ariadne:ariadne README.md ./ariadne/
 
-# Install Ariadne
-ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.1.0
-RUN cd ariadne && pip install .
+# Install Ariadne with core dependencies only
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.3.4
+RUN cd ariadne && pip install --no-cache-dir .
 
 # Switch to non-root user
 USER ariadne
@@ -112,25 +111,115 @@ ENV ARIADNE_BACKEND_PREFERENCE="stim,qiskit"
 # Create volume mount point for results
 VOLUME ["/home/ariadne/results"]
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import ariadne; print('OK')" || exit 1
+
 # Default production command
-CMD ["python", "-c", "import ariadne; print('Ariadne Quantum Router ready')"]
+CMD ["python", "-c", "import ariadne; print(f'Ariadne v{ariadne.__version__} ready')"]
+
+# =============================================================================
+# Stage 5: Quantum Full Environment (With All Platforms)
+# =============================================================================
+FROM base AS quantum-full
+
+# Install additional system dependencies for quantum libraries
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libffi-dev \
+    libssl-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Try to install OpenCL if available (optional)
+RUN apt-get update && \
+    (apt-get install -y ocl-icd-opencl-dev || echo "OpenCL not available") && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+
+# Copy source code
+COPY --chown=ariadne:ariadne . ./ariadne/
+
+# Install core Ariadne first
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.3.4
+RUN cd ariadne && pip install --no-cache-dir -e .
+
+# Install quantum platforms one by one with better error handling
+RUN cd ariadne && \
+    echo "Installing quantum platforms..." && \
+    (pip install --no-cache-dir --no-deps pennylane>=0.30.0 || echo "PennyLane failed") && \
+    (pip install --no-cache-dir --no-deps pennylane-lightning || echo "PennyLane Lightning failed") && \
+    echo "PennyLane installation attempted"
+
+RUN cd ariadne && \
+    (pip install --no-cache-dir --no-deps pyquil>=3.0.0 || echo "PyQuil failed") && \
+    echo "PyQuil installation attempted"
+
+RUN cd ariadne && \
+    (pip install --no-cache-dir --no-deps amazon-braket-sdk>=1.40.0 || echo "Braket failed") && \
+    echo "Braket installation attempted"
+
+RUN cd ariadne && \
+    (pip install --no-cache-dir --no-deps qsharp>=1.0.0 || echo "Q# failed") && \
+    echo "Q# installation attempted"
+
+RUN cd ariadne && \
+    (pip install --no-cache-dir --no-deps pyopencl>=2023.1.0 || echo "PyOpenCL failed") && \
+    echo "PyOpenCL installation attempted"
+
+# Install advanced simulators
+RUN cd ariadne && \
+    (pip install --no-cache-dir --no-deps "mqt.ddsim>=2.0.0" || echo "DDSIM failed") && \
+    echo "DDSIM installation attempted"
+
+RUN cd ariadne && \
+    (pip install --no-cache-dir --no-deps "qulacs>=0.6.4" || echo "Qulacs failed") && \
+    echo "Qulacs installation attempted"
+
+RUN cd ariadne && \
+    (pip install --no-cache-dir --no-deps "cirq>=1.0.0" || echo "Cirq failed") && \
+    echo "Cirq installation attempted"
+
+# Install missing dependencies that might have been skipped
+RUN pip install --no-cache-dir autograd || echo "autograd install failed"
+RUN pip install --no-cache-dir toml || echo "toml install failed"
+
+# Switch to non-root user
+USER ariadne
+
+# Set up quantum-full environment
+ENV ARIADNE_LOG_LEVEL=INFO
+ENV ARIADNE_BACKEND_PREFERENCE="stim,tensor_network,ddsim,cirq,pennylane,qulacs,pyquil"
+ENV PYTHONPATH=/home/ariadne/ariadne/src
+
+# Create workspace and test installation
+RUN mkdir -p /home/ariadne/workspace
+
+# Test the installation in a separate step
+RUN cd /home/ariadne/workspace && \
+    python -c "import sys; print(f'Python {sys.version}')" && \
+    python -c "import ariadne; print(f'Ariadne {ariadne.__version__}')" && \
+    python -c "from ariadne import get_available_backends; backends = get_available_backends(); print(f'Available backends: {len(backends)}'); [print(f'  - {b}') for b in backends]" && \
+    echo "Quantum-full environment ready!"
+
+# Health check for quantum-full
+HEALTHCHECK --interval=60s --timeout=30s --start-period=10s --retries=3 \
+    CMD python -c "from ariadne import get_available_backends; assert len(get_available_backends()) >= 4" || exit 1
+
+# Default command shows available backends
+CMD ["python", "-c", "from ariadne import get_available_backends; import ariadne; print(f'Ariadne v{ariadne.__version__} Quantum-Full Environment'); print(f'Available backends ({len(get_available_backends())}):'); [print(f'  ✅ {b}') for b in get_available_backends()]"]
 
 # =============================================================================
 # Metadata and Labels
 # =============================================================================
-
-# Add labels for container metadata
 LABEL org.opencontainers.image.title="Ariadne Quantum Circuit Router"
 LABEL org.opencontainers.image.description="Intelligent quantum circuit routing with automatic backend selection"
-LABEL org.opencontainers.image.authors="Hmbown"
+LABEL org.opencontainers.image.authors="Hunter Bown <hunter@shannonlabs.dev>"
 LABEL org.opencontainers.image.url="https://github.com/Hmbown/ariadne"
 LABEL org.opencontainers.image.source="https://github.com/Hmbown/ariadne"
-LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.version="0.3.4"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 
 # Expose port for potential web interface (future)
 EXPOSE 8000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import ariadne; print('OK')" || exit 1

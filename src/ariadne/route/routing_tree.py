@@ -88,35 +88,42 @@ class ComprehensiveRoutingTree:
         """Check which backends are actually available."""
         availability = {}
 
+        def safe_find_spec(module_name: str) -> bool:
+            """Safely check if a module exists without raising ModuleNotFoundError."""
+            try:
+                return find_spec(module_name) is not None
+            except (ModuleNotFoundError, ValueError, ImportError):
+                return False
+
         # Always available
         availability[BackendType.QISKIT] = True
 
         # Check Stim
-        availability[BackendType.STIM] = find_spec("stim") is not None
+        availability[BackendType.STIM] = safe_find_spec("stim")
 
         # Check CUDA
-        availability[BackendType.CUDA] = find_spec("cupy") is not None
+        availability[BackendType.CUDA] = safe_find_spec("cupy")
 
         # Check Metal (Apple Silicon)
-        availability[BackendType.JAX_METAL] = self._is_apple_silicon() and (find_spec("jax") is not None)
+        availability[BackendType.JAX_METAL] = self._is_apple_silicon() and safe_find_spec("jax")
 
         # Check Tensor Network
-        availability[BackendType.TENSOR_NETWORK] = bool(find_spec("cotengra") and find_spec("quimb"))
+        availability[BackendType.TENSOR_NETWORK] = safe_find_spec("cotengra") and safe_find_spec("quimb")
 
         # Check MPS
-        availability[BackendType.MPS] = find_spec("quimb") is not None
+        availability[BackendType.MPS] = safe_find_spec("quimb")
 
         # Check DDSIM
-        availability[BackendType.DDSIM] = find_spec("mqt.ddsim") is not None
+        availability[BackendType.DDSIM] = safe_find_spec("mqt.ddsim")
 
         # Additional optional backends
-        availability[BackendType.CIRQ] = find_spec("cirq") is not None
-        availability[BackendType.PENNYLANE] = find_spec("pennylane") is not None
-        availability[BackendType.QULACS] = find_spec("qulacs") is not None
-        availability[BackendType.PYQUIL] = find_spec("pyquil") is not None
-        availability[BackendType.BRAKET] = find_spec("braket") is not None
-        availability[BackendType.QSHARP] = find_spec("qsharp") is not None
-        availability[BackendType.OPENCL] = find_spec("pyopencl") is not None
+        availability[BackendType.CIRQ] = safe_find_spec("cirq")
+        availability[BackendType.PENNYLANE] = safe_find_spec("pennylane")
+        availability[BackendType.QULACS] = safe_find_spec("qulacs")
+        availability[BackendType.PYQUIL] = safe_find_spec("pyquil")
+        availability[BackendType.BRAKET] = safe_find_spec("braket")
+        availability[BackendType.QSHARP] = safe_find_spec("qsharp")
+        availability[BackendType.OPENCL] = safe_find_spec("pyopencl")
 
         return availability
 
@@ -663,3 +670,14 @@ def show_routing_tree() -> str:
     """Show the routing tree structure."""
     tree = get_routing_tree()
     return tree.visualize_routing_tree()
+
+
+def get_available_backends() -> list[str]:
+    """Get list of actually available backends (not just possible ones)."""
+    tree = get_routing_tree()
+    # Return only the backends that are actually available
+    available = []
+    for backend, is_available in tree.backend_availability.items():
+        if is_available:
+            available.append(backend.value)
+    return available

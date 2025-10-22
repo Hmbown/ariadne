@@ -7,6 +7,7 @@
 docs/
 *.md
 !README.md
+!CHANGELOG.md
 
 # Python cache and build artifacts
 __pycache__/
@@ -66,9 +67,7 @@ ehthumbs.db
 Thumbs.db
 
 # Docker
-Dockerfile
 docker-compose*.yml
-.dockerignore
 
 # Jupyter notebooks
 .ipynb_checkpoints/

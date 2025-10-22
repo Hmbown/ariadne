@@ -14,7 +14,6 @@ classifiers = [
   "Intended Audience :: Developers",
   "Intended Audience :: Education",
   "Intended Audience :: Science/Research",
-  "License :: OSI Approved :: Apache Software License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
@@ -46,6 +45,13 @@ apple = [
   "jax>=0.4; platform_system=='Darwin' and platform_machine=='arm64'",
   "jaxlib>=0.4; platform_system=='Darwin' and platform_machine=='arm64'",
   "jax-metal>=0.1; platform_system=='Darwin' and platform_machine=='arm64'",
+]
+quantum_platforms = [
+  "pennylane>=0.30.0",
+  "pyquil>=3.0.0",
+  "amazon-braket-sdk>=1.40.0",
+  "qsharp>=1.0.0 ; python_implementation != 'PyPy'",
+  "pyopencl>=2023.1.0",
 ]
 advanced = [
   "mqt.ddsim>=2.0.0",

@@ -56,7 +56,7 @@ from .education_integration import (
 from .route.enhanced_router import EnhancedQuantumRouter
 
 # Comprehensive routing tree (internal use)
-from .route.routing_tree import ComprehensiveRoutingTree, explain_routing, show_routing_tree
+from .route.routing_tree import ComprehensiveRoutingTree, explain_routing, get_available_backends, show_routing_tree
 
 # Main simulation interface
 from .router import simulate
@@ -103,6 +103,7 @@ __all__ = [
     "ComprehensiveRoutingTree",
     "explain_routing",
     "show_routing_tree",
+    "get_available_backends",
     # Configuration system
     "AriadneConfig",
     "BackendConfig",

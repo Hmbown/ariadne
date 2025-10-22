@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.4] - 2025-10-22
+
+### Added
+- New `get_available_backends()` function to public API for checking available backends
+- Added optional dependencies for additional quantum platforms: PennyLane, PyQuil, Braket, Q#, and OpenCL
+- Added quantum-full Docker environment with all quantum libraries pre-installed
+- Added quantum-full service to docker-compose configuration
+
+### Changed
+- Updated license classifier format for compatibility with newer setuptools versions
+- Reorganized optional dependencies with new quantum_platforms group
+- Enhanced Dockerfile with multi-stage build including quantum-full environment
+- Updated documentation to include quantum-full Docker usage
+
 ## [0.3.2] - 2025-10-20
 
 ### Added

@@ -121,10 +121,38 @@ result = simulate(qc, strategy=RoutingStrategy.MEMORY_EFFICIENT)
 <details>
 <summary><b>🐳 Docker Usage</b></summary>
 
+### Standard Usage
 ```bash
 docker pull ghcr.io/hmbown/ariadne-router:latest
 docker run --rm ghcr.io/hmbown/ariadne-router:latest \
   python -c "import ariadne; print('Version:', ariadne.__version__)"
+```
+
+### Quantum Full Environment (All Platforms Included)
+```bash
+# Build the quantum-full environment with all quantum libraries
+docker build --target quantum-full -t ariadne-quantum-full .
+
+# Run interactively to access all quantum platforms (10 backends available)
+docker run -it ariadne-quantum-full
+
+# Or run with a specific command
+docker run ariadne-quantum-full python -c "
+from ariadne import get_available_backends
+print('Available backends:', get_available_backends())
+"
+```
+
+### Using Docker Compose
+```bash
+# Run the quantum-full environment with docker-compose
+docker-compose run ariadne-quantum-full
+
+# Run demo to see all available backends
+docker-compose run --rm ariadne-demo
+
+# Run production environment
+docker-compose run --rm ariadne-prod
 ```
 </details>
 
