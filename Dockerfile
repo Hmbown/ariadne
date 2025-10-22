@@ -99,6 +99,7 @@ COPY --chown=ariadne:ariadne src/ ./ariadne/src/
 COPY --chown=ariadne:ariadne pyproject.toml ./ariadne/
 
 # Install Ariadne
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.1.0
 RUN cd ariadne && pip install .
 
 # Switch to non-root user

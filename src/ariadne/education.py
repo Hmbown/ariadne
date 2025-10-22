@@ -10,7 +10,11 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
-from IPython.display import HTML, display
+
+try:
+    from IPython.display import HTML, display
+except ImportError:
+    HTML = display = None
 from qiskit import QuantumCircuit
 
 from .algorithms import AlgorithmParameters, get_algorithm, list_algorithms
@@ -613,7 +617,10 @@ class EducationDashboard:
             html += f"  <li><strong>{alg.upper()}</strong></li>\n"
         html += "</ul>\n"
 
-        display(HTML(html))
+        if display is not None:
+            display(HTML(html))
+        else:
+            print(html)
 
     def compare_algorithms_interactive(self, algorithm_names: list[str]) -> None:
         """Create an interactive comparison of algorithms."""
@@ -629,7 +636,10 @@ class EducationDashboard:
                 html += f"<tr><td>{name}</td><td colspan='4'>{data['error']}</td></tr>\n"
 
         html += "</table>\n"
-        display(HTML(html))
+        if display is not None:
+            display(HTML(html))
+        else:
+            print(html)
 
     def run_learning_path(self, algorithm_name: str, n_qubits: int = 3) -> None:
         """Run a step-by-step learning path for an algorithm."""
