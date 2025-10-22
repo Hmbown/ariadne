@@ -21,21 +21,27 @@ wheels/
 .installed.cfg
 *.egg
 
-# Benchmark results - temporary files
+# Development artifacts and temporary files
 benchmark_results_*.json
 benchmarks/*_benchmark_results.json
+firebase-debug.log
+coverage.xml
+routing_demo_results.json
+improvement_recommendations.md
+validation_plan.md
+GPT5_FEEDBACK_IMPLEMENTATION.md
+*.log
+*.tmp
+
 # Keep curated results in results/
 !benchmarks/results/
-
-# Development artifacts
-bullshit_check_prompt.md
-firebase-debug.log
 
 # Internal development documentation
 ALGORITHM_EXPANSION_SUMMARY.md
 REPOSITIONING_SUMMARY.md
 performance_validation_report.md
 docs/RELEASE_VALIDATION_SUMMARY.md
+.dev/
 
 # IDE and editor files
 .vscode/

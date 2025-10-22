@@ -1,6 +1,6 @@
 [project]
 name = "ariadne-router"
-description = "Zero-config quantum simulator bundle for education, benchmarking & CI"
+description = "Intelligent quantum simulator router with automatic backend selection"
 readme = "README.md"
 requires-python = ">=3.11"
 dynamic = ["version"]
@@ -14,13 +14,15 @@ classifiers = [
   "Intended Audience :: Developers",
   "Intended Audience :: Education",
   "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering",
   "Topic :: Scientific/Engineering :: Physics",
-  "Topic :: Education",
   "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: System :: Distributed Computing",
 ]
 dependencies = [
   "qiskit==2.2.1",
