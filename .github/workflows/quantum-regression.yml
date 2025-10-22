@@ -33,109 +33,18 @@ jobs:
         pip install -e ".[dev,viz]"
 
     - name: Install platform-specific dependencies
-      shell: bash
       run: |
-        if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+        if [ "${{ matrix.os }}" == "macos-latest" ]; then
           pip install -e ".[apple]" || echo "Apple dependencies not available"
-        fi
-        if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+        elif [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
           pip install -e ".[cuda]" || echo "CUDA dependencies not available"
+        else
+          echo "No platform-specific dependencies for ${{ matrix.os }}"
         fi
+      shell: bash
 
     - name: Run quantum regression tests
-      shell: bash
-      run: |
-        python << 'EOF'
-        import json
-        import time
-        from datetime import datetime
-
-        try:
-            from ariadne import simulate, get_available_backends, explain_routing
-            from ariadne.benchmarking import export_benchmark_report
-            from qiskit import QuantumCircuit
-
-            print("🚀 Quantum Regression Test Suite")
-            print("=" * 50)
-
-            # Get available backends
-            backends = get_available_backends()
-            print(f"Available backends: {backends}")
-
-            # Test algorithms
-            algorithms_to_test = ['bell', 'ghz']  # Simple set for CI
-            results = {'results': {}}
-
-            for alg_name in algorithms_to_test:
-                print(f"\nTesting {alg_name} algorithm...")
-                results['results'][alg_name] = {'backends': {}}
-
-                # Create test circuit based on algorithm
-                if alg_name == 'bell':
-                    qc = QuantumCircuit(2, 2)
-                    qc.h(0)
-                    qc.cx(0, 1)
-                    qc.measure_all()
-                elif alg_name == 'ghz':
-                    qc = QuantumCircuit(3, 3)
-                    qc.h(0)
-                    qc.cx(0, 1)
-                    qc.cx(1, 2)
-                    qc.measure_all()
-
-                # Test with available backends
-                backends_to_test = ['qiskit', 'stim'] if 'stim' in backends else ['qiskit']
-
-                for backend_name in backends_to_test:
-                    try:
-                        start_time = time.time()
-                        result = simulate(qc, shots=100, backend=backend_name)
-                        execution_time = time.time() - start_time
-
-                        results['results'][alg_name]['backends'][backend_name] = {
-                            'success': True,
-                            'execution_time': execution_time,
-                            'throughput': 100 / execution_time,
-                            'backend_used': str(result.backend_used)
-                        }
-                        print(f"  ✓ {backend_name}: {execution_time:.3f}s")
-
-                    except Exception as e:
-                        results['results'][alg_name]['backends'][backend_name] = {
-                            'success': False,
-                            'error': str(e),
-                            'execution_time': 0,
-                            'throughput': 0
-                        }
-                        print(f"  ✗ {backend_name}: {e}")
-
-            # Save results
-            with open('benchmark_results.json', 'w') as f:
-                json.dump(results, f, indent=2, default=str)
-
-            # Calculate success rate
-            total_tests = sum(len(alg['backends']) for alg in results['results'].values())
-            successful_tests = sum(sum(1 for b in alg['backends'].values() if b['success'])
-                                 for alg in results['results'].values())
-            success_rate = successful_tests / total_tests if total_tests > 0 else 0
-
-            with open('success_rate.txt', 'w') as f:
-                f.write(f"{success_rate:.2%}")
-
-            print(f"\nOverall success rate: {success_rate:.2%} ({successful_tests}/{total_tests})")
-
-            # Exit with success if we have basic functionality
-            if success_rate >= 0.5:  # At least 50% success rate
-                print("✅ Quantum regression tests passed!")
-                exit(0)
-            else:
-                print("❌ Quantum regression tests failed!")
-                exit(1)
-
-        except Exception as e:
-            print(f"❌ Critical error in quantum regression tests: {e}")
-            exit(1)
-        EOF
+      run: python scripts/quantum_regression_test.py
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
