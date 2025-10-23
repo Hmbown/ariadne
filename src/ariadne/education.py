@@ -6,20 +6,31 @@ including step-by-step circuit builders, visualizations, and educational
 simulations.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
-
-try:
-    from IPython.display import HTML, display
-except ImportError:
-    HTML = display = None
 from qiskit import QuantumCircuit
 
 from .algorithms import AlgorithmParameters, get_algorithm, list_algorithms
 from .core import get_logger
 from .router import simulate
+
+HtmlRenderer = Callable[[str], Any]
+DisplayCallable = Callable[..., None]
+
+try:
+    from IPython import display as ipy_display
+except ImportError:
+    _html_impl = None
+    _display_impl = None
+else:
+    _html_impl = ipy_display.HTML
+    _display_impl = ipy_display.display
+
+html_renderer: HtmlRenderer | None = cast(HtmlRenderer | None, _html_impl)
+display_fn: DisplayCallable | None = cast(DisplayCallable | None, _display_impl)
 
 # Set up logging
 logger = get_logger(__name__)
@@ -617,10 +628,11 @@ class EducationDashboard:
             html += f"  <li><strong>{alg.upper()}</strong></li>\n"
         html += "</ul>\n"
 
-        if display is not None:
-            display(HTML(html))
-        else:
+        if display_fn is None or html_renderer is None:
             print(html)
+            return
+
+        display_fn(html_renderer(html))
 
     def compare_algorithms_interactive(self, algorithm_names: list[str]) -> None:
         """Create an interactive comparison of algorithms."""
@@ -636,10 +648,11 @@ class EducationDashboard:
                 html += f"<tr><td>{name}</td><td colspan='4'>{data['error']}</td></tr>\n"
 
         html += "</table>\n"
-        if display is not None:
-            display(HTML(html))
-        else:
+        if display_fn is None or html_renderer is None:
             print(html)
+            return
+
+        display_fn(html_renderer(html))
 
     def run_learning_path(self, algorithm_name: str, n_qubits: int = 3) -> None:
         """Run a step-by-step learning path for an algorithm."""
