@@ -71,7 +71,7 @@ if 'bell' in available_algorithms and 'ghz' in available_algorithms:
     try:
         dashboard.compare_algorithms_interactive(['bell', 'ghz'])
         print("Comparison completed")
-    except:
+    except Exception:
         print("Comparison display failed (likely non-IPython environment)")
 
 print("\n6. BENCHMARKING TOOLS")
@@ -96,7 +96,7 @@ print("\n7. INTERACTIVE CIRCUIT WALKTHROUGH")
 print("-" * 37)
 
 # Step-by-step walkthrough
-for _i, step in enumerate(builder.history):
+for _, step in enumerate(builder.history):
     print(f"\nStep {step.step_number}: {step.title}")
     print(f"Description: {step.description}")
     print("Circuit at this step:")

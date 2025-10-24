@@ -11,12 +11,14 @@ With timings, memory usage, and explain_routing() outputs.
 """
 
 import time
-from typing import Dict, Any
+from typing import Any
+
 from qiskit import QuantumCircuit
-from ariadne import simulate, explain_routing
+
+from ariadne import explain_routing, simulate
 
 
-def benchmark_circuit(name: str, circuit: QuantumCircuit, shots: int = 1000) -> Dict[str, Any]:
+def benchmark_circuit(name: str, circuit: QuantumCircuit, shots: int = 1000) -> dict[str, Any]:
     """Benchmark a single circuit and return detailed results."""
     print(f"\n{'='*20} {name} {'='*20}")
     print(f"Circuit: {circuit.num_qubits} qubits, depth {circuit.depth()}")
@@ -36,7 +38,7 @@ def benchmark_circuit(name: str, circuit: QuantumCircuit, shots: int = 1000) -> 
         execution_time = end_time - start_time
         throughput = shots / execution_time if execution_time > 0 else 0
 
-        print(f"✅ SUCCESS")
+        print("✅ SUCCESS")
         print(f"   Backend: {result.backend_used.value}")
         print(f"   Time: {execution_time:.4f}s")
         print(f"   Throughput: {throughput:.0f} shots/s")
@@ -179,4 +181,4 @@ if __name__ == "__main__":
     import json
     with open("routing_demo_results.json", "w") as f:
         json.dump(benchmark_results, f, indent=2, default=str)
-    print(f"\n📊 Results saved to routing_demo_results.json")
+    print("\n📊 Results saved to routing_demo_results.json")

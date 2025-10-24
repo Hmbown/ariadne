@@ -280,7 +280,7 @@ class PerformanceRegressionDetector:
 
             circuit_str += f"{op.name}({','.join(map(str, op.params))})->{qubits},{clbits};"
 
-        return hashlib.md5(circuit_str.encode()).hexdigest()[:16]
+        return hashlib.sha256(circuit_str.encode()).hexdigest()[:16]
 
     def _get_baseline_key(self, metric_type: MetricType, backend: str, circuit_hash: str) -> str:
         """Generate a unique key for baseline storage."""

@@ -45,9 +45,9 @@ def demonstrate_education_features():
     print("\n2. Bell State Algorithm Demo:")
     print("-" * 30)
 
-    BellState = get_algorithm("bell")
+    bell_state_class = get_algorithm("bell")
     bell_params = AlgorithmParameters(n_qubits=2)
-    bell_algorithm = BellState(bell_params)
+    bell_algorithm = bell_state_class(bell_params)
 
     bell_circuit = bell_algorithm.create_circuit()
     print(f"Bell circuit has {bell_circuit.num_qubits} qubits and depth {bell_circuit.depth()}")
@@ -70,9 +70,9 @@ def demonstrate_education_features():
     print("\n3. Quantum Fourier Transform Demo:")
     print("-" * 30)
 
-    QFT = get_algorithm("qft")
+    qft_class = get_algorithm("qft")
     qft_params = AlgorithmParameters(n_qubits=3)
-    qft_algorithm = QFT(qft_params)
+    qft_algorithm = qft_class(qft_params)
 
     qft_circuit = qft_algorithm.create_circuit()
     print(f"QFT circuit has {qft_circuit.num_qubits} qubits and depth {qft_circuit.depth()}")

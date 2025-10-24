@@ -281,7 +281,7 @@ class InteractiveCircuitBuilder:
             Explanation string for the step
         """
         if not 0 <= step_idx < len(self.history):
-            error_msg = f"Step {step_idx} not found. Available steps: 0-{len(self.history)-1 if self.history else 0}"
+            error_msg = f"Step {step_idx} not found. Available steps: 0-{len(self.history) - 1 if self.history else 0}"
             logger.warning(error_msg)
             return error_msg
 
@@ -302,7 +302,7 @@ class InteractiveCircuitBuilder:
             Dictionary of measurement counts
         """
         if not 0 <= step_idx < len(self.history):
-            error_msg = f"Step {step_idx} not found. Available steps: 0-{len(self.history)-1 if self.history else 0}"
+            error_msg = f"Step {step_idx} not found. Available steps: 0-{len(self.history) - 1 if self.history else 0}"
             logger.warning(error_msg)
             return {}
 
@@ -313,7 +313,7 @@ class InteractiveCircuitBuilder:
 
         try:
             # Add measurements if not already present
-            has_measurements = any(inst.name == "measure" for inst, _, _ in step_circuit.data)
+            has_measurements = any(inst.operation.name == "measure" for inst in step_circuit.data)
             if not has_measurements:
                 temp_circuit = step_circuit.copy()
                 temp_circuit.measure_all()
@@ -335,7 +335,7 @@ class InteractiveCircuitBuilder:
             step_idx: Index of the step to visualize
         """
         if not 0 <= step_idx < len(self.history):
-            error_msg = f"Step {step_idx} not found. Available steps: 0-{len(self.history)-1 if self.history else 0}"
+            error_msg = f"Step {step_idx} not found. Available steps: 0-{len(self.history) - 1 if self.history else 0}"
             logger.warning(error_msg)
             print(error_msg)
             return

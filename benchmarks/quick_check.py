@@ -4,7 +4,7 @@
 import argparse
 import sys
 import time
-from typing import Dict, Any
+
 
 def main():
     """Run quick performance check."""
@@ -14,8 +14,9 @@ def main():
 
     try:
         # Import Ariadne
-        from ariadne import simulate, get_available_backends
         from qiskit import QuantumCircuit
+
+        from ariadne import get_available_backends, simulate
 
         print(f"🚀 Quick performance check on {args.platform}")
         print("=" * 50)
@@ -37,7 +38,7 @@ def main():
         result = simulate(qc, shots=100)
         end_time = time.time()
 
-        print(f"✅ Test simulation completed:")
+        print("✅ Test simulation completed:")
         print(f"   Backend: {result.backend_used}")
         print(f"   Time: {result.execution_time:.4f}s")
         print(f"   Total time: {end_time - start_time:.4f}s")
@@ -46,7 +47,7 @@ def main():
         if result.execution_time > 1.0:  # 1 second threshold
             print(f"⚠️  Performance warning: simulation took {result.execution_time:.4f}s")
         else:
-            print(f"✅ Performance OK")
+            print("✅ Performance OK")
 
         print(f"🎉 Quick check passed on {args.platform}")
         return 0

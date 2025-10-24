@@ -367,7 +367,7 @@ class EnhancedQuantumRouter:
 
     def _calculate_entropy(self, circuit: QuantumCircuit) -> float:
         """Calculate gate entropy."""
-        gate_counts = {}
+        gate_counts: dict[str, int] = {}
         total_gates = 0
 
         for instruction in circuit.data:
@@ -440,11 +440,12 @@ class EnhancedQuantumRouter:
         try:
             import cupy
 
-            return cupy.cuda.runtime.getDeviceCount() > 0
+            device_count = cupy.cuda.runtime.getDeviceCount()
+            return bool(device_count > 0)
         except Exception:
             return False
 
-    def simulate(self, circuit, shots=1000):
+    def simulate(self, circuit: QuantumCircuit, shots: int = 1000) -> Any:
         """Simulate circuit using the selected backend."""
         from ..router import simulate as router_simulate
 

@@ -26,8 +26,8 @@ class BraketBackend:
 
             # Map Qiskit instructions to Braket circuit (subset)
             for item in circuit.data:
-                op = getattr(item, "operation", item[0])
-                qargs = list(getattr(item, "qubits", item[1]))
+                op = item.operation
+                qargs = item.qubits
                 name = getattr(op, "name", "")
 
                 if name in {"measure", "barrier", "delay", "reset"}:

@@ -125,8 +125,8 @@ class QuantumAlgorithm(ABC):
 
         # Count gates by type
         gate_counts: dict[str, int] = {}
-        for instruction, _, _ in circuit.data:
-            gate_name = instruction.name
+        for instruction in circuit.data:
+            gate_name = instruction.operation.name
             gate_counts[gate_name] = gate_counts.get(gate_name, 0) + 1
 
         # Calculate entanglement heuristic

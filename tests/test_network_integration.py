@@ -147,10 +147,10 @@ class TestQuantumTask:
 
 
 @pytest.mark.skipif(not NETWORK_COORDINATION_AVAILABLE, reason="Network coordination not available")
-@pytest.mark.asyncio
 class TestNetworkCoordinator:
     """Test suite for network coordinator functionality."""
 
+    @pytest.mark.asyncio
     async def test_coordinator_initialization(self) -> None:
         """Test network coordinator initialization."""
         coordinator = NetworkCoordinator(
@@ -165,6 +165,7 @@ class TestNetworkCoordinator:
         assert len(coordinator.nodes) == 0
         assert len(coordinator.task_queue) == 0
 
+    @pytest.mark.asyncio
     async def test_node_registration_handling(self) -> None:
         """Test node registration message handling."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
@@ -189,6 +190,7 @@ class TestNetworkCoordinator:
         assert "test-node-123" in coordinator.nodes
         assert coordinator.nodes["test-node-123"].node_type == NodeType.COMPUTE_NODE
 
+    @pytest.mark.asyncio
     async def test_heartbeat_handling(self) -> None:
         """Test heartbeat message handling."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
@@ -218,6 +220,7 @@ class TestNetworkCoordinator:
         assert coordinator.nodes["heartbeat-test-node"].load == 0.3
         assert coordinator.nodes["heartbeat-test-node"].status == NetworkStatus.ONLINE
 
+    @pytest.mark.asyncio
     async def test_task_submission_and_result_handling(self) -> None:
         """Test task submission and result processing."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)
@@ -261,6 +264,7 @@ class TestNetworkCoordinator:
         assert result.node_id == "test-executor-node"
         assert result.execution_time == 1.23
 
+    @pytest.mark.asyncio
     async def test_time_synchronization(self) -> None:
         """Test time synchronization protocol."""
         coordinator = NetworkCoordinator(enable_websockets=False, enable_zmq=False)

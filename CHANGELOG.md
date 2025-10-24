@@ -21,7 +21,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - **"Google Maps" Positioning**: Enhanced README with clear "Google Maps for Quantum Circuits" tagline and better differentiation from Qiskit Aer
-- **PyPI Name Clarity**: Changed package name to `ariadne-quantum-router` to avoid conflict with GraphQL Ariadne library
+- **PyPI Name Clarity**: Changed package name back to `ariadne-router` to avoid conflict with GraphQL Ariadne library
 - **Enhanced CLI Error Handling**: Added friendly error messages for missing optional backends with install instructions (CUDA, JAX-Metal, MPS/TN, Stim)
 - **New CLI Commands**: Added `ariadne run` and `ariadne explain` commands for better user experience
 - **Routing Transparency**: Enhanced `explain_routing()` visibility throughout documentation and examples
@@ -31,7 +31,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- **Package Name**: From `ariadne-router` to `ariadne-quantum-router` in pyproject.toml
+- **Package Name**: From `ariadne-quantum-router` to `ariadne-router` in pyproject.toml
 - **README Structure**: Improved positioning with clear value proposition, use cases, and external references
 - **CLI User Experience**: Better error messages guide users to install missing optional dependencies
 - **Documentation Links**: Added references to Stim and quimb documentation, QMAP paper for hardware routing distinction

@@ -6,6 +6,7 @@ for the Ariadne quantum simulation framework.
 """
 
 import warnings
+from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
@@ -28,7 +29,7 @@ def validate_qubit_index(qubit_idx: int, max_qubits: int) -> None:
         ValueError: If qubit index is out of range
     """
     if not 0 <= qubit_idx < max_qubits:
-        raise ValueError(f"Qubit index {qubit_idx} is out of range [0, {max_qubits-1}]")
+        raise ValueError(f"Qubit index {qubit_idx} is out of range [0, {max_qubits - 1}]")
 
 
 def validate_qubit_indices(control_idx: int, target_idx: int, max_qubits: int) -> None:
@@ -111,7 +112,7 @@ def validate_circuit(circuit: QuantumCircuit) -> None:
         raise ValueError(f"Circuit validation failed: {e}") from e
 
 
-def safe_execute(func):
+def safe_execute(func: Callable) -> Callable:
     """
     Decorator to safely execute a function with comprehensive error handling.
 
@@ -123,7 +124,7 @@ def safe_execute(func):
     """
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return func(*args, **kwargs)
         except CircuitTooLargeError:
@@ -222,7 +223,7 @@ def validate_measurement_indices(
 
     for c_idx in classical_indices:
         if not 0 <= c_idx < max_classical_bits:
-            raise ValueError(f"Classical bit index {c_idx} is out of range [0, {max_classical_bits-1}]")
+            raise ValueError(f"Classical bit index {c_idx} is out of range [0, {max_classical_bits - 1}]")
 
 
 def check_simulation_requirements(circuit: QuantumCircuit, backend: str | None = None) -> dict[str, Any]:
@@ -236,7 +237,7 @@ def check_simulation_requirements(circuit: QuantumCircuit, backend: str | None =
     Returns:
         Dictionary with validation results
     """
-    results = {"valid": True, "warnings": [], "errors": [], "recommended_backend": backend or "auto"}
+    results: dict[str, Any] = {"valid": True, "warnings": [], "errors": [], "recommended_backend": backend or "auto"}
 
     # Validate basic circuit properties
     try:
@@ -273,10 +274,10 @@ class CircuitValidator:
     A class for comprehensive circuit validation with multiple check methods.
     """
 
-    def __init__(self):
-        self.checks = []
+    def __init__(self) -> None:
+        self.checks: list[tuple[Callable, str]] = []
 
-    def add_check(self, check_func, description: str):
+    def add_check(self, check_func: Callable, description: str) -> None:
         """
         Add a validation check function.
 
@@ -296,7 +297,7 @@ class CircuitValidator:
         Returns:
             Dictionary with validation results
         """
-        results = {"valid": True, "passed_checks": [], "failed_checks": [], "warnings": []}
+        results: dict[str, Any] = {"valid": True, "passed_checks": [], "failed_checks": [], "warnings": []}
 
         for check_func, description in self.checks:
             try:
@@ -322,14 +323,14 @@ def create_default_validator() -> CircuitValidator:
     """
     validator = CircuitValidator()
 
-    def check_qubit_count(circuit: QuantumCircuit):
+    def check_qubit_count(circuit: QuantumCircuit) -> tuple[bool, str]:
         if circuit.num_qubits <= 0:
             return False, "Circuit must have at least 1 qubit"
         if circuit.num_qubits > 64:
             return False, f"Circuit with {circuit.num_qubits} qubits may be too large"
         return True, f"Circuit has {circuit.num_qubits} qubits"
 
-    def check_depth(circuit: QuantumCircuit):
+    def check_depth(circuit: QuantumCircuit) -> tuple[bool, str]:
         depth = circuit.depth()
         if depth > 10000:
             return True, f"Circuit has high depth ({depth}), simulation may be slow"
@@ -337,8 +338,8 @@ def create_default_validator() -> CircuitValidator:
             return False, "Circuit has no gates"
         return True, f"Circuit has depth {depth}"
 
-    def check_measurements(circuit: QuantumCircuit):
-        measure_count = sum(1 for inst, _, _ in circuit.data if inst.name == "measure")
+    def check_measurements(circuit: QuantumCircuit) -> tuple[bool, str]:
+        measure_count = sum(1 for inst in circuit.data if inst.operation.name == "measure")
         if measure_count == 0:
             return True, "No measurements found (this is valid for some algorithms)"
         return True, f"Circuit has {measure_count} measurement operations"
@@ -351,7 +352,7 @@ def create_default_validator() -> CircuitValidator:
 
 
 # Validation utilities for backward compatibility
-def validate_circuit_for_simulation(circuit: QuantumCircuit, backend: str | None = None):
+def validate_circuit_for_simulation(circuit: QuantumCircuit, backend: str | None = None) -> bool:
     """
     Validate a circuit for simulation (backward compatibility function).
 

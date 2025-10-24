@@ -310,7 +310,7 @@ class BackendCalibrator:
             qubit_indices = [circuit.find_bit(q).index for q in qubits]
             circuit_str += f"{instruction.name}-{qubit_indices};"
 
-        return hashlib.md5(circuit_str.encode()).hexdigest()[:CIRCUIT_HASH_LENGTH]
+        return hashlib.sha256(circuit_str.encode()).hexdigest()[:CIRCUIT_HASH_LENGTH]
 
     def get_calibrated_capacities(self, backend_name: str) -> dict[str, float] | None:
         """Get calibrated capacities for a specific backend."""

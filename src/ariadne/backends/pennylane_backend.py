@@ -197,9 +197,9 @@ class PennyLaneBackend:
         qubit_to_index = {qubit: i for i, qubit in enumerate(circuit.qubits)}
 
         # Apply each operation
-        for instruction, qubits, _clbits in circuit.data:
-            gate_name = instruction.name.lower()
-            qubit_indices = [qubit_to_index[q] for q in qubits]
+        for instruction in circuit.data:
+            gate_name = instruction.operation.name.lower()
+            qubit_indices = [qubit_to_index[q] for q in instruction.qubits]
 
             # Skip measurement and barrier operations
             if gate_name in ["measure", "barrier", "delay"]:

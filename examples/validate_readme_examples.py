@@ -7,6 +7,7 @@ Run this to ensure the README examples are always accurate.
 """
 
 import sys
+
 from qiskit import QuantumCircuit
 
 
@@ -15,7 +16,7 @@ def test_30_second_demo():
     print("Testing 30-second demo...")
 
     try:
-        from ariadne import simulate, explain_routing
+        from ariadne import explain_routing, simulate
 
         # 40-qubit GHZ (stabilizer circuit)
         qc = QuantumCircuit(40, 40)
@@ -97,8 +98,9 @@ def test_core_api():
     print("\nTesting core API...")
 
     try:
-        from ariadne import simulate, EnhancedQuantumRouter, ComprehensiveRoutingTree
         from qiskit import QuantumCircuit
+
+        from ariadne import ComprehensiveRoutingTree, EnhancedQuantumRouter, simulate
 
         circuit = QuantumCircuit(2, 2)
         circuit.h(0)

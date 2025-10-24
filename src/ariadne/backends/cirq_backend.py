@@ -273,9 +273,9 @@ class CirqBackend:
         }
 
         # Convert each instruction
-        for instruction, qubits_used, _clbits in circuit.data:
-            gate_name = instruction.name.lower()
-            cirq_qubits = [qubit_map[q] for q in qubits_used]
+        for instruction in circuit.data:
+            gate_name = instruction.operation.name.lower()
+            cirq_qubits = [qubit_map[q] for q in instruction.qubits]
 
             # Skip measurements and barriers for now
             if gate_name in ["measure", "barrier", "delay"]:

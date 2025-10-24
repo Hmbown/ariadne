@@ -4,12 +4,14 @@ Professional quantum simulation example showcasing production-ready usage.
 """
 
 import time
-from typing import List, Dict, Any
+from typing import Any
+
 from qiskit import QuantumCircuit
-from ariadne import simulate, explain_routing, get_available_backends
+
+from ariadne import explain_routing, get_available_backends, simulate
 
 
-def benchmark_backends(circuit: QuantumCircuit, shots: int = 1000) -> Dict[str, Any]:
+def benchmark_backends(circuit: QuantumCircuit, shots: int = 1000) -> dict[str, Any]:
     """Benchmark different backends for a given circuit."""
     backends = get_available_backends()
     results = {}
@@ -35,7 +37,7 @@ def benchmark_backends(circuit: QuantumCircuit, shots: int = 1000) -> Dict[str, 
     return results
 
 
-def create_algorithm_circuits() -> Dict[str, QuantumCircuit]:
+def create_algorithm_circuits() -> dict[str, QuantumCircuit]:
     """Create a variety of quantum circuits for testing."""
     circuits = {}
 

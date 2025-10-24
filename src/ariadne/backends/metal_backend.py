@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import mmap
 import os
+import tempfile
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -61,7 +62,10 @@ class AppleSiliconMemoryManager:
 
         # Memory mapping for large states
         self.mapped_files: dict[str, str] = {}  # block_id -> file_path
-        self.temp_dir = "/tmp/ariadne_memory" if enable_mapping else None
+        self.temp_dir = None
+        if enable_mapping:
+            # Create secure temporary directory
+            self.temp_dir = tempfile.mkdtemp(prefix="ariadne_memory_")
 
         # Performance metrics
         self.allocation_count = 0
@@ -73,8 +77,8 @@ class AppleSiliconMemoryManager:
 
     def _initialize_memory_pool(self) -> None:
         """Initialize memory pool and temporary directory."""
-        if self.enable_mapping and self.temp_dir:
-            os.makedirs(self.temp_dir, exist_ok=True)
+        # Secure temporary directory is already created in __init__
+        pass
 
     def configure_for_metal(self, device: Any) -> None:
         """Configure memory management for Metal device."""
@@ -154,13 +158,13 @@ class AppleSiliconMemoryManager:
             return self._allocate_aligned_state(state_size)
 
         # Create temporary file for memory mapping
-        file_path = os.path.join(self.temp_dir, f"{block_id}.dat")
+        file_handle, file_path = tempfile.mkstemp(dir=self.temp_dir, prefix=f"{block_id}_", suffix=".dat")
 
         # Calculate file size (add extra for alignment)
         file_size = (state_size + 8) * 16  # 16 bytes per complex128
 
         # Create and initialize file
-        with open(file_path, "wb") as f:
+        with os.fdopen(file_handle, "wb") as f:
             f.write(b"\x00" * file_size)
 
         # Memory map the file
@@ -255,12 +259,20 @@ class AppleSiliconMemoryManager:
             except Exception:
                 pass
 
-        # Clean up temporary directory if empty
+        # Clean up temporary directory and files
         if self.temp_dir and os.path.exists(self.temp_dir):
             try:
+                # Remove all temporary files first
+                for filename in os.listdir(self.temp_dir):
+                    file_path = os.path.join(self.temp_dir, filename)
+                    try:
+                        os.unlink(file_path)
+                    except OSError:
+                        pass  # File may be in use or permission error
+                # Remove the directory
                 os.rmdir(self.temp_dir)
-            except Exception:
-                pass  # Directory not empty or other error
+            except OSError:
+                pass  # Directory not empty or permission error
 
 
 def is_metal_available() -> bool:

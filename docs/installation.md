@@ -50,7 +50,7 @@ Comprehensive installation instructions for Ariadne on all supported platforms a
 
 Once published to PyPI:
 ```bash
-pip install ariadne-quantum-router
+pip install ariadne-router
 ```
 
 ## Optional Dependencies

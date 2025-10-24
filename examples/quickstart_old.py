@@ -7,7 +7,8 @@ with a practical quantum algorithm simulation.
 """
 
 from qiskit import QuantumCircuit
-from ariadne import simulate, explain_routing
+
+from ariadne import explain_routing, simulate
 
 
 def create_ghz_circuit(n_qubits: int) -> QuantumCircuit:

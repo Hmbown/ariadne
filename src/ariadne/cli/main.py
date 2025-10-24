@@ -1126,9 +1126,9 @@ Examples:
         print(f"\nQuiz on {args.topic.upper()} - {len(quiz)} questions\n")
 
         for i, q in enumerate(quiz):
-            print(f"Q{i+1}: {q['question']}")
+            print(f"Q{i + 1}: {q['question']}")
             for j, opt in enumerate(q["options"]):
-                print(f"  {j+1}. {opt}")
+                print(f"  {j + 1}. {opt}")
 
             # For simplicity, just show the answer (in a real implementation would ask user)
             correct_idx = q["options"].index(q["answer"]) + 1
