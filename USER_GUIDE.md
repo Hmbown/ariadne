@@ -166,7 +166,9 @@ For a full list of commands and options, use `ariadne --help`.
 
 ## 5. API Reference
 
-For detailed information on Ariadne's classes and functions, please refer to the source code and docstrings.
+For detailed information on Ariadne's classes and functions, please refer to our [API Reference](docs/source).
+
+The API reference is automatically generated from the docstrings in the source code. To generate the documentation locally, please see the instructions in the [Contributing Guide](CONTRIBUTING.md).
 
 ---
 
@@ -178,6 +180,103 @@ This section provides guides for common advanced tasks.
 
 To add a new backend, you need to create a new class that inherits from `ariadne.backends.base.QuantumBackend` and implement the `simulate` method. Then, register your backend with the `BackendRegistry`.
 
+**Step 1: Create the Backend Class**
+
+Create a new Python file for your backend, for example, `my_custom_backend.py`. In this file, define your backend class:
+
+```python
+from ariadne.backends.base import QuantumBackend
+from ariadne.circuit import QuantumCircuit
+from ariadne.simulator import SimulationResult
+
+class MyCustomBackend(QuantumBackend):
+    """
+    A custom backend for demonstrating how to add a new backend to Ariadne.
+    """
+    def __init__(self, options=None):
+        super().__init__(options)
+        self.backend_name = "my_custom_backend"
+
+    def simulate(self, circuit: QuantumCircuit, shots: int) -> SimulationResult:
+        """
+        This is where you would implement the simulation logic for your backend.
+        For this example, we will just return a dummy result.
+        """
+        print(f"Simulating circuit on {self.backend_name}...")
+        # In a real backend, you would perform the simulation here.
+        # For this example, we will just return a dummy result.
+        counts = {"00": shots // 2, "11": shots // 2}
+        return SimulationResult(
+            backend_used=self.backend_name,
+            shots=shots,
+            counts=counts,
+            execution_time=0.1,
+        )
+```
+
+**Step 2: Register the Backend**
+
+To make your backend available to Ariadne, you need to register it with the `BackendRegistry`. You can do this in your application code before you call the `simulate` function:
+
+```python
+from ariadne.backend_registry import BackendRegistry
+from my_custom_backend import MyCustomBackend
+
+# Register the custom backend
+BackendRegistry.register_backend("my_custom_backend", MyCustomBackend)
+
+# Now you can use your custom backend
+result = simulate(qc, shots=1000, backend="my_custom_backend")
+```
+
+**Step 3: (Optional) Integrate with the Router**
+
+To integrate your backend with Ariadne's automatic routing, you will need to create a new filter for the `RoutingTree`. This is a more advanced topic, and we recommend that you read the source code for the existing filters to understand how they work.
+
 ### How to Create a Custom Routing Strategy
 
 To create a custom routing strategy, you can create a new function that takes a `QuantumCircuit` as input and returns a `RoutingDecision` object.
+
+**Step 1: Create the Strategy Function**
+
+Create a new Python file for your strategy, for example, `my_custom_strategy.py`. In this file, define your strategy function:
+
+```python
+from ariadne.circuit import QuantumCircuit
+from ariadne.routing import RoutingDecision
+from ariadne.routing import BackendType
+
+def my_custom_strategy(circuit: QuantumCircuit) -> RoutingDecision:
+    """
+    A custom routing strategy that always chooses the 'my_custom_backend'.
+    """
+    # In a real strategy, you would analyze the circuit and make a decision.
+    # For this example, we will always choose 'my_custom_backend'.
+    if circuit.n_qubits > 10:
+        return RoutingDecision(
+            backend=BackendType.QISKIT,
+            reason="Circuit is too large for my_custom_backend.",
+        )
+    else:
+        return RoutingDecision(
+            backend="my_custom_backend",
+            reason="My custom strategy always chooses my_custom_backend for small circuits.",
+        )
+```
+
+**Step 2: Use the Custom Strategy**
+
+To use your custom strategy, you can pass it to the `ComprehensiveRoutingTree`'s `route_circuit` method:
+
+```python
+from ariadne import ComprehensiveRoutingTree
+from my_custom_strategy import my_custom_strategy
+
+router = ComprehensiveRoutingTree()
+decision = router.route_circuit(circuit, strategy=my_custom_strategy)
+
+print(f"Backend: {decision.backend}")
+print(f"Reason: {decision.reason}")
+```
+
+This allows you to create complex routing logic that is tailored to your specific needs.

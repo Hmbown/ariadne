@@ -3,28 +3,41 @@
 # Ariadne
 **Intelligent Quantum Simulator Router**
 
-*The Google Maps for quantum circuit simulation*
+*The Google Maps for quantum circuit simulation, automatically finding the fastest path for your quantum circuits.*
 
 [![PyPI version](https://img.shields.io/pypi/v/ariadne-router.svg)](https://pypi.org/project/ariadne-router/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CI](https://github.com/Hmbown/ariadne/actions/workflows/ci.yml/badge.svg)](https://github.com/Hmbown/ariadne/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/Hmbown/ariadne/branch/main/graph/badge.svg)](https://codecov.io/gh/Hmbown/ariadne)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Hmbown/ariadne/blob/main/notebooks/Ariadne_Interactive_Demo.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Hmbown/ariadne/blob/main/notebooks/01_ariadne_advantage_fixed.ipynb)
 
 </div>
 
 ---
 
+## Table of Contents
+- [What is Ariadne?](#what-is-ariadne)
+- [Why Ariadne? The Numbers Don\'t Lie](#why-ariadne-the-numbers-dont-lie)
+- [Perfect For Your Use Case](#-perfect-for-your-use-case)
+- [Quick Start](#quick-start)
+- [How Ariadne Works](#-how-ariadne-works)
+- [Real Performance Benchmarks](#-real-performance-benchmarks)
+- [Educational Examples](#-educational-examples)
+- [Advanced Features](#-advanced-features)
+- [Ariadne vs Other Tools](#-ariadne-vs-other-tools)
+- [Docker Usage](#-docker-usage)
+- [Documentation & Learning](#-documentation--learning)
+- [Contributing](#-contributing)
+- [Performance Tuning](#-performance-tuning)
+- [Troubleshooting](#-troubleshooting)
+- [Project Status](#-project-status)
+- [Success Stories](#-success-stories)
+- [License](#-license)
+
+---
+
 ## 🚀 Try It Now! No Installation Required
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Hmbown/ariadne/blob/main/notebooks/Ariadne_Interactive_Demo.ipynb)
-
-**Run quantum circuits in your browser in 5 minutes:**
-- ⚡ Interactive tutorial with live examples
-- 📊 Real-time performance benchmarks
-- 🎓 Step-by-step quantum algorithms
-- 🔬 Research-grade simulations
 
 ---
 
@@ -32,7 +45,7 @@
 
 **Stop wasting hours choosing quantum simulators.** Ariadne automatically routes your quantum circuits to the optimal backend, giving you maximum performance with zero configuration.
 
-**One line of code. 1000× speedup potential.**
+**One line of code. Up to 1000× speedup for specific circuit types.**
 
 ```python
 from ariadne import simulate
@@ -45,16 +58,16 @@ result = simulate(quantum_circuit, shots=1000)  # That's it!
 
 ---
 
-## Why Ariadne? The Numbers Don't Lie
+## Performance Highlights
 
 | Circuit Type | Traditional Approach | Ariadne | Speedup |
 |--------------|---------------------|---------|---------|
-| **50-qubit Clifford** | Crashes or 45+ seconds | 0.045s | **1000× faster** |
-| **Low-entanglement circuits** | 12.8s | 0.26s | **50× faster** |
-| **Error correction codes** | Memory errors | Instant | **Works when others fail** |
+| **50-qubit Clifford** | Crashes or 45+ seconds | 0.045s | **1000× faster*** |
+| **Low-entanglement circuits** | 12.8s | 0.26s | **50× faster*** |
+| **Large Clifford circuits** | Memory errors | 0.045s | **Handles circuits that fail on other simulators*** |
 | **Large quantum algorithms** | Manual backend tuning | Automatic | **Zero configuration** |
 
-*Real benchmarks on Apple M3 Max with 128GB RAM*
+*\*Benchmarks run on an Apple M3 Max with 128GB RAM. Speedups are relative to Qiskit Aer.*
 
 ---
 
@@ -74,7 +87,7 @@ result = simulate(quantum_circuit, shots=1000)  # That's it!
 ### ⚙️ **Developers & Engineers**
 - **Integrate quantum simulation into existing workflows**
 - **Production-ready with enterprise support**
-- **Automatic scaling from laptop to supercomputer**
+- **Automatic scaling from your laptop to powerful multi-core servers**
 
 ---
 
@@ -340,7 +353,7 @@ print('Available backends:', get_available_backends())
 
 ### Quick Learning Path
 
-1. **5-Minute Tutorial** → [Try in Colab](https://colab.research.google.com/github/Hmbown/ariadne/blob/main/notebooks/Ariadne_Interactive_Demo.ipynb)
+1. **5-Minute Tutorial** → [Try in Colab](https://colab.research.google.com/github/Hmbown/ariadne/blob/main/notebooks/01_ariadne_advantage_fixed.ipynb)
 2. **User Guide** → [USER_GUIDE.md](USER_GUIDE.md)
 3. **Educational Examples** → [examples/education/](examples/education/)
 4. **API Reference** → [docs/source/](docs/source/)
@@ -423,7 +436,6 @@ result = simulate(
 
 **Get Help:**
 - 📖 [Full Troubleshooting Guide](docs/troubleshooting.md)
-- 💬 [GitHub Discussions](https://github.com/Hmbown/ariadne/discussions)
 - 🐛 [Report Issues](https://github.com/Hmbown/ariadne/issues)
 
 ---
@@ -439,16 +451,7 @@ result = simulate(
 
 ---
 
-## 🏆 Success Stories
 
-> **"Ariadne enabled our students to focus on quantum concepts instead of simulator configuration. The automatic routing is magical."**
-> — *Dr. Sarah Chen, MIT Quantum Computing Instructor*
-
-> **"We reproduced a complex quantum error correction paper in hours, not weeks. The routing engine is incredibly smart."**
-> — *Research Team, IBM Quantum*
-
-> **"Our production quantum application went from crashing on 20 qubits to simulating 50+ qubits reliably."**
-> — *Quantum Software Startup*
 
 ---
 
