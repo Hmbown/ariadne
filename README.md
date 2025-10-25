@@ -153,9 +153,9 @@ graph TD
     E -->|No| G[Qiskit Backend];
 
     D --> H{Circuit Size?};
-    H --> I{Small (<= 20 qubits)};
-    H --> J{Medium (21-35 qubits)};
-    H --> K{Large (> 35 qubits)};
+    H --> I{"Small (<= 20 qubits)"};
+    H --> J{"Medium (21-35 qubits)"};
+    H --> K{"Large (> 35 qubits)"};
 
     I --> L{Hardware?};
     L -->|Apple Silicon with JAX/Metal| M[JAX/Metal Backend];
