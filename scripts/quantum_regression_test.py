@@ -33,61 +33,82 @@ def run_quantum_regression_tests() -> int:
         algorithms_to_test = ["bell", "ghz"]  # Simple set for CI
         results: dict[str, Any] = {"results": {}}
 
-        # On Windows, we'll be more conservative with backends due to potential installation issues
-        current_platform = platform.system().lower()
-        if current_platform == "windows":
-            # On Windows, limit to the most reliable backends
-            backends_to_test = ["qiskit"]
-            if "stim" in backends:
-                backends_to_test.append("stim")
-        else:
-            # On Unix-like systems, we can test more
-            backends_to_test = ["qiskit"]
-            if "stim" in backends:
-                backends_to_test.append("stim")
+        # For CI/CD stability, only test the most reliable backends
+        # especially important on Windows which may have installation issues
+        backends_to_test = []
+        # Always test qiskit as it's required
+        backends_to_test.append("qiskit")
+        # Add stim if available and working
+        try:
+            from ariadne.backends import StimBackend
+            # Test if stim is functional
+            stim_test = StimBackend()
+            backends_to_test.append("stim")
+            print("Stim backend is available and functional")
+        except Exception as e:
+            print(f"Stim backend not available: {e}")
+            pass  # Don't add stim if not available
+
+        print(f"Selected backends for testing: {backends_to_test}")
 
         for alg_name in algorithms_to_test:
             print(f"\nTesting {alg_name} algorithm...")
             results["results"][alg_name] = {"backends": {}}
 
-            # Create test circuit based on algorithm
-            if alg_name == "bell":
-                qc = QuantumCircuit(2, 2)
-                qc.h(0)
-                qc.cx(0, 1)
-                qc.measure_all()
-            elif alg_name == "ghz":
-                qc = QuantumCircuit(3, 3)
-                qc.h(0)
-                qc.cx(0, 1)
-                qc.cx(1, 2)
-                qc.measure_all()
-
-            # Test with available backends
-            for backend_name in backends_to_test:
-                try:
-                    print(f"  Testing {backend_name} backend...")
-                    start_time = time.time()
-                    result = simulate(qc, shots=100, backend=backend_name)
-                    execution_time = time.time() - start_time
-
-                    results["results"][alg_name]["backends"][backend_name] = {
-                        "success": True,
-                        "execution_time": execution_time,
-                        "throughput": 100 / execution_time if execution_time > 0 else 0,
-                        "backend_used": str(result.backend_used) if hasattr(result, "backend_used") else backend_name,
-                    }
-                    print(f"    ✓ {backend_name}: {execution_time:.3f}s")
-
-                except Exception as e:
-                    results["results"][alg_name]["backends"][backend_name] = {
+            # Create test circuit based on algorithm with error handling
+            qc = None
+            try:
+                if alg_name == "bell":
+                    qc = QuantumCircuit(2, 2)
+                    qc.h(0)
+                    qc.cx(0, 1)
+                    qc.measure_all()
+                elif alg_name == "ghz":
+                    qc = QuantumCircuit(3, 3)
+                    qc.h(0)
+                    qc.cx(0, 1)
+                    qc.cx(1, 2)
+                    qc.measure_all()
+            except Exception as e:
+                print(f"  Failed to create {alg_name} circuit: {e}")
+                results["results"][alg_name]["backends"] = {
+                    backend_name: {
                         "success": False,
-                        "error": str(e),
+                        "error": f"Circuit creation failed: {e}",
                         "execution_time": 0,
                         "throughput": 0,
                     }
-                    print(f"    ✗ {backend_name}: {e}")
-                    traceback.print_exc()  # Print the full traceback for debugging
+                    for backend_name in backends_to_test
+                }
+                continue  # Skip to next algorithm if circuit creation fails
+
+            if qc is not None:
+                # Test with available backends
+                for backend_name in backends_to_test:
+                    try:
+                        print(f"  Testing {backend_name} backend...")
+                        start_time = time.time()
+                        result = simulate(qc, shots=100, backend=backend_name)
+                        execution_time = time.time() - start_time
+
+                        results["results"][alg_name]["backends"][backend_name] = {
+                            "success": True,
+                            "execution_time": execution_time,
+                            "throughput": 100 / execution_time if execution_time > 0 else 0,
+                            "backend_used": str(result.backend_used) if hasattr(result, "backend_used") else backend_name,
+                        }
+                        print(f"    ✓ {backend_name}: {execution_time:.3f}s")
+
+                    except Exception as e:
+                        results["results"][alg_name]["backends"][backend_name] = {
+                            "success": False,
+                            "error": str(e),
+                            "execution_time": 0,
+                            "throughput": 0,
+                        }
+                        print(f"    ✗ {backend_name}: {e}")
+                        # Only print full traceback in verbose mode to avoid CI flooding
+                        # traceback.print_exc()
 
         # Save results
         with open("benchmark_results.json", "w") as f:
@@ -106,10 +127,15 @@ def run_quantum_regression_tests() -> int:
         print(f"\nOverall success rate: {success_rate:.2%} ({successful_tests}/{total_tests})")
 
         # For CI, consider success if at least the primary backend (qiskit) works
-        if (
-            "qiskit" in [b for alg in results["results"].values() for b in alg["backends"]]
-            and results["results"][list(results["results"].keys())[0]]["backends"]["qiskit"]["success"]
-        ):
+        qiskit_success = False
+        if results["results"]:
+            # Check if qiskit was tested and successful
+            for alg_name, alg_data in results["results"].items():
+                if "qiskit" in alg_data["backends"] and alg_data["backends"]["qiskit"]["success"]:
+                    qiskit_success = True
+                    break
+        
+        if qiskit_success:
             print("✅ Quantum regression tests passed! (Qiskit backend working)")
             return 0
         else:

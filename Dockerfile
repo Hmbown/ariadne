@@ -145,40 +145,40 @@ COPY --chown=ariadne:ariadne . ./ariadne/
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.3.4
 RUN cd ariadne && pip install --no-cache-dir -e .
 
-# Install quantum platforms one by one with better error handling
+# Install quantum platforms one by one with better error handling and reduced dependencies
 RUN cd ariadne && \
-    echo "Installing quantum platforms with timeout control..." && \
-    timeout 300 pip install --no-cache-dir --timeout=120 "pennylane>=0.30.0" || echo "PennyLane failed" && \
-    timeout 300 pip install --no-cache-dir --timeout=120 "pennylane-lightning" || echo "PennyLane Lightning failed" && \
+    echo "Installing quantum platforms with reduced dependencies..." && \
+    pip install --no-cache-dir --timeout=120 --prefer-binary "pennylane>=0.30.0" || echo "PennyLane failed" && \
+    pip install --no-cache-dir --timeout=120 --prefer-binary "pennylane-lightning" || echo "PennyLane Lightning failed" && \
     echo "PennyLane installation completed"
 
 RUN cd ariadne && \
-    timeout 300 pip install --no-cache-dir --timeout=120 "pyquil>=3.0.0" || echo "PyQuil failed" && \
+    pip install --no-cache-dir --timeout=120 --prefer-binary "pyquil>=3.0.0" || echo "PyQuil failed" && \
     echo "PyQuil installation completed"
 
 RUN cd ariadne && \
-    timeout 300 pip install --no-cache-dir --timeout=120 "amazon-braket-sdk>=1.40.0" || echo "Braket failed" && \
+    pip install --no-cache-dir --timeout=120 --prefer-binary "amazon-braket-sdk>=1.40.0" || echo "Braket failed" && \
     echo "Braket installation completed"
 
 RUN cd ariadne && \
-    timeout 300 pip install --no-cache-dir --timeout=120 "qsharp>=1.0.0" || echo "Q# failed" && \
+    pip install --no-cache-dir --timeout=120 --prefer-binary "qsharp>=1.0.0" || echo "Q# failed" && \
     echo "Q# installation completed"
 
 RUN cd ariadne && \
-    timeout 300 pip install --no-cache-dir --timeout=120 "pyopencl>=2023.1.0" || echo "PyOpenCL failed" && \
+    pip install --no-cache-dir --timeout=120 --prefer-binary "pyopencl>=2023.1.0" || echo "PyOpenCL failed" && \
     echo "PyOpenCL installation completed"
 
 # Install advanced simulators
 RUN cd ariadne && \
-    timeout 300 pip install --no-cache-dir --timeout=120 "mqt.ddsim>=2.0.0" || echo "DDSIM failed" && \
+    pip install --no-cache-dir --timeout=120 --prefer-binary "mqt.ddsim>=2.0.0" || echo "DDSIM failed" && \
     echo "DDSIM installation completed"
 
 RUN cd ariadne && \
-    timeout 300 pip install --no-cache-dir --timeout=120 "qulacs>=0.6.4" || echo "Qulacs failed" && \
+    pip install --no-cache-dir --timeout=120 --prefer-binary "qulacs>=0.6.4" || echo "Qulacs failed" && \
     echo "Qulacs installation completed"
 
 RUN cd ariadne && \
-    timeout 300 pip install --no-cache-dir --timeout=120 "cirq>=1.0.0" || echo "Cirq failed" && \
+    pip install --no-cache-dir --timeout=120 --prefer-binary "cirq>=1.0.0" || echo "Cirq failed" && \
     echo "Cirq installation completed"
 
 # Install missing dependencies that might have been skipped
