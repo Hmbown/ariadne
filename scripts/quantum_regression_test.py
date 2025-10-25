@@ -13,7 +13,7 @@ import traceback
 
 def run_quantum_regression_tests() -> int:
     """Run minimal quantum regression tests."""
-    print("🚀 Quantum Regression Test Suite (Minimal)")
+    print("Quantum Regression Test Suite (Minimal)")
     print("=" * 50)
     print(f"Platform: {platform.system()} {platform.release()}")
     print(f"Python: {sys.version}")
@@ -26,13 +26,13 @@ def run_quantum_regression_tests() -> int:
         print("1. Testing Ariadne core import...")
         try:
             import ariadne
-            print("   ✅ Ariadne import successful")
+            print("   OK Ariadne import successful")
             results["results"]["minimal_test"]["backends"]["core_import"] = {
                 "success": True,
                 "message": f"Ariadne version {ariadne.__version__ if hasattr(ariadne, '__version__') else 'unknown'}"
             }
         except ImportError as e:
-            print(f"   ❌ Ariadne import failed: {e}")
+            print(f"   FAIL Ariadne import failed: {e}")
             results["results"]["minimal_test"]["backends"]["core_import"] = {
                 "success": False,
                 "error": str(e)
@@ -48,13 +48,13 @@ def run_quantum_regression_tests() -> int:
         print("2. Testing Qiskit import...")
         try:
             import qiskit
-            print(f"   ✅ Qiskit import successful (version {qiskit.__version__})")
+            print(f"   OK Qiskit import successful (version {qiskit.__version__})")
             results["results"]["minimal_test"]["backends"]["qiskit_import"] = {
                 "success": True,
                 "message": f"Qiskit version {qiskit.__version__}"
             }
         except ImportError as e:
-            print(f"   ❌ Qiskit import failed: {e}")
+            print(f"   FAIL Qiskit import failed: {e}")
             results["results"]["minimal_test"]["backends"]["qiskit_import"] = {
                 "success": False,
                 "error": str(e)
@@ -65,13 +65,13 @@ def run_quantum_regression_tests() -> int:
         try:
             from ariadne import get_available_backends
             backends = get_available_backends()
-            print(f"   ✅ Backend detection successful: {backends}")
+            print(f"   OK Backend detection successful: {backends}")
             results["results"]["minimal_test"]["backends"]["backend_detection"] = {
                 "success": True,
                 "message": f"Found {len(backends)} backends: {backends}"
             }
         except Exception as e:
-            print(f"   ❌ Backend detection failed: {e}")
+            print(f"   FAIL Backend detection failed: {e}")
             results["results"]["minimal_test"]["backends"]["backend_detection"] = {
                 "success": False,
                 "error": str(e)
@@ -85,18 +85,18 @@ def run_quantum_regression_tests() -> int:
             qc.h(0)
             qc.cx(0, 1)
             qc.measure_all()
-            print("   ✅ Quantum circuit creation successful")
+            print("   OK Quantum circuit creation successful")
             
             # If we have simulate function, test it
             if 'simulate' in dir(__import__('ariadne', fromlist=['simulate'])):
                 from ariadne import simulate
-                print("   ✅ Ariadne simulate function available")
+                print("   OK Ariadne simulate function available")
                 
                 # Run a minimal simulation
                 start_time = time.time()
                 result = simulate(qc, shots=10)  # Minimal shots for speed
                 execution_time = time.time() - start_time
-                print(f"   ✅ Basic simulation successful (time: {execution_time:.3f}s)")
+                print(f"   OK Basic simulation successful (time: {execution_time:.3f}s)")
                 
                 results["results"]["minimal_test"]["backends"]["basic_simulation"] = {
                     "success": True,
@@ -105,7 +105,7 @@ def run_quantum_regression_tests() -> int:
                     "backend_used": str(getattr(result, 'backend_used', 'unknown'))
                 }
             else:
-                print("   ⚠️  Ariadne simulate function not available")
+                print("   WARN Ariadne simulate function not available")
                 results["results"]["minimal_test"]["backends"]["basic_simulation"] = {
                     "success": False,
                     "error": "simulate function not found"
