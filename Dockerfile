@@ -145,41 +145,15 @@ COPY --chown=ariadne:ariadne . ./ariadne/
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.3.4
 RUN cd ariadne && pip install --no-cache-dir -e .
 
-# Install quantum platforms one by one with better error handling and reduced dependencies
+# Install quantum platforms with single command for better stability
 RUN cd ariadne && \
-    echo "Installing quantum platforms with reduced dependencies..." && \
-    pip install --no-cache-dir --timeout=120 --prefer-binary "pennylane>=0.30.0" || echo "PennyLane failed" && \
-    pip install --no-cache-dir --timeout=120 --prefer-binary "pennylane-lightning" || echo "PennyLane Lightning failed" && \
-    echo "PennyLane installation completed"
-
-RUN cd ariadne && \
-    pip install --no-cache-dir --timeout=120 --prefer-binary "pyquil>=3.0.0" || echo "PyQuil failed" && \
-    echo "PyQuil installation completed"
-
-RUN cd ariadne && \
-    pip install --no-cache-dir --timeout=120 --prefer-binary "amazon-braket-sdk>=1.40.0" || echo "Braket failed" && \
-    echo "Braket installation completed"
-
-RUN cd ariadne && \
-    pip install --no-cache-dir --timeout=120 --prefer-binary "qsharp>=1.0.0" || echo "Q# failed" && \
-    echo "Q# installation completed"
-
-RUN cd ariadne && \
-    pip install --no-cache-dir --timeout=120 --prefer-binary "pyopencl>=2023.1.0" || echo "PyOpenCL failed" && \
-    echo "PyOpenCL installation completed"
-
-# Install advanced simulators
-RUN cd ariadne && \
-    pip install --no-cache-dir --timeout=120 --prefer-binary "mqt.ddsim>=2.0.0" || echo "DDSIM failed" && \
-    echo "DDSIM installation completed"
-
-RUN cd ariadne && \
-    pip install --no-cache-dir --timeout=120 --prefer-binary "qulacs>=0.6.4" || echo "Qulacs failed" && \
-    echo "Qulacs installation completed"
-
-RUN cd ariadne && \
-    pip install --no-cache-dir --timeout=120 --prefer-binary "cirq>=1.0.0" || echo "Cirq failed" && \
-    echo "Cirq installation completed"
+    echo "Installing quantum platforms with single pip command..." && \
+    pip install --no-cache-dir --timeout=300 --prefer-binary \
+        pennylane>=0.30.0 \
+        pyquil>=3.0.0 \
+        amazon-braket-sdk>=1.40.0 \
+        qsharp>=1.0.0 \
+        || echo "Some quantum platforms failed to install - continuing with available ones"
 
 # Install missing dependencies that might have been skipped
 RUN pip install --no-cache-dir autograd || echo "autograd install failed"
