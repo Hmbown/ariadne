@@ -190,7 +190,7 @@ USER ariadne
 
 # Set up quantum-full environment
 ENV ARIADNE_LOG_LEVEL=INFO
-ENV ARIADNE_BACKEND_PREFERENCE="stim,qiskit"  # Simplified for CI stability
+ENV ARIADNE_BACKEND_PREFERENCE="stim,qiskit"
 ENV PYTHONPATH=/home/ariadne/ariadne/src
 
 # Create workspace and test installation
