@@ -240,13 +240,7 @@ result = simulate(vqe_circuit, shots=8192)
 # 50× faster than state vector simulation
 ```
 
-### Hardware Acceleration Results
 
-| Platform | Backend | Circuit Size | CPU Time | Accelerated Time | Speedup |
-|----------|---------|--------------|----------|------------------|---------|
-| Apple M3 | JAX-Metal | 20-qubit QAOA | 2.1s | 0.18s | **11.7×** |
-| NVIDIA A100 | CUDA | 30-qubit random | 8.5s | 0.42s | **20.2×** |
-| Intel i9 | Qiskit Aer | 25-qubit GHZ | 1.2s | 1.2s | **1.0× (baseline)** |
 
 ---
 
