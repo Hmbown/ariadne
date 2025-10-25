@@ -18,7 +18,7 @@
 
 ## Table of Contents
 - [What is Ariadne?](#what-is-ariadne)
-- [Why Ariadne? The Numbers Don\'t Lie](#why-ariadne-the-numbers-dont-lie)
+- [Performance Highlights](#performance-highlights)
 - [Perfect For Your Use Case](#-perfect-for-your-use-case)
 - [Quick Start](#quick-start)
 - [How Ariadne Works](#-how-ariadne-works)
@@ -36,8 +36,6 @@
 - [License](#-license)
 
 ---
-
-## 🚀 Try It Now! No Installation Required
 
 ---
 
@@ -219,6 +217,8 @@ Ariadne analyzes your circuit in milliseconds and selects the optimal backend:
 
 ### Clifford Circuit Performance (Error Correction)
 
+*Note: The following code examples are snippets and may require additional code to run.*
+
 ```python
 # 50-qubit surface code simulation
 qc = create_surface_code(50)  # 50 qubits, 1000+ gates
@@ -229,6 +229,8 @@ result = simulate(qc, shots=1000)
 ```
 
 ### Quantum Algorithm Performance
+
+*Note: The following code examples are snippets and may require additional code to run.*
 
 ```python
 # VQE simulation for quantum chemistry
