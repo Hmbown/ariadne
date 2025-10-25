@@ -9,14 +9,39 @@ import sys
 import time
 import platform
 import traceback
+import os
+import sys
+
+# Add src directory to Python path
+_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+_src_dir = os.path.join(_root_dir, 'src')
+sys.path.insert(0, _src_dir)
+
+
+def log_environment_details():
+    """Log detailed environment information for debugging."""
+    print("--- Environment Details ---")
+    print(f"OS: {platform.system()} {platform.release()} ({platform.version()})")
+    print(f"Architecture: {platform.machine()}")
+    print(f"Python Implementation: {platform.python_implementation()}")
+    print(f"Python Version: {sys.version}")
+    print(f"Current Directory: {os.getcwd()}")
+    print(f"Path Separator: {os.path.sep}")
+    print("--- Python Path ---")
+    for p in sys.path:
+        print(f"  - {p}")
+    print("--- Environment Variables ---")
+    for key, value in sorted(os.environ.items()):
+        if "SECRET" not in key.upper() and "TOKEN" not in key.upper() and "KEY" not in key.upper():
+            print(f"  - {key}: {value}")
+    print("--------------------------")
 
 
 def run_quantum_regression_tests() -> int:
     """Run minimal quantum regression tests."""
     print("Quantum Regression Test Suite (Minimal)")
     print("=" * 50)
-    print(f"Platform: {platform.system()} {platform.release()}")
-    print(f"Python: {sys.version}")
+    log_environment_details()
     
     # Initialize results
     results = {"results": {"minimal_test": {"backends": {}}}}
@@ -31,11 +56,12 @@ def run_quantum_regression_tests() -> int:
                 "success": True,
                 "message": f"Ariadne version {ariadne.__version__ if hasattr(ariadne, '__version__') else 'unknown'}"
             }
-        except ImportError as e:
+        except ModuleNotFoundError as e:
             print(f"   FAIL Ariadne import failed: {e}")
+            print(f"   Python Path: {sys.path}")
             results["results"]["minimal_test"]["backends"]["core_import"] = {
                 "success": False,
-                "error": str(e)
+                "error": f"ModuleNotFoundError: {e}. Check PYTHONPATH."
             }
             # If import fails, we can't continue
             with open("benchmark_results.json", "w") as f:

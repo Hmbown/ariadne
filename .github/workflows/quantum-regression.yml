@@ -28,27 +28,27 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
-      shell: bash
+      shell: pwsh
       run: |
         python -m pip install --upgrade pip
         pip install wheel  # Ensure wheel is installed for faster installs
         # On Windows, install with reduced dependencies to avoid installation issues
-        if [ "${{ runner.os }}" == "Windows" ]; then
+        if ($env:RUNNER_OS -eq "Windows") {
           pip install -e ".[dev]"
-        else
+        } else {
           pip install -e ".[dev,viz]"
-        fi
+        }
 
     - name: Install platform-specific dependencies
+      shell: pwsh
       run: |
-        if [ "${{ matrix.os }}" == "macos-latest" ]; then
-          pip install -e ".[apple]" || echo "Apple dependencies not available"
-        elif [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
-          pip install -e ".[cuda]" || echo "CUDA dependencies not available"
-        else
-          echo "No platform-specific dependencies for ${{ matrix.os }}"
-        fi
-      shell: bash
+        if ($env:RUNNER_OS -eq "macOS") {
+          pip install -e ".[apple]" | Out-Null
+        } elseif ($env:RUNNER_OS -eq "Linux") {
+          pip install -e ".[cuda]" | Out-Null
+        } else {
+          Write-Host "No platform-specific dependencies for $($env:RUNNER_OS)"
+        }
 
     - name: Run quantum regression tests
       run: python scripts/quantum_regression_test.py

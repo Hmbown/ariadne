@@ -32,6 +32,8 @@ validation_plan.md
 GPT5_FEEDBACK_IMPLEMENTATION.md
 *.log
 *.tmp
+benchmark_results.json
+success_rate.txt
 
 # Keep curated results in results/
 !benchmarks/results/

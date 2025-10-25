@@ -88,42 +88,43 @@ class ComprehensiveRoutingTree:
         """Check which backends are actually available."""
         availability = {}
 
-        def safe_find_spec(module_name: str) -> bool:
-            """Safely check if a module exists without raising ModuleNotFoundError."""
+        def _safe_find_spec(module_name: str) -> bool:
+            """Safely check if a module exists without raising exceptions."""
             try:
                 return find_spec(module_name) is not None
-            except (ModuleNotFoundError, ValueError, ImportError):
+            except (ModuleNotFoundError, ValueError, ImportError, AttributeError):
+                # AttributeError can be raised on Windows in some cases
                 return False
 
         # Always available
         availability[BackendType.QISKIT] = True
 
         # Check Stim
-        availability[BackendType.STIM] = safe_find_spec("stim")
+        availability[BackendType.STIM] = _safe_find_spec("stim")
 
         # Check CUDA
-        availability[BackendType.CUDA] = safe_find_spec("cupy")
+        availability[BackendType.CUDA] = _safe_find_spec("cupy")
 
         # Check Metal (Apple Silicon)
-        availability[BackendType.JAX_METAL] = self._is_apple_silicon() and safe_find_spec("jax")
+        availability[BackendType.JAX_METAL] = self._is_apple_silicon() and _safe_find_spec("jax")
 
         # Check Tensor Network
-        availability[BackendType.TENSOR_NETWORK] = safe_find_spec("cotengra") and safe_find_spec("quimb")
+        availability[BackendType.TENSOR_NETWORK] = _safe_find_spec("cotengra") and _safe_find_spec("quimb")
 
         # Check MPS
-        availability[BackendType.MPS] = safe_find_spec("quimb")
+        availability[BackendType.MPS] = _safe_find_spec("quimb")
 
         # Check DDSIM
-        availability[BackendType.DDSIM] = safe_find_spec("mqt.ddsim")
+        availability[BackendType.DDSIM] = _safe_find_spec("mqt.ddsim")
 
         # Additional optional backends
-        availability[BackendType.CIRQ] = safe_find_spec("cirq")
-        availability[BackendType.PENNYLANE] = safe_find_spec("pennylane")
-        availability[BackendType.QULACS] = safe_find_spec("qulacs")
-        availability[BackendType.PYQUIL] = safe_find_spec("pyquil")
-        availability[BackendType.BRAKET] = safe_find_spec("braket")
-        availability[BackendType.QSHARP] = safe_find_spec("qsharp")
-        availability[BackendType.OPENCL] = safe_find_spec("pyopencl")
+        availability[BackendType.CIRQ] = _safe_find_spec("cirq")
+        availability[BackendType.PENNYLANE] = _safe_find_spec("pennylane")
+        availability[BackendType.QULACS] = _safe_find_spec("qulacs")
+        availability[BackendType.PYQUIL] = _safe_find_spec("pyquil")
+        availability[BackendType.BRAKET] = _safe_find_spec("braket")
+        availability[BackendType.QSHARP] = _safe_find_spec("qsharp")
+        availability[BackendType.OPENCL] = _safe_find_spec("pyopencl")
 
         return availability
 
