@@ -30,7 +30,13 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e ".[dev,viz]"
+        pip install wheel  # Ensure wheel is installed for faster installs
+        # On Windows, install with reduced dependencies to avoid installation issues
+        if [ "${{ runner.os }}" == "Windows" ]; then
+          pip install -e ".[dev]"
+        else
+          pip install -e ".[dev,viz]"
+        fi
 
     - name: Install platform-specific dependencies
       run: |
