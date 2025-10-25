@@ -144,23 +144,61 @@ Why: Clifford circuit detected → routed to Stim for 1000× speedup
 
 ```mermaid
 graph TD
-    A[Quantum Circuit] --> B[Analyze Circuit Properties]
-    B --> C{Clifford Circuit?}
-    C -->|Yes| D[Route to Stim Backend]
-    C -->|No| E{Low Entanglement?}
-    E -->|Yes| F[Route to Tensor Networks]
-    E -->|No| G{Hardware Available?}
-    G -->|CUDA| H[Route to GPU Backend]
-    G -->|Metal| I[Route to Apple Silicon]
-    G -->|None| J[Route to Qiskit Aer]
+    A[Quantum Circuit] --> B{Circuit Type?};
+    B --> C{Clifford?};
+    B --> D{General?};
 
-    D --> K[Execute Simulation]
-    F --> K
-    H --> K
-    I --> K
-    J --> K
+    C --> E{Stim available?};
+    E -->|Yes| F[Stim Backend];
+    E -->|No| G[Qiskit Backend];
 
-    K --> L[Return Results + Performance Metrics]
+    D --> H{Circuit Size?};
+    H --> I{Small (<= 20 qubits)};
+    H --> J{Medium (21-35 qubits)};
+    H --> K{Large (> 35 qubits)};
+
+    I --> L{Hardware?};
+    L -->|Apple Silicon with JAX/Metal| M[JAX/Metal Backend];
+    L -->|NVIDIA GPU with CUDA| N[CUDA Backend];
+    L -->|CPU or other| O{Optional Backends?};
+    O -->|Cirq| P[Cirq Backend];
+    O -->|Qulacs| Q[Qulacs Backend];
+    O -->|PennyLane| R[PennyLane Backend];
+    O -->|None| G;
+
+    J --> S{Entanglement?};
+    S --> T{Low};
+    S --> U{High};
+
+    T --> V{MPS available?};
+    V -->|Yes| W[MPS Backend];
+    V -->|No| X{Tensor Network available?};
+    X -->|Yes| Y[Tensor Network Backend];
+    X -->|No| G;
+
+    U --> Z{Hardware?};
+    Z -->|NVIDIA GPU with CUDA| N;
+    Z -->|Apple Silicon with JAX/Metal| M;
+    Z -->|CPU or other| AA{Optional Backends?};
+    AA -->|OpenCL| AB[OpenCL Backend];
+    AA -->|Cirq| P;
+    AA -->|Qulacs| Q;
+    AA -->|None| G;
+
+    K --> AC{Entanglement?};
+    AC --> AD{Low};
+    AC --> AE{High};
+
+    AD --> AF{MPS available?};
+    AF -->|Yes| W;
+    AF -->|No| X;
+
+    AE --> AG{Specialized Backends?};
+    AG -->|Tensor Network| Y;
+    AG -->|DDSIM| AH[DDSIM Backend];
+    AG -->|Braket| AI[Braket Backend];
+    AG -->|Q#| AJ[Q# Backend];
+    AG -->|None| G;
 ```
 
 ### Backend Selection Logic
@@ -358,6 +396,7 @@ print('Available backends:', get_available_backends())
 3. **Educational Examples** → [examples/education/](examples/education/)
 4. **API Reference** → [docs/source/](docs/source/)
 5. **Research Papers** → [docs/project/CITATIONS.bib](docs/project/CITATIONS.bib)
+6. **Configuration Options** → [Configuration Options](docs/options.md)
 
 ### For Different Audiences
 
@@ -366,6 +405,7 @@ print('Available backends:', get_available_backends())
 - **👨‍🏫 Educators**: Check [instructor guide](docs/getting-started/for-instructors.md)
 - **⚙️ Developers**: Read [developer guide](docs/guides/developer_guide.md)
 - **🚀 DevOps**: Follow [deployment guide](docs/getting-started/for-devops.md)
+- **🔧 System Administrators**: Refer to the [Configuration Options](docs/options.md) for detailed tuning and setup.
 
 ---
 
