@@ -138,7 +138,7 @@ def run_quantum_regression_tests() -> int:
                 }
                 
         except Exception as e:
-            print(f"   ❌ Basic simulation failed: {e}")
+            print(f"   Basic simulation failed: {e}")
             print(f"   Full error: {traceback.format_exc()}")
             results["results"]["minimal_test"]["backends"]["basic_simulation"] = {
                 "success": False,
@@ -161,14 +161,14 @@ def run_quantum_regression_tests() -> int:
             f.write(f"{success_rate:.2%}")
         
         if overall_success:
-            print(f"\n✅ Quantum regression tests passed! ({successful_tests}/{total_tests} components working)")
+            print(f"\nQuantum regression tests passed! ({successful_tests}/{total_tests} components working)")
             return 0
         else:
-            print(f"\n❌ Quantum regression tests failed! (Core import failed)")
+            print(f"\nQuantum regression tests failed! (Core import failed)")
             return 1
             
     except Exception as e:
-        print(f"❌ Critical error in quantum regression tests: {e}")
+        print(f"Critical error in quantum regression tests: {e}")
         print(f"Full error: {traceback.format_exc()}")
         
         # Create minimal results to avoid CI failures
