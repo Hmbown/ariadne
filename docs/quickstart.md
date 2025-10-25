@@ -156,9 +156,8 @@ If you encounter any issues:
 ## Need Help?
 
 - Check our [Troubleshooting Guide](troubleshooting.md)
-- Join our [GitHub Discussions](https://github.com/Hmbown/ariadne/discussions)
 - Report issues on our [Issue Tracker](https://github.com/Hmbown/ariadne/issues)
 
 ---
 
-*Ready to explore more? Continue to the [Basic Usage Guide](basic-usage.md) for detailed API documentation and advanced features.*
+*Ready to explore more? Continue to the [User Guide](../USER_GUIDE.md) for detailed API documentation and advanced features.*

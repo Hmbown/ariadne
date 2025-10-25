@@ -34,6 +34,7 @@ GPT5_FEEDBACK_IMPLEMENTATION.md
 *.tmp
 benchmark_results.json
 success_rate.txt
+results/
 
 # Keep curated results in results/
 !benchmarks/results/

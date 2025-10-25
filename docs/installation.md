@@ -46,9 +46,8 @@ Comprehensive installation instructions for Ariadne on all supported platforms a
    pip install -e .
    ```
 
-### Method 2: Install from PyPI (Coming Soon)
+### Method 2: Install from PyPI
 
-Once published to PyPI:
 ```bash
 pip install ariadne-router
 ```
@@ -282,7 +281,6 @@ If you encounter installation issues:
 
 1. **Check our [Troubleshooting Guide](troubleshooting.md)**
 2. **Search [GitHub Issues](https://github.com/Hmbown/ariadne/issues)**
-3. **Ask in [GitHub Discussions](https://github.com/Hmbown/ariadne/discussions)**
 4. **Verify system requirements match your environment**
 
 ## Next Steps
