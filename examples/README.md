@@ -120,6 +120,7 @@ For interactive exploration, use Jupyter notebooks:
 | **enhanced_routing_demo.py** | Advanced | Advanced | Custom routing strategies | Routing tree, performance models |
 | **performance_comparison.py** | Benchmarking | Intermediate | Compare backend performance | Benchmarking, profiling |
 | **production_ready_demo.py** | Production | Advanced | Production deployment patterns | Error handling, logging, monitoring |
+| **production_ready_example.py** | Production | Advanced | Example of production deployment | Production patterns, best practices |
 
 ---
 
