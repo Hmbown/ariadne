@@ -143,7 +143,7 @@ When submitting an issue, please include:
 5. **Commit your changes:**
    ```bash
    git add .
-   git commit -m "Brief description of changes"
+   git commit -m "feat: Add interactive circuit builder"
    ```
 
    **Commit Message Guidelines:**
