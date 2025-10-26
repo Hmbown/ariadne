@@ -54,11 +54,11 @@ def check_pyproject_metadata(root: Path) -> List[CheckResult]:
 
     dependencies = project.get("dependencies", [])
     if dependencies:
-        pinned = [dep for dep in dependencies if any(op in dep for op in ("==", ">=", "<=", "~=", "!="))]
-        if pinned:
-            results.append(CheckResult("pyproject:dependencies", "ok", f"{len(dependencies)} core dependencies declared"))
+        unpinned = [dep for dep in dependencies if not any(op in dep for op in ("==", ">=", "<=", "~=", "!="))]
+        if unpinned:
+            results.append(CheckResult("pyproject:dependencies", "warning", f"Found unpinned core dependencies: {', '.join(unpinned)}"))
         else:
-            results.append(CheckResult("pyproject:dependencies", "warning", "core dependencies present but not version pinned"))
+            results.append(CheckResult("pyproject:dependencies", "ok", f"All {len(dependencies)} core dependencies are pinned"))
     else:
         results.append(CheckResult("pyproject:dependencies", "error", "no core dependencies configured"))
 
