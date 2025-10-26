@@ -7,7 +7,7 @@ import dataclasses
 import re
 import sys
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable
 
 try:
     import tomllib  # Python >=3.11
