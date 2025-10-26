@@ -312,7 +312,10 @@ theta = Parameter('θ')
 vqe_circuit = QuantumCircuit(4)
 vqe_circuit.ry(theta, 0)
 vqe_circuit.cx(0, 1)
-# Ariadne handles parameterized circuits efficiently
+# Ariadne handles parameterized circuits efficiently.
+# To run a simulation, you must first bind the parameters to concrete values.
+result = simulate(vqe_circuit.bind_parameters({theta: 0.5}), shots=1000)
+print(f"VQE results: {result.counts}")
 ```
 
 ---
