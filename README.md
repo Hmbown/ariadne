@@ -79,6 +79,8 @@ Real-world performance improvements from automatic backend selection:
 
 *\*Benchmarks measured on Apple M3 Max (128GB RAM). Actual speedups vary by circuit type and hardware. Clifford circuits see the largest improvements via Stim backend. Your results may differ based on circuit characteristics and available backends.*
 
+**Note:** In specific benchmark scenarios, we've observed up to 5000× speedup for Clifford circuits and 50× for general circuits. See the [benchmark notebook](https://colab.research.google.com/github/Hmbown/ariadne/blob/main/notebooks/01_ariadne_advantage_fixed.ipynb) for detailed reproducible results.
+
 ---
 
 ## 🎯 Perfect For Your Use Case
@@ -117,6 +119,8 @@ pip install ariadne-router[apple]
 # NVIDIA GPUs
 pip install ariadne-router[cuda]
 ```
+
+> **Note:** The package installs as `ariadne-router` but imports as `ariadne`. This may conflict with the [Ariadne GraphQL library](https://ariadnegraphql.org/). If you use both, consider using a virtual environment or we plan to switch to `ariadne_router` imports in a future release.
 
 ### Basic Usage
 
@@ -222,6 +226,20 @@ Ariadne analyzes your circuit in milliseconds and selects the optimal backend:
 | **JAX-Metal** | Apple Silicon acceleration | 10× | Running on M1/M2/M3/M4 Macs |
 | **CUDA** | NVIDIA GPU acceleration | 20× | NVIDIA GPU with sufficient memory |
 | **Qiskit Aer** | General-purpose, reliable fallback | 1× | Universal fallback for any circuit |
+
+### Backend Capabilities & References
+
+Ariadne leverages several powerful quantum simulation backends, each with specific strengths:
+
+- **[Stim](https://github.com/quantumlib/Stim)**: A fast stabilizer circuit simulator that excels at Clifford circuits (common in error correction). This is where Ariadne achieves its largest speedups.
+
+- **[Qiskit Aer](https://qiskit.github.io/qiskit-aer/)**: A high-performance simulator for quantum circuits with various methods including statevector, density matrix, and tensor network simulation.
+
+- **[Tensor Networks/MPS](https://pennylane.ai/qml/demos/tutorial_How_to_simulate_quantum_circuits_with_tensor_networks.html)**: Efficient for low-entanglement quantum circuits where the amount of quantum entanglement grows slowly with qubit count.
+
+- **[JAX-Metal](https://developer.apple.com/metal/jax/)**: Apple's GPU acceleration framework that provides significant speedups on Apple Silicon Macs.
+
+- **[CUDA](https://developer.nvidia.com/cuda-zone)**: NVIDIA's parallel computing platform that enables GPU acceleration for quantum simulation on NVIDIA hardware.
 
 ---
 
@@ -422,11 +440,10 @@ print('Available backends:', get_available_backends())
 ### Quick Learning Path
 
 1. **5-Minute Tutorial** → [Try in Colab](https://colab.research.google.com/github/Hmbown/ariadne/blob/main/notebooks/01_ariadne_advantage_fixed.ipynb)
-2. **User Guide** → [USER_GUIDE.md](USER_GUIDE.md)
-3. **Educational Examples** → [examples/education/](examples/education/)
-4. **API Reference** → [docs/source/](docs/source/)
-5. **Research Papers** → [docs/project/CITATIONS.bib](docs/project/CITATIONS.bib)
-6. **Configuration Options** → [Configuration Options](docs/options.md)
+2. **Educational Examples** → [examples/education/](examples/education/)
+3. **API Reference** → [docs/source/](docs/source/)
+4. **Research Papers** → [docs/project/CITATIONS.bib](docs/project/CITATIONS.bib)
+5. **Configuration Options** → [Configuration Options](docs/options.md)
 
 ### For Different Audiences
 
@@ -512,7 +529,7 @@ result = simulate(
 
 ## 📊 Project Status
 
-- ✅ **Production Ready** - All tests passing, security audited
+- ✅ **Production Ready** - All tests passing, CI/CD with comprehensive test suite
 - ✅ **Cross-Platform** - Windows, macOS, Linux support
 - ✅ **Hardware Acceleration** - CUDA, Metal, Apple Silicon
 - ✅ **Educational Tools** - 15+ algorithms, interactive tutorials
