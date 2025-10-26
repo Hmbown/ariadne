@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - New `get_available_backends()` function to public API for checking available backends
+- Added offline release readiness checklist script and Makefile target for packaging validation
 - Added optional dependencies for additional quantum platforms: PennyLane, PyQuil, Braket, Q#, and OpenCL
 - Added quantum-full Docker environment with all quantum libraries pre-installed
 - Added quantum-full service to docker-compose configuration

@@ -1,4 +1,4 @@
-.PHONY: test install dev-install lint format clean help docker-build-prod docker-build-dev docker-push-prod docker-push-dev docker-run-prod compose-dev compose-test
+.PHONY: test install dev-install lint format clean help docker-build-prod docker-build-dev docker-push-prod docker-push-dev docker-run-prod compose-dev compose-test release-check
 
 help:
 	@echo "Ariadne Development Commands"
@@ -18,6 +18,11 @@ help:
 	@echo "  make compose-test        Run test compose service"
 
 # Container image coordinates (override OWNER on invocation)
+VERSION ?=
+
+release-check:
+	python scripts/release_checklist.py $(if $(VERSION),--version $(VERSION),)
+
 OWNER ?= your-gh-username
 IMAGE_BASE ?= ghcr.io/$(OWNER)/ariadne-router
 

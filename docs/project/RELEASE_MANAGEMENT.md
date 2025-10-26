@@ -53,6 +53,13 @@ We use [Semantic Versioning (SemVer)](https://semver.org/) with the format `MAJO
 ### 2. Pre-Release Phase (1-2 weeks)
 
 **Quality Assurance**
+
+**Automated Readiness Checks**
+```bash
+make release-check VERSION=X.Y.Z
+```
+The checklist validates packaging metadata, changelog structure, and release documentation before the artifact build begins.
+
 ```bash
 # Run comprehensive test suite
 make test-all
