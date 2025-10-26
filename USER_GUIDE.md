@@ -97,13 +97,15 @@ print(builder.get_circuit().draw())
 Explore a library of over 15 quantum algorithms:
 
 ```python
-from ariadne.education import AlgorithmExplorer
+from ariadne import list_algorithms, get_algorithm
 
-explorer = AlgorithmExplorer()
-print(explorer.list_algorithms())
+# List all available algorithms
+algorithms = list_algorithms()
+print(f"Available algorithms: {algorithms}")
 
-info = explorer.get_algorithm_info('bell')
-print(info['metadata'].description)
+# Get information about a specific algorithm
+info = get_algorithm('bell')
+print(f"Description: {info['metadata'].description}")
 ```
 
 ---
@@ -119,7 +121,7 @@ Compare the performance of different backends for a given circuit:
 ```python
 from ariadne.enhanced_benchmarking import EnhancedBenchmarkSuite
 
-site = EnhancedBenchmarkSuite()
+suite = EnhancedBenchmarkSuite()
 comparison = suite.benchmark_backend_comparison(
     algorithm_name='bell',
     qubit_count=2,

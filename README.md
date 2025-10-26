@@ -37,11 +37,11 @@
 
 ---
 
----
-
 ## What is Ariadne?
 
 **Stop wasting hours choosing quantum simulators.** Ariadne automatically routes your quantum circuits to the optimal backend, giving you maximum performance with zero configuration.
+
+Think of it as **Google Maps for quantum computing** - you provide the destination (your quantum circuit), and Ariadne finds the fastest route (optimal backend).
 
 **One line of code. Up to 1000× speedup for specific circuit types.**
 
@@ -50,22 +50,34 @@ from ariadne import simulate
 result = simulate(quantum_circuit, shots=1000)  # That's it!
 ```
 
-**Before Ariadne:** You spend hours researching backends, dealing with installation nightmares, and manually optimizing for each circuit type.
+**Before Ariadne:**
+- Spend hours researching which backend to use
+- Deal with complex installation and configuration
+- Manually optimize for each circuit type
+- Circuits crash or run painfully slow
+- Different setups for different platforms
 
-**After Ariadne:** Write your circuit once. Ariadne analyzes it instantly and routes to the perfect backend automatically.
+**After Ariadne:**
+- Write your circuit once
+- Ariadne analyzes it in milliseconds
+- Automatic routing to the optimal backend
+- Consistent performance across platforms
+- Zero configuration required
 
 ---
 
 ## Performance Highlights
 
+Real-world performance improvements from automatic backend selection:
+
 | Circuit Type | Traditional Approach | Ariadne | Speedup |
 |--------------|---------------------|---------|---------|
-| **50-qubit Clifford** | Crashes or 45+ seconds | 0.045s | **1000× faster*** |
-| **Low-entanglement circuits** | 12.8s | 0.26s | **50× faster*** |
-| **Large Clifford circuits** | Memory errors | 0.045s | **Handles circuits that fail on other simulators*** |
-| **Large quantum algorithms** | Manual backend tuning | Automatic | **Zero configuration** |
+| **50-qubit Clifford** | Crashes or 45+ seconds | 0.045s | **~1000× faster*** |
+| **Low-entanglement circuits** | 12.8s | 0.26s | **~50× faster*** |
+| **Large Clifford circuits** | Memory errors | 0.045s | **Succeeds where others fail*** |
+| **General quantum algorithms** | Manual backend tuning | Automatic | **Zero configuration** |
 
-*\*Benchmarks run on an Apple M3 Max with 128GB RAM. Speedups are relative to Qiskit Aer.*
+*\*Benchmarks measured on Apple M3 Max (128GB RAM). Actual speedups vary by circuit type and hardware. Clifford circuits see the largest improvements via Stim backend. Your results may differ based on circuit characteristics and available backends.*
 
 ---
 
@@ -251,17 +263,21 @@ result = simulate(vqe_circuit, shots=8192)
 ### Learn Quantum Algorithms Step-by-Step
 
 ```python
-from ariadne.education import AlgorithmExplorer, InteractiveCircuitBuilder
+from ariadne import list_algorithms, get_algorithm, InteractiveCircuitBuilder, simulate
 
 # Explore 15+ quantum algorithms
-explorer = AlgorithmExplorer()
-print(explorer.list_algorithms())
-# ['bell', 'deutsch_jozsa', 'grover', 'shor', 'vqe', 'qaoa', ...]
+algorithms = list_algorithms()
+print(f"Available algorithms: {algorithms}")
+# ['bell', 'deutsch_jozsa', 'grover', 'bernstein_vazirani', 'qft', ...]
+
+# Get details about a specific algorithm
+bell_info = get_algorithm('bell')
+print(f"Description: {bell_info['metadata'].description}")
 
 # Interactive learning with explanations
 builder = InteractiveCircuitBuilder(2, "Bell State")
-builder.add_hadamard(0, "Create superposition")
-builder.add_cnot(0, 1, "Create entanglement")
+builder.add_hadamard(0, "Create superposition", "Apply H gate to qubit 0")
+builder.add_cnot(0, 1, "Create entanglement", "Apply CNOT to entangle qubits")
 circuit = builder.get_circuit()
 
 result = simulate(circuit, shots=1000)
@@ -272,16 +288,34 @@ print(f"Only |00⟩ and |11⟩ states: {dict(result.counts)}")
 ### Real Research Applications
 
 ```python
-# Reproduce famous quantum papers
-from ariadne.algorithms import reproduce_paper
+# Simulate quantum error correction codes
+from qiskit import QuantumCircuit
 
-# Google's quantum supremacy experiment (simplified)
-supremacy_circuit = reproduce_paper('arXiv:1910.11333')
-result = simulate(supremacy_circuit, shots=1000000)
+# Create a simple repetition code for error correction
+def create_repetition_code(n_physical=3):
+    qc = QuantumCircuit(n_physical, n_physical)
+    # Encode logical qubit into physical qubits
+    qc.cx(0, 1)
+    qc.cx(0, 2)
+    # Add noise simulation would go here
+    qc.measure_all()
+    return qc
 
-# IBM's quantum error correction (surface code)
-surface_code = reproduce_paper('arXiv:2012.04108')
-result = simulate(surface_code, shots=10000)
+# Ariadne automatically optimizes error correction simulations
+error_code = create_repetition_code(3)
+result = simulate(error_code, shots=10000)
+print(f"Error correction results: {result.counts}")
+
+# Simulate variational quantum algorithms
+from qiskit.circuit import Parameter
+theta = Parameter('θ')
+vqe_circuit = QuantumCircuit(4)
+vqe_circuit.ry(theta, 0)
+vqe_circuit.cx(0, 1)
+# Ariadne handles parameterized circuits efficiently.
+# To run a simulation, you must first bind the parameters to concrete values.
+result = simulate(vqe_circuit.bind_parameters({theta: 0.5}), shots=1000)
+print(f"VQE results: {result.counts}")
 ```
 
 ---

@@ -227,9 +227,9 @@ print(explain_routing(qc))
 ## 9. Next Steps with Ariadne
 
 ### 🎓 **Learn More**
-- Try the [Interactive Tutorial](notebooks/Ariadne_Interactive_Demo.ipynb)
-- Explore [Educational Examples](examples/education/)
-- Run [Benchmarks](benchmarks/) to see the speedup
+- Try the [Interactive Tutorial](../notebooks/01_ariadne_advantage_fixed.ipynb)
+- Explore [Educational Examples](../examples/education/)
+- Run [Benchmarks](../benchmarks/) to see the speedup
 
 ### 🔬 **Research Applications**
 - Simulate [quantum algorithms](examples/education/quantum_algorithms_tutorial.py)
@@ -258,6 +258,6 @@ print(explain_routing(qc))
 
 <div align="center">
 
-**🌟 Next:** [Try Ariadne in your browser →](https://colab.research.google.com/github/Hmbown/ariadne/blob/main/notebooks/Ariadne_Interactive_Demo.ipynb)
+**🌟 Next:** [Try Ariadne in your browser →](https://colab.research.google.com/github/Hmbown/ariadne/blob/main/notebooks/01_ariadne_advantage_fixed.ipynb)
 
 </div>
