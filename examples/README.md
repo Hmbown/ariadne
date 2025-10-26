@@ -36,6 +36,7 @@ Perfect for first-time users learning Ariadne fundamentals.
 - **quickstart.py** - Your first Ariadne simulation
 - **bell_state_demo.py** - Simple Bell state with automatic routing
 - **simple_demo.py** - Basic circuit simulation workflow
+- **clifford_circuit.py** - Clifford circuit optimization demo
 
 ### Educational Examples (`education/`)
 Learn quantum computing concepts with interactive tutorials.
