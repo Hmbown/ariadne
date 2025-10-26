@@ -44,6 +44,14 @@ ALGORITHM_EXPANSION_SUMMARY.md
 REPOSITIONING_SUMMARY.md
 performance_validation_report.md
 docs/RELEASE_VALIDATION_SUMMARY.md
+ROADMAP.md
+QUICK_START.md
+USER_GUIDE.md
+docs/tweet-thread.md
+docs/qce25-abstract.md
+docs/*_roadmap.md
+docs/*_performance_report.md
+quantum_specialist_tests/
 .dev/
 
 # IDE and editor files
