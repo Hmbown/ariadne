@@ -4,6 +4,8 @@ import math
 
 from qiskit import QuantumCircuit
 
+from .topology_analyzer import detect_layout_properties
+
 
 def should_use_mps(circuit: QuantumCircuit) -> bool:
     """
@@ -32,8 +34,12 @@ def should_use_mps(circuit: QuantumCircuit) -> bool:
 
     Heuristic Criteria:
     1. Small System Size: Fewer than 15 qubits. (N < 15)
-    2. Limited Interaction: The number of two-qubit gates (which generate entanglement)
-       is less than 2 * N^1.5. This limits the depth and complexity of entanglement growth.
+       - Count two-qubit gates and check if below threshold 2 * N^1.5
+       - Also verify shallow depth (depth <= 5 * sqrt(N))
+    2. Large System with Low Max Degree: For circuits with ≥15 qubits
+       - Check if max degree in interaction graph ≤ 2 (chain-like or sparse)
+       - Verify shallow depth relative to circuit width (depth <= N)
+       - This handles low-entanglement structures like nearest-neighbor circuits
 
     Args:
         circuit: The quantum circuit to analyze.
@@ -42,18 +48,38 @@ def should_use_mps(circuit: QuantumCircuit) -> bool:
         True if the circuit is likely suitable for efficient MPS simulation, False otherwise.
     """
     num_qubits = circuit.num_qubits
-    if num_qubits >= 15:
+    depth = circuit.depth()
+
+    # For small circuits, use the original two-qubit gate counting heuristic
+    if num_qubits < 15:
+        # Count two-qubit gates (entangling gates)
+        two_qubit_gates = 0
+        for instruction in circuit.data:
+            if len(instruction.qubits) == 2:
+                # We assume any two-qubit gate is an entangling gate for this heuristic
+                # (e.g., CNOT, CZ, RXX, etc.)
+                two_qubit_gates += 1
+
+        # The threshold for two-qubit gates: 2 * N^1.5
+        threshold = 2 * math.pow(num_qubits, 1.5)
+
+        # Also check depth - deep circuits have high entanglement even with few gates
+        depth_threshold = 5 * math.sqrt(num_qubits)
+
+        return two_qubit_gates < threshold and depth <= depth_threshold
+
+    # For larger circuits (≥15 qubits), check topology
+    # Circuits with low max degree and shallow depth can still benefit from MPS
+    try:
+        props = detect_layout_properties(circuit)
+        max_degree = int(props.get("max_degree", num_qubits))
+
+        # Accept sparse circuits (max degree <= 2) with shallow depth
+        # Shallow means depth doesn't exceed the number of qubits
+        is_sparse = max_degree <= 2
+        is_shallow = depth <= num_qubits
+
+        return is_sparse and is_shallow
+    except Exception:
+        # If topology analysis fails, default to conservative False for large circuits
         return False
-
-    # Count two-qubit gates (entangling gates)
-    two_qubit_gates = 0
-    for instruction in circuit.data:
-        if len(instruction.qubits) == 2:
-            # We assume any two-qubit gate is an entangling gate for this heuristic
-            # (e.g., CNOT, CZ, RXX, etc.)
-            two_qubit_gates += 1
-
-    # The threshold for two-qubit gates: 2 * N^1.5
-    threshold = 2 * math.pow(num_qubits, 1.5)
-
-    return two_qubit_gates < threshold
