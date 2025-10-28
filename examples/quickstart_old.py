@@ -67,7 +67,7 @@ def main() -> None:
     print("circuit types, optimizing performance without any user configuration!")
 
     print("\n📚 Next Steps:")
-    print("• Check out USER_GUIDE.md for advanced features")
+    print("• Check out docs/README.md for advanced features")
     print("• Try your own circuits with simulate(your_circuit)")
     print("• Explore different backends with backend='stim' parameter")
 

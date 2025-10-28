@@ -36,6 +36,10 @@ benchmark_results.json
 success_rate.txt
 results/
 
+# Generated output files from examples
+*_demo.png
+*_scaling_demo.png
+
 # Keep curated results in results/
 !benchmarks/results/
 

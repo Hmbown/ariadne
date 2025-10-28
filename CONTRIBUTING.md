@@ -264,7 +264,7 @@ When making changes, update:
 
 - **Docstrings**: For API changes
 - **README.md**: For major features
-- **USER_GUIDE.md**: For user-facing functionality
+- **Documentation** (docs/): For user-facing functionality
 - **Examples**: Add or update example scripts
 - **CHANGELOG.md**: Document changes for next release
 
@@ -276,7 +276,7 @@ When making changes, update:
 
 - **GitHub Discussions**: For questions and discussions
 - **GitHub Issues**: For bug reports and feature requests
-- **Documentation**: Start with [README.md](README.md) and [USER_GUIDE.md](USER_GUIDE.md)
+- **Documentation**: Start with [README.md](README.md) and [Documentation](docs/README.md)
 
 ### Code Review Process
 

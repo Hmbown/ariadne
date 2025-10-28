@@ -156,7 +156,7 @@ Building applications with Ariadne:
 1. **Production examples** → `examples/production/`
 2. **Error handling** → See production_ready_demo.py
 3. **CLI integration** → `python examples/education/cli_education_demo.py`
-4. **API reference** → [User Guide](../USER_GUIDE.md)
+4. **API reference** → [Documentation](../docs/README.md)
 
 ---
 
@@ -239,7 +239,7 @@ We welcome new examples! See our [Contributing Guide](../CONTRIBUTING.md) for:
 
 After exploring the examples:
 
-- **Deep dive** → [User Guide](../USER_GUIDE.md)
+- **Deep dive** → [Documentation](../docs/README.md)
 - **Contribute** → [Contributing Guide](../CONTRIBUTING.md)
 - **Ask questions** → [GitHub Discussions](https://github.com/Hmbown/ariadne/discussions)
 - **Report issues** → [GitHub Issues](https://github.com/Hmbown/ariadne/issues)
