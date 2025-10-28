@@ -240,11 +240,10 @@ class PerformanceStabilityTest(ValidationTest):
                 execution_times.append(execution_time)
 
                 # Check result consistency
-                if reference_counts is None:
-                    reference_counts = counts
-                else:
-                    consistency = self._calculate_consistency(counts, reference_counts)  # type: ignore[unreachable]
+                if reference_counts is not None:
+                    consistency = self._calculate_consistency(counts, reference_counts)
                     results_consistency.append(consistency)
+                reference_counts = counts
 
             # Calculate stability metrics
             time_stability = 1.0 - (np.std(execution_times) / np.mean(execution_times))
