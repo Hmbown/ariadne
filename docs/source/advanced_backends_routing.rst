@@ -35,7 +35,11 @@ MPS exploits this by representing the quantum state as a chain of matrices. The 
 *   **Low Entanglement:** If the entanglement is low (e.g., constant or logarithmic in the number of qubits $N$), the required bond dimension $D$ is small, and the simulation scales polynomially with $N$. This is the ideal scenario for MPS.
 *   **High Entanglement:** If the circuit generates high entanglement, $D$ must grow exponentially with $N$, causing the MPS simulation to revert to exponential scaling, defeating its purpose.
 
-The :py:func:`ariadne.route.mps_analyzer.should_use_mps` function uses a heuristic to check for low entanglement, specifically by limiting the number of two-qubit gates (which generate entanglement) relative to the system size ($N < 15$ and two-qubit gates $< 2 \cdot N^{1.5}$).
+The :py:func:`ariadne.route.mps_analyzer.should_use_mps` function uses a dual-strategy heuristic to check for low entanglement:
+
+1. **Small Circuits ($N < 15$):** Uses gate counting, limiting the number of two-qubit gates (which generate entanglement) relative to the system size (two-qubit gates $< 2 \cdot N^{1.5}$) and depth.
+
+2. **Large Circuits ($N \geq 15$):** Uses topology analysis to detect sparse, chain-like structures (max degree ≤ 2) with shallow depth (depth ≤ $N$). This allows MPS to handle large sparse circuits like nearest-neighbor chains that were previously rejected.
 
 .. literalinclude:: ../../src/ariadne/route/mps_analyzer.py
    :language: python
