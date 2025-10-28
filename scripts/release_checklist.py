@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 """Offline release readiness checklist for Ariadne."""
+
 from __future__ import annotations
 
 import argparse
 import dataclasses
 import re
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 try:
-    import tomllib  # Python >=3.11
-except ModuleNotFoundError as exc:  # pragma: no cover - required for fallback environments
-    raise SystemExit("Python 3.11+ is required to run the release checklist") from exc
+    import tomllib as tomllib_compat  # Python >=3.11
+except ModuleNotFoundError:  # pragma: no cover - fallback for Python 3.10
+    try:
+        import tomli as tomllib_compat  # type: ignore[no-redef]
+    except ModuleNotFoundError as exc:  # pragma: no cover
+        raise SystemExit("tomllib/tomli not available. Install 'tomli' or use Python 3.11+.") from exc
 
 
 @dataclasses.dataclass
@@ -28,13 +32,13 @@ class CheckResult:
 
 def load_pyproject(path: Path) -> dict:
     try:
-        return tomllib.loads(path.read_text(encoding="utf-8"))
+        return tomllib_compat.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError as exc:
         raise SystemExit(f"Could not locate pyproject.toml at {path}") from exc
 
 
-def check_pyproject_metadata(root: Path) -> List[CheckResult]:
-    results: List[CheckResult] = []
+def check_pyproject_metadata(root: Path) -> list[CheckResult]:
+    results: list[CheckResult] = []
     data = load_pyproject(root / "pyproject.toml")
     project = data.get("project", {})
 
@@ -56,9 +60,15 @@ def check_pyproject_metadata(root: Path) -> List[CheckResult]:
     if dependencies:
         unpinned = [dep for dep in dependencies if not any(op in dep for op in ("==", ">=", "<=", "~=", "!="))]
         if unpinned:
-            results.append(CheckResult("pyproject:dependencies", "warning", f"Found unpinned core dependencies: {', '.join(unpinned)}"))
+            results.append(
+                CheckResult(
+                    "pyproject:dependencies", "warning", f"Found unpinned core dependencies: {', '.join(unpinned)}"
+                )
+            )
         else:
-            results.append(CheckResult("pyproject:dependencies", "ok", f"All {len(dependencies)} core dependencies are pinned"))
+            results.append(
+                CheckResult("pyproject:dependencies", "ok", f"All {len(dependencies)} core dependencies are pinned")
+            )
     else:
         results.append(CheckResult("pyproject:dependencies", "error", "no core dependencies configured"))
 
@@ -66,9 +76,13 @@ def check_pyproject_metadata(root: Path) -> List[CheckResult]:
     duplicates = find_duplicate_optional_dependencies(optional_deps)
     if duplicates:
         joined = ", ".join(sorted(duplicates))
-        results.append(CheckResult("pyproject:optional extras", "warning", f"duplicate packages found across extras: {joined}"))
+        results.append(
+            CheckResult("pyproject:optional extras", "warning", f"duplicate packages found across extras: {joined}")
+        )
     else:
-        results.append(CheckResult("pyproject:optional extras", "ok", f"{len(optional_deps)} optional dependency groups defined"))
+        results.append(
+            CheckResult("pyproject:optional extras", "ok", f"{len(optional_deps)} optional dependency groups defined")
+        )
 
     scripts = project.get("scripts", {})
     if "ariadne" in scripts:
@@ -81,7 +95,9 @@ def check_pyproject_metadata(root: Path) -> List[CheckResult]:
     if write_to and (root / write_to).exists():
         results.append(CheckResult("setuptools_scm", "ok", f"Version file configured at {write_to}"))
     else:
-        results.append(CheckResult("setuptools_scm", "error", "setuptools_scm write_to path is missing or file not generated"))
+        results.append(
+            CheckResult("setuptools_scm", "error", "setuptools_scm write_to path is missing or file not generated")
+        )
 
     return results
 
@@ -99,7 +115,7 @@ def find_duplicate_optional_dependencies(optional_deps: dict[str, Iterable[str]]
     return duplicates
 
 
-def check_changelog(root: Path, version: str | None) -> List[CheckResult]:
+def check_changelog(root: Path, version: str | None) -> list[CheckResult]:
     changelog_path = root / "CHANGELOG.md"
     if not changelog_path.exists():
         return [CheckResult("changelog", "error", "CHANGELOG.md is missing")]
@@ -114,14 +130,20 @@ def check_changelog(root: Path, version: str | None) -> List[CheckResult]:
 
     if version:
         if latest.startswith(version):
-            results.append(CheckResult("changelog:version", "ok", f"Latest changelog entry matches requested version {version}"))
+            results.append(
+                CheckResult("changelog:version", "ok", f"Latest changelog entry matches requested version {version}")
+            )
         else:
-            results.append(CheckResult("changelog:version", "warning", f"Requested version {version} does not match latest entry {latest}"))
+            results.append(
+                CheckResult(
+                    "changelog:version", "warning", f"Requested version {version} does not match latest entry {latest}"
+                )
+            )
     return results
 
 
-def check_documentation(root: Path) -> List[CheckResult]:
-    results: List[CheckResult] = []
+def check_documentation(root: Path) -> list[CheckResult]:
+    results: list[CheckResult] = []
     readme = root / "README.md"
     if readme.exists():
         results.append(CheckResult("docs:README", "ok", "Project README present"))
@@ -141,21 +163,21 @@ def check_documentation(root: Path) -> List[CheckResult]:
     return results
 
 
-def parse_args(argv: List[str]) -> argparse.Namespace:
+def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run local release readiness checks")
     parser.add_argument("--version", help="Expected release version (e.g. 0.3.4)")
     return parser.parse_args(argv)
 
 
-def run_checks(root: Path, version: str | None) -> List[CheckResult]:
-    results: List[CheckResult] = []
+def run_checks(root: Path, version: str | None) -> list[CheckResult]:
+    results: list[CheckResult] = []
     results.extend(check_pyproject_metadata(root))
     results.extend(check_changelog(root, version))
     results.extend(check_documentation(root))
     return results
 
 
-def main(argv: List[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
     root = Path(__file__).resolve().parent.parent
     results = run_checks(root, args.version)

@@ -42,6 +42,11 @@ class BackendConfig:
     device_id: int = 0
     use_gpu: bool = True
 
+    # Additional convenience fields for tests
+    default_backend: str | None = None
+    enable_gpu: bool | None = None
+    memory_limit_gb: float | None = None
+
     # Backend-specific parameters
     custom_options: dict[str, Any] = field(default_factory=dict)
 
@@ -156,10 +161,29 @@ class AriadneConfig:
     cache_dir: str | None = None
     data_dir: str | None = None
 
+    # Convenience parameters for easier configuration
+    default_backend: str | None = None
+    enable_gpu: bool | None = None
+    memory_limit_gb: float | None = None
+
     def __post_init__(self) -> None:
         """Initialize default backend configurations."""
         if not self.backends:
             self._initialize_default_backends()
+
+        # Apply convenience parameters if provided
+        if self.default_backend is not None:
+            self.update_backend_config(self.default_backend, priority=10)
+
+        if self.enable_gpu is not None:
+            # Enable GPU backends
+            self.update_backend_config("cuda", enabled=self.enable_gpu)
+            self.update_backend_config("metal", enabled=self.enable_gpu)
+
+        if self.memory_limit_gb is not None:
+            # Set memory limits
+            self.update_backend_config("cuda", memory_limit_mb=int(self.memory_limit_gb * 1024))
+            self.update_backend_config("metal", memory_limit_mb=int(self.memory_limit_gb * 1024))
 
     def _initialize_default_backends(self) -> None:
         """Initialize default backend configurations."""
@@ -239,6 +263,9 @@ class AriadneConfig:
             "log_level": self.log_level,
             "cache_dir": self.cache_dir,
             "data_dir": self.data_dir,
+            "default_backend": self.default_backend,
+            "enable_gpu": self.enable_gpu,
+            "memory_limit_gb": self.memory_limit_gb,
         }
 
     @classmethod
@@ -254,6 +281,11 @@ class AriadneConfig:
         analysis_data = data.pop("analysis", {})
         performance_data = data.pop("performance", {})
 
+        # Extract convenience parameters
+        default_backend = data.pop("default_backend", None)
+        enable_gpu = data.pop("enable_gpu", None)
+        memory_limit_gb = data.pop("memory_limit_gb", None)
+
         # Create main config
         config = cls(
             backends=backends,
@@ -261,6 +293,9 @@ class AriadneConfig:
             error_mitigation=ErrorMitigationConfig(**error_mitigation_data),
             analysis=AnalysisConfig(**analysis_data),
             performance=PerformanceConfig(**performance_data),
+            default_backend=default_backend,
+            enable_gpu=enable_gpu,
+            memory_limit_gb=memory_limit_gb,
             **data,
         )
 
@@ -320,6 +355,29 @@ class ConfigManager:
             print(f"Warning: Failed to load config from {file_path}: {e}")
             print("Using default configuration.")
 
+    def load_from_file(self, file_path: str | Path) -> AriadneConfig:
+        """Load configuration from file and return it."""
+        path_obj = Path(file_path) if isinstance(file_path, str) else file_path
+
+        if not path_obj.exists():
+            raise FileNotFoundError(f"Configuration file not found: {file_path}")
+
+        try:
+            with open(path_obj) as f:
+                if path_obj.suffix.lower() == ".json":
+                    data = json.load(f)
+                elif path_obj.suffix.lower() in [".yaml", ".yml"]:
+                    data = yaml.safe_load(f)
+                else:
+                    raise ValueError(f"Unsupported config format: {path_obj.suffix}")
+
+            config = AriadneConfig.from_dict(data)
+            self.config = config
+            return config
+
+        except Exception as e:
+            raise ValueError(f"Failed to load config from {file_path}: {e}") from e
+
     def save_config(self, file_path: Path | None = None) -> None:
         """Save configuration to file."""
         file_path = file_path or self.config_file
@@ -359,6 +417,18 @@ class ConfigManager:
     def get_preferred_backends(self) -> list[str]:
         """Get list of backends in preference order."""
         return self.config.get_backend_priority_list()
+
+    def get_config(self) -> AriadneConfig:
+        """Get the current configuration."""
+        return self.config
+
+    def reset_to_defaults(self) -> None:
+        """Reset configuration to defaults."""
+        self.config = AriadneConfig()
+
+    def update_config(self, new_config: AriadneConfig) -> None:
+        """Update the current configuration."""
+        self.config = new_config
 
     def configure_for_platform(self, platform: str = "auto") -> None:
         """Configure settings for specific platform."""

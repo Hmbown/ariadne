@@ -16,12 +16,16 @@ help:
 	@echo "  make docker-run-prod     Run a quick prod container verification"
 	@echo "  make compose-dev         Launch dev compose service"
 	@echo "  make compose-test        Run test compose service"
+ 	@echo "  make publish-testpypi    Upload dist/* to TestPyPI (requires env vars)"
+ 	@echo "  make publish-pypi        Upload dist/* to PyPI (requires env vars)"
 
 # Container image coordinates (override OWNER on invocation)
 VERSION ?=
 
+PYTHON ?= python3
+
 release-check:
-	python scripts/release_checklist.py $(if $(VERSION),--version $(VERSION),)
+	$(PYTHON) scripts/release_checklist.py $(if $(VERSION),--version $(VERSION),)
 
 OWNER ?= your-gh-username
 IMAGE_BASE ?= ghcr.io/$(OWNER)/ariadne-router
@@ -61,6 +65,18 @@ clean:
 	find . -type f -name ".coverage" -delete
 	rm -rf build/ dist/ htmlcov/ .coverage
 	@echo "Clean complete!"
+
+publish-testpypi:
+	@if [ -z "$$TWINE_USERNAME" ] || [ -z "$$TWINE_PASSWORD" ]; then \
+		echo "TWINE_USERNAME/TWINE_PASSWORD must be set"; exit 1; \
+	fi
+	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+publish-pypi:
+	@if [ -z "$$TWINE_USERNAME" ] || [ -z "$$TWINE_PASSWORD" ]; then \
+		echo "TWINE_USERNAME/TWINE_PASSWORD must be set"; exit 1; \
+	fi
+	twine upload dist/*
 
 # -----------------------------
 # Docker / Compose helpers

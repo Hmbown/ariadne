@@ -31,7 +31,7 @@ class ValidationResult:
     error_message: str | None = None
     timestamp: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.timestamp:
             self.timestamp = datetime.now().isoformat()
 
@@ -52,7 +52,7 @@ class ValidationTest(ABC):
     """Abstract base class for validation tests."""
 
     @abstractmethod
-    def run_test(self, backend_name: str, **kwargs) -> ValidationResult:
+    def run_test(self, backend_name: str, **kwargs: Any) -> ValidationResult:
         """Run the validation test."""
         pass
 
@@ -68,7 +68,7 @@ class AccuracyValidationTest(ValidationTest):
     def get_test_name(self) -> str:
         return "accuracy_validation"
 
-    def run_test(self, backend_name: str, **kwargs) -> ValidationResult:
+    def run_test(self, backend_name: str, **kwargs: Any) -> ValidationResult:
         """Test accuracy by comparing with exact results."""
 
         try:
@@ -114,8 +114,8 @@ class AccuracyValidationTest(ValidationTest):
 
             return ValidationResult(
                 test_name=self.get_test_name(),
-                passed=passed,
-                score=avg_accuracy,
+                passed=bool(passed),
+                score=float(avg_accuracy),
                 details={
                     "individual_scores": accuracy_scores,
                     "num_tests": len(accuracy_scores),
@@ -188,7 +188,7 @@ class AccuracyValidationTest(ValidationTest):
 
         # Fidelity between probability distributions
         fidelity = np.sum(np.sqrt(measured_probs * expected_probs))
-        return fidelity
+        return float(fidelity)
 
 
 class PerformanceStabilityTest(ValidationTest):
@@ -197,7 +197,7 @@ class PerformanceStabilityTest(ValidationTest):
     def get_test_name(self) -> str:
         return "performance_stability"
 
-    def run_test(self, backend_name: str, num_runs: int = 10, **kwargs) -> ValidationResult:
+    def run_test(self, backend_name: str, num_runs: int = 10, **kwargs: Any) -> ValidationResult:
         """Test performance stability."""
 
         try:
@@ -227,8 +227,8 @@ class PerformanceStabilityTest(ValidationTest):
                 )
 
             # Run multiple times and measure consistency
-            execution_times = []
-            results_consistency = []
+            execution_times: list[float] = []
+            results_consistency: list[float] = []
 
             reference_counts = None
 
@@ -243,7 +243,7 @@ class PerformanceStabilityTest(ValidationTest):
                 if reference_counts is None:
                     reference_counts = counts
                 else:
-                    consistency = self._calculate_consistency(counts, reference_counts)
+                    consistency = self._calculate_consistency(counts, reference_counts)  # type: ignore[unreachable]
                     results_consistency.append(consistency)
 
             # Calculate stability metrics
@@ -255,8 +255,8 @@ class PerformanceStabilityTest(ValidationTest):
 
             return ValidationResult(
                 test_name=self.get_test_name(),
-                passed=passed,
-                score=overall_stability,
+                passed=bool(passed),
+                score=float(overall_stability),
                 details={
                     "execution_times": execution_times,
                     "time_stability": time_stability,
@@ -312,7 +312,7 @@ class ScalabilityTest(ValidationTest):
     def get_test_name(self) -> str:
         return "scalability"
 
-    def run_test(self, backend_name: str, max_qubits: int = 20, **kwargs) -> ValidationResult:
+    def run_test(self, backend_name: str, max_qubits: int = 20, **kwargs: Any) -> ValidationResult:
         """Test scalability performance."""
 
         try:
@@ -374,7 +374,7 @@ class ScalabilityTest(ValidationTest):
 
             return ValidationResult(
                 test_name=self.get_test_name(),
-                passed=passed,
+                passed=bool(passed),
                 score=scalability_score,
                 details={
                     "successful_qubits": success_qubits,
@@ -449,7 +449,7 @@ class ScalabilityTest(ValidationTest):
         else:
             score = 0.3
 
-        return score
+        return float(score)
 
 
 class ErrorHandlingTest(ValidationTest):
@@ -458,7 +458,7 @@ class ErrorHandlingTest(ValidationTest):
     def get_test_name(self) -> str:
         return "error_handling"
 
-    def run_test(self, backend_name: str, **kwargs) -> ValidationResult:
+    def run_test(self, backend_name: str, **kwargs: Any) -> ValidationResult:
         """Test error handling capabilities."""
 
         try:
@@ -515,7 +515,7 @@ class ErrorHandlingTest(ValidationTest):
 
             return ValidationResult(
                 test_name=self.get_test_name(),
-                passed=passed,
+                passed=bool(passed),
                 score=score,
                 details={
                     "test_results": test_details,
@@ -635,14 +635,14 @@ class PerformanceValidationFramework:
 
         return all_results
 
-    def _save_validation_results(self, results: dict[str, dict[str, ValidationResult]]):
+    def _save_validation_results(self, results: dict[str, dict[str, ValidationResult]]) -> None:
         """Save validation results to file."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"validation_results_{timestamp}.json"
         filepath = self.output_dir / filename
 
         # Convert results to serializable format
-        serializable_results = {}
+        serializable_results: dict[str, Any] = {}
         for backend_name, backend_results in results.items():
             serializable_results[backend_name] = {}
             for test_name, result in backend_results.items():

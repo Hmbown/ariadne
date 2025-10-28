@@ -2,7 +2,7 @@
 name = "ariadne-router"
 description = "Intelligent quantum simulator router with automatic backend selection"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dynamic = ["version"]
 license = "Apache-2.0"
 authors = [
@@ -14,6 +14,7 @@ classifiers = [
   "Intended Audience :: Developers",
   "Intended Audience :: Education",
   "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
@@ -24,17 +25,17 @@ classifiers = [
   "Topic :: System :: Distributed Computing",
 ]
 dependencies = [
-  "qiskit==2.2.1",
-  "qiskit-aer==0.17.2",
-  "stim==1.15.0",
-  "quimb==1.11.2",
-  "cotengra==0.7.5",
-  "opt_einsum==3.4.0",
-  "numpy==2.3.4",
-  "scipy==1.16.2",
-  "networkx==3.5",
-  "matplotlib==3.10.7",
-  "PyYAML==6.0.3",
+  "qiskit>=2.2.0,<2.4.0",
+  "qiskit-aer>=0.17.0,<0.18.0",
+  "stim>=1.15.0",
+  "quimb>=1.11.0",
+  "cotengra>=0.7.0",
+  "opt_einsum>=3.4.0",
+  "numpy>=2.0.0,<2.3.0",
+  "scipy>=1.10.0,<1.17.0",
+  "networkx>=3.0",
+  "matplotlib>=3.5.0",
+  "PyYAML>=6.0",
 ]
 
 [project.optional-dependencies]

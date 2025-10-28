@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-27 10:12:19",
+  "timestamp": "2025-10-27 10:09:00",
   "total_tests": 13,
   "passed": 13,
   "failed": 0,
@@ -7,7 +7,7 @@
     {
       "circuit_name": "small_clifford_ghz",
       "backend_used": "stim",
-      "execution_time": 0.021970750000036787,
+      "execution_time": 0.011154124978929758,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -19,7 +19,7 @@
     {
       "circuit_name": "small_clifford_ladder",
       "backend_used": "stim",
-      "execution_time": 0.00969045799865853,
+      "execution_time": 0.007800915744155645,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -31,7 +31,7 @@
     {
       "circuit_name": "medium_clifford_ghz",
       "backend_used": "stim",
-      "execution_time": 0.013894249997974839,
+      "execution_time": 0.01126187527552247,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -43,7 +43,7 @@
     {
       "circuit_name": "medium_clifford_stabilizer",
       "backend_used": "stim",
-      "execution_time": 0.01555266699870117,
+      "execution_time": 0.011923666577786207,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -55,7 +55,7 @@
     {
       "circuit_name": "large_clifford_ghz",
       "backend_used": "stim",
-      "execution_time": 0.03433266699721571,
+      "execution_time": 0.026771167293190956,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -67,7 +67,7 @@
     {
       "circuit_name": "large_clifford_surface_code",
       "backend_used": "stim",
-      "execution_time": 0.052119457999651786,
+      "execution_time": 0.04103058436885476,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -78,8 +78,8 @@
     },
     {
       "circuit_name": "small_non_clifford",
-      "backend_used": "jax_metal",
-      "execution_time": 0.006850165998912416,
+      "backend_used": "mps",
+      "execution_time": 1.1683638747781515,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -90,8 +90,8 @@
     },
     {
       "circuit_name": "medium_non_clifford",
-      "backend_used": "jax_metal",
-      "execution_time": 0.01972037499945145,
+      "backend_used": "mps",
+      "execution_time": 0.8280987497419119,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -102,8 +102,8 @@
     },
     {
       "circuit_name": "mixed_vqe_ansatz",
-      "backend_used": "jax_metal",
-      "execution_time": 0.007449000004271511,
+      "backend_used": "mps",
+      "execution_time": 0.6406565839424729,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -114,8 +114,8 @@
     },
     {
       "circuit_name": "mixed_qaoa",
-      "backend_used": "jax_metal",
-      "execution_time": 0.006795792003686074,
+      "backend_used": "mps",
+      "execution_time": 0.40097324969246984,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -127,7 +127,7 @@
     {
       "circuit_name": "single_qubit",
       "backend_used": "stim",
-      "execution_time": 0.001765458997397218,
+      "execution_time": 0.002178042195737362,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -139,7 +139,7 @@
     {
       "circuit_name": "no_gates",
       "backend_used": "stim",
-      "execution_time": 0.0023508750018663704,
+      "execution_time": 0.002755375113338232,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -151,7 +151,7 @@
     {
       "circuit_name": "measurement_only",
       "backend_used": "stim",
-      "execution_time": 0.0024653750006109476,
+      "execution_time": 0.002328250091522932,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -162,11 +162,11 @@
     }
   ],
   "environment_info": {
-    "platform": "macOS-26.0-arm64-arm-64bit",
-    "python_version": "3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:54:21) [Clang 16.0.6 ]",
+    "platform": "macOS-14.6.1-arm64-arm-64bit",
+    "python_version": "3.10.0 (v3.10.0:b494f5935c, Oct  4 2021, 14:59:19) [Clang 12.0.5 (clang-1205.0.22.11)]",
     "architecture": "arm64",
     "processor": "arm",
-    "metal_available": true,
+    "metal_available": false,
     "cuda_available": false,
     "router_backends": [
       "stim",
@@ -174,7 +174,17 @@
       "tensor_network",
       "jax_metal",
       "ddsim",
-      "cuda"
+      "cuda",
+      "mps",
+      "cirq",
+      "pennylane",
+      "qulacs",
+      "braket",
+      "pyquil",
+      "qsharp",
+      "opencl",
+      "rocm",
+      "oneapi"
     ]
   }
 }

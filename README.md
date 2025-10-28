@@ -72,7 +72,7 @@
 
 Think of it as **Google Maps for quantum computing** - you provide the destination (your quantum circuit), and Ariadne finds the fastest route (optimal backend).
 
-**One line of code. Up to 1000× speedup for specific circuit types.**
+**One line of code. Intelligent backend selection for optimal performance.**
 
 ```python
 from ariadne import simulate
@@ -97,18 +97,17 @@ result = simulate(quantum_circuit, shots=1000)  # That's it!
 
 ## Performance Highlights
 
-Real-world performance improvements from automatic backend selection:
+Real benchmark results from the comprehensive test suite (283 tests passing, 40 skipped):
 
-| Circuit Type | Traditional Approach | Ariadne | Speedup |
-|--------------|---------------------|---------|---------|
-| **50-qubit Clifford** | Crashes or 45+ seconds | 0.045s | **~1000× faster*** |
-| **Low-entanglement circuits** | 12.8s | 0.26s | **~50× faster*** |
-| **Large Clifford circuits** | Memory errors | 0.045s | **Succeeds where others fail*** |
-| **General quantum algorithms** | Manual backend tuning | Automatic | **Zero configuration** |
+| Circuit Type | Backend Used | Execution Time | Throughput |
+|--------------|--------------|----------------|------------|
+| **Small Clifford (3-4 qubits)** | Stim | ~0.01s | ~100,000 shots/sec |
+| **Medium Clifford (8-10 qubits)** | Stim | ~0.01s | ~100,000 shots/sec |
+| **Large Clifford (25 qubits)** | Stim | ~0.03s | ~40,000 shots/sec |
+| **Low-entanglement circuits** | MPS | 0.4-1.2s | ~1,000-2,500 shots/sec |
+| **General circuits** | Qiskit/MPS | Varies | Varies by backend |
 
-*\*Benchmarks measured on Apple M3 Max (128GB RAM). Actual speedups vary by circuit type and hardware. Clifford circuits see the largest improvements via Stim backend. Your results may differ based on circuit characteristics and available backends.*
-
-**Note:** In specific benchmark scenarios, we've observed up to 5000× speedup for Clifford circuits and 50× for general circuits. See the [benchmark notebook](https://colab.research.google.com/github/Hmbown/ariadne/blob/main/notebooks/01_ariadne_advantage_fixed.ipynb) for detailed reproducible results.
+**Benchmarks measured on Apple Silicon (10-core CPU). Actual performance varies by circuit type, hardware, and available backends.** See the [benchmark results](benchmarks/results/reproducible_benchmark_report.md) for detailed reproducible results.
 
 ---
 
@@ -248,13 +247,14 @@ graph TD
 
 Ariadne analyzes your circuit in milliseconds and selects the optimal backend:
 
-| Backend | Best For | Speedup | When It Works |
-|---------|----------|---------|---------------|
-| **Stim** | Clifford circuits, error correction | 1000× | Circuit contains only H, S, CNOT, Pauli gates |
-| **Tensor Networks** | Low-entanglement circuits | 50× | Entanglement grows slowly with qubit count |
-| **JAX-Metal** | Apple Silicon acceleration | 10× | Running on M1/M2/M3/M4 Macs |
-| **CUDA** | NVIDIA GPU acceleration | 20× | NVIDIA GPU with sufficient memory |
-| **Qiskit Aer** | General-purpose, reliable fallback | 1× | Universal fallback for any circuit |
+| Backend | Best For | Typical Throughput | When It Works |
+|---------|----------|-------------------|---------------|
+| **Stim** | Clifford circuits, error correction | ~100,000 shots/sec | Circuit contains only H, S, CNOT, Pauli gates |
+| **MPS** | Low-entanglement circuits | ~1,000-2,500 shots/sec | Entanglement grows slowly with qubit count |
+| **Tensor Networks** | Moderate-entanglement circuits | Varies | Circuit structure suitable for tensor decomposition |
+| **Qiskit Aer** | General-purpose, reliable fallback | Varies | Universal fallback for any circuit |
+| **JAX-Metal** | Apple Silicon acceleration | Experimental | Experimental feature for M1/M2/M3/M4 Macs |
+| **CUDA** | NVIDIA GPU acceleration | Experimental | Experimental feature for NVIDIA GPUs |
 
 ### Backend Capabilities & References
 
@@ -305,72 +305,69 @@ result = simulate(vqe_circuit, shots=8192)
 
 ## 🎯 Comprehensive Benchmark Results
 
-We've conducted extensive benchmarking of Ariadne's routing system to validate its correctness, performance, and reliability. Here are the key findings:
+We've conducted extensive benchmarking of Ariadne's routing system to validate its correctness, performance, and reliability. Here are the key findings from 283 passing tests (40 skipped):
+
+### ✅ Test Results Summary
+
+- **283 tests passing** ✅
+- **40 tests skipped** (optional dependencies not available)
+- **13/13 benchmark tests passed** ✅
 
 ### ✅ Correctness Validation
 
 - **Routing Logic**: Ariadne correctly identifies Clifford circuits and routes them to Stim with 100% confidence
-- **Parameter Binding**: Parameterized circuits are properly handled after binding parameters
-- **Result Consistency**: Total Variation Distance (TVD) between auto-routed results and baseline is minimal for most circuits
+- **Backend Selection**: Successfully selects optimal backend based on circuit characteristics
+- **Result Consistency**: All tests validate correctness of simulation results
 
-### 🚀 Performance Highlights
+### 🚀 Performance Results
 
 #### Clifford Circuits (Stim Backend)
-| Circuit Size | Ariadne (Stim) | Qiskit (Aer) | Speedup | Shots/Second |
-|--------------|----------------|--------------|---------|--------------|
-| **8-qubit GHZ** | 0.0067s | 0.0030s | **~45× faster** | 108,684 |
-| **16-qubit GHZ** | 0.0173s | 0.0183s | **~9× faster** | 57,657 |
-| **32-qubit GHZ** | 0.0338s | 0.0176s | **~2× faster** | 29,568 |
-| **40-qubit GHZ** | 0.0337s | 0.0331s | **~2× faster** | 29,633 |
+| Circuit Type | Backend | Execution Time | Throughput |
+|--------------|---------|----------------|------------|
+| **Small Clifford (3-4 qubits)** | Stim | 0.007-0.011s | ~100,000-150,000 shots/sec |
+| **Medium Clifford (8-10 qubits)** | Stim | 0.010-0.012s | ~100,000 shots/sec |
+| **Large Clifford (25 qubits)** | Stim | 0.024-0.041s | ~25,000-40,000 shots/sec |
 
-#### Low-Entanglement Circuits
-- **12-qubit (depth 6)**: Routed to MPS with 2.1s runtime
-- **24-qubit (depth 6)**: Routed to MPS with 1.6s runtime
-
-#### General Random Circuits
-- **8-qubit (depth 8)**: Routed to Cirq with 0.7s runtime
-- **16-qubit (depth 8)**: Routed to Cirq with 0.7s runtime
-- **24-qubit (depth 8)**: Routed to Cirq with 0.7s runtime
-
-#### Parameterized Circuits
-- **4-qubit with bound parameter**: Successfully executed with all backends
+#### Low-Entanglement Circuits (MPS Backend)
+| Circuit Type | Backend | Execution Time | Throughput |
+|--------------|---------|----------------|------------|
+| **Small (3 qubits, depth 7)** | MPS | 1.17s | ~857 shots/sec |
+| **Medium (8 qubits, depth 21)** | MPS | 0.82s | ~1,214 shots/sec |
+| **VQE Ansatz (6 qubits)** | MPS | 0.64s | ~1,568 shots/sec |
+| **QAOA (4 qubits)** | MPS | 0.40s | ~2,511 shots/sec |
 
 ### 📊 Routing Distribution
-- **Stim**: 40% (Clifford circuits)
-- **MPS**: 20% (Low-entanglement circuits)
-- **Cirq**: 30% (General random circuits)
-- **Qiskit (Aer)**: 10% (Baseline comparisons)
+From benchmark results:
+- **Stim**: 69.2% (9/13 circuits - Clifford circuits)
+- **MPS**: 30.8% (4/13 circuits - low-entanglement circuits)
 
 ### 🔧 Hardware Environment
 - **Platform**: macOS (Apple Silicon)
-- **CPU**: ARM64 architecture
-- **Available Backends**: Stim, Qiskit/Aer, Tensor Networks, MPS, Cirq, and more
-- **No NVIDIA GPU**: CUDA not available on this test machine
+- **CPU**: 10-core ARM64
+- **Available Backends**: Stim, Qiskit/Aer, Tensor Networks, MPS
+- **Experimental**: JAX-Metal, CUDA (experimental, marked as such)
 
 ### 💡 Key Insights
 
-1. **Clifford Circuit Optimization**: Ariadne correctly identifies Clifford circuits and routes them to Stim, providing significant speedups (2-45×) compared to Aer. The speedup is most dramatic for smaller circuits (8-16 qubits) and still notable for larger ones (32-40 qubits).
+1. **Clifford Circuit Optimization**: Ariadne correctly identifies Clifford circuits and routes them to Stim, achieving excellent throughput (~100,000 shots/sec) for stabilizer circuits.
 
-2. **Backend Selection Logic**: The routing system works as expected:
+2. **Backend Selection Logic**: The routing system works correctly:
    - Clifford → Stim (fastest for stabilizer circuits)
-   - Low-entanglement → MPS (matrix product states)
-   - General circuits → Cirq (fallback for non-Clifford)
+   - Low-entanglement → MPS (matrix product states for polynomial scaling)
 
-3. **Performance Scaling**: As circuit size increases, the relative advantage of Stim over Aer decreases, which is expected behavior. For very large circuits, the overhead of Stim initialization becomes more significant relative to the simulation time.
+3. **Reliable Performance**: All 13 benchmark tests pass successfully, demonstrating stability.
 
-4. **Tensor Network Issues**: Some tensor network simulations failed and fell back to Qiskit, indicating room for improvement in handling certain circuit structures.
+4. **Transparent Routing**: The `explain_routing()` function provides clear explanations for routing decisions.
 
-### 🎯 Launch Readiness
+### 🎯 Current Status
 
-Ariadne is well-positioned for the HN/X launch with:
+Ariadne is actively developing with:
 
-1. **Honest Performance Claims**: The actual speedups (2-45× for Clifford) are substantial but more conservative than the "up to 1000×" claim, which helps credibility.
-
-2. **Transparent Routing**: The `explain_routing()` function provides clear explanations for routing decisions, and the benchmark confirms routing matches expectations.
-
-3. **Robust Fallbacks**: When specialized backends fail, the system gracefully falls back to Qiskit/Aer, ensuring reliability.
-
-4. **Cross-Platform Compatibility**: Works well on Apple Silicon with no CUDA dependencies required for core functionality.
+1. **Core Functionality Working**: 283 tests passing (40 skipped) demonstrate robust core features
+2. **Realistic Performance Claims**: Benchmarks show real throughput data instead of exaggerated speedup claims
+3. **Honest Documentation**: Features marked as "experimental" where applicable
+4. **Working CI/CD**: Tests run successfully with proper dependency management
+5. **Functional Examples**: Colab notebook demonstrates real routing behavior
 
 ---
 
@@ -627,12 +624,14 @@ result = simulate(
 
 ## 📊 Project Status
 
-- ✅ **Production Ready** - All tests passing, CI/CD with comprehensive test suite
+- ✅ **Core Functionality Working** - 283 tests passing, 40 skipped; comprehensive test suite
 - ✅ **Cross-Platform** - Windows, macOS, Linux support
-- ✅ **Hardware Acceleration** - CUDA, Metal, Apple Silicon
+- ✅ **Stim Backend** - Fully functional, excellent for Clifford circuits
+- ✅ **MPS Backend** - Working for low-entanglement circuits
 - ✅ **Educational Tools** - 15+ algorithms, interactive tutorials
-- ✅ **Enterprise Support** - Docker, CI/CD, monitoring
-- 🔄 **Active Development** - New backends and features monthly
+- ⚠️ **Hardware Acceleration** - JAX-Metal and CUDA marked experimental
+- ✅ **CI/CD** - Fixed pipeline, tests running successfully
+- 🔄 **Active Development** - Improving routing logic and adding features
 
 ---
 

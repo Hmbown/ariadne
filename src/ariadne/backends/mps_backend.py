@@ -107,7 +107,11 @@ class MPSBackend(UniversalBackend):
             except Exception as err:
                 if gate_name in ["measure", "barrier", "reset"]:
                     continue
-                raise NotImplementedError(f"Gate '{gate_name}' not supported by MPS backend.") from err
+                # MPS backend has limited gate support
+                # This is expected behavior for complex gates
+                raise ValueError(
+                    f"Gate '{gate_name}' not supported by MPS backend. MPS supports only single and two-qubit gates with matrix representations."
+                ) from err
 
             if not physical_qubits:
                 continue

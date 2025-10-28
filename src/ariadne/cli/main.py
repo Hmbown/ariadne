@@ -291,27 +291,7 @@ Examples:
 
         parser.add_argument("--output", help="Output file for benchmark results (JSON format)")
 
-    def _add_benchmark_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
-        """Add the benchmark command (performance analysis)."""
-        parser = subparsers.add_parser(
-            "benchmark",
-            help="Run performance benchmarks",
-            description="Run performance benchmarks for backends",
-        )
-
-        parser.add_argument("--circuit", help="Path to quantum circuit file for benchmarking")
-
-        parser.add_argument("--shots", type=int, default=1000, help="Number of measurement shots (default: 1000)")
-
-        parser.add_argument(
-            "--backend",
-            choices=CLI_BACKEND_CHOICES,
-            help="Backend to benchmark (default: all available)",
-        )
-
-        parser.add_argument("--iterations", type=int, default=5, help="Number of benchmark iterations (default: 5)")
-
-        parser.add_argument("--output", help="Output file for benchmark results (JSON format)")
+    # Removed legacy duplicate benchmark parser to avoid confusion
 
     def _add_learn_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the learn command (educational tools)."""
@@ -420,27 +400,7 @@ Examples:
 
         parser.add_argument("--detailed", action="store_true", help="Show detailed status information")
 
-    def _add_benchmark_original_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
-        """Add the original benchmark command."""
-        parser = subparsers.add_parser(
-            "benchmark",
-            help="Run performance benchmarks",
-            description="Run performance benchmarks for backends",
-        )
-
-        parser.add_argument("--circuit", help="Path to quantum circuit file for benchmarking")
-
-        parser.add_argument("--shots", type=int, default=1000, help="Number of measurement shots (default: 1000)")
-
-        parser.add_argument(
-            "--backend",
-            choices=CLI_BACKEND_CHOICES,
-            help="Backend to benchmark (default: all available)",
-        )
-
-        parser.add_argument("--iterations", type=int, default=5, help="Number of benchmark iterations (default: 5)")
-
-        parser.add_argument("--output", help="Output file for benchmark results (JSON format)")
+    # Legacy duplicate benchmark parser removed
 
     def _add_benchmark_suite_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the benchmark-suite command."""

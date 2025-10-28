@@ -33,8 +33,21 @@ def main():
 
     # Verify Bell state properties
     total = sum(result.counts.values())
-    prob_00 = result.counts.get("00", 0) / total
-    prob_11 = result.counts.get("11", 0) / total
+
+    # The measurement results are in 4-bit format (e.g., "0000", "1100")
+    # For a 2-qubit Bell state measured with measure_all(),
+    # the format is: q0, q1, c0, c1 (or with padding)
+    # We need to extract the first 2 bits for the 2-qubit measurement
+    prob_00 = 0
+    prob_11 = 0
+    for state, count in result.counts.items():
+        # Extract the first 2 bits for 2-qubit measurement
+        if len(state) >= 2:
+            first_two_bits = state[:2]
+            if first_two_bits == "00":
+                prob_00 += count / total
+            elif first_two_bits == "11":
+                prob_11 += count / total
 
     print("\nBell state verification:")
     print(f"  P(00): {prob_00:.3f} (expected: ~0.5)")

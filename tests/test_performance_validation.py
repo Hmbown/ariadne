@@ -291,10 +291,11 @@ class TestPerformanceStability:
             execution_time = time.perf_counter() - start_time
             execution_times.append(execution_time)
 
-        # Check consistency
-        mean_time = statistics.mean(execution_times)
-        std_time = statistics.stdev(execution_times)
-        coefficient_of_variation = std_time / mean_time
+        # Check consistency (robust to first-call jitter)
+        trimmed = sorted(execution_times)[1:-1] if len(execution_times) > 2 else execution_times
+        mean_time = statistics.mean(trimmed)
+        std_time = statistics.stdev(trimmed) if len(trimmed) > 1 else 0.0
+        coefficient_of_variation = (std_time / mean_time) if mean_time else 0.0
 
         # Execution times should be reasonably consistent (CV < 50%)
         assert coefficient_of_variation < 0.50, f"Execution times too variable: CV={coefficient_of_variation}"

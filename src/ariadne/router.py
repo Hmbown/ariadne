@@ -157,7 +157,7 @@ def _simulate_jax_metal(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
         # Use our new MetalBackend with hybrid approach
         backend = MetalBackend(allow_cpu_fallback=True)
-        result = backend.simulate(circuit, shots)
+        result = dict(backend.simulate(circuit, shots))
 
         # Log backend mode for debugging
         logger.debug(f"Metal backend executed in mode: {backend.backend_mode}")
@@ -205,7 +205,7 @@ def _simulate_cirq(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
     try:
         backend = CirqBackend()
-        return backend.simulate(circuit, shots)
+        return dict(backend.simulate(circuit, shots))
     except Exception as exc:
         logger.log_simulation_error(exc, backend="cirq")
         raise SimulationError(f"Cirq simulation failed: {exc}", backend="cirq") from exc
@@ -222,7 +222,7 @@ def _simulate_pennylane(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
     try:
         backend = PennyLaneBackend()
-        return backend.simulate(circuit, shots)
+        return dict(backend.simulate(circuit, shots))
     except Exception as exc:
         logger.log_simulation_error(exc, backend="pennylane")
         raise SimulationError(f"PennyLane simulation failed: {exc}", backend="pennylane") from exc
@@ -239,7 +239,7 @@ def _simulate_qulacs(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
     try:
         backend = QulacsBackend()
-        return backend.simulate(circuit, shots)
+        return dict(backend.simulate(circuit, shots))
     except Exception as exc:
         logger.log_simulation_error(exc, backend="qulacs")
         raise SimulationError(f"Qulacs simulation failed: {exc}", backend="qulacs") from exc
@@ -256,7 +256,7 @@ def _simulate_pyquil(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
     try:
         backend = PyQuilBackend()
-        return backend.simulate(circuit, shots)
+        return dict(backend.simulate(circuit, shots))
     except Exception as exc:
         logger.log_simulation_error(exc, backend="pyquil")
         raise SimulationError(f"PyQuil simulation failed: {exc}", backend="pyquil") from exc
@@ -273,7 +273,7 @@ def _simulate_braket(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
     try:
         backend = BraketBackend()
-        return backend.simulate(circuit, shots)
+        return dict(backend.simulate(circuit, shots))
     except Exception as exc:
         logger.log_simulation_error(exc, backend="braket")
         raise SimulationError(f"Braket simulation failed: {exc}", backend="braket") from exc
@@ -290,7 +290,7 @@ def _simulate_qsharp(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
     try:
         backend = QSharpBackend()
-        return backend.simulate(circuit, shots)
+        return dict(backend.simulate(circuit, shots))
     except Exception as exc:
         logger.log_simulation_error(exc, backend="qsharp")
         raise SimulationError(f"Q# simulation failed: {exc}", backend="qsharp") from exc
@@ -307,7 +307,7 @@ def _simulate_opencl(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 
     try:
         backend = OpenCLBackend()
-        return backend.simulate(circuit, shots)
+        return dict(backend.simulate(circuit, shots))
     except Exception as exc:
         logger.log_simulation_error(exc, backend="opencl")
         raise SimulationError(f"OpenCL simulation failed: {exc}", backend="opencl") from exc

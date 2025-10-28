@@ -107,7 +107,8 @@ class ValidationRule:
         Returns:
             Validation issue if validation fails, None otherwise
         """
-        raise NotImplementedError
+        # Default implementation - no validation
+        return None
 
 
 class TypeRule(ValidationRule):

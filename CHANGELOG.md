@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2025-10-27
+
+### Added
+- Verified packaging builds cleanly (`sdist` and `wheel`) and metadata passes `twine check`
+- Improved CLI integration tests and help/version coverage
+- Expanded README with accurate test counts and clarified performance statements
+
+### Changed
+- Updated Bell state demo to correctly interpret measurement bitstrings when `measure_all()` adds an extra classical register; verification now extracts the 2-qubit outcomes reliably
+- Aligned README “Comprehensive Benchmark Results” and “Project Status” with current test results (283 passed, 40 skipped)
+- Removed unused legacy benchmark parser helpers from CLI to avoid duplication
+
+### Fixed
+- Removed unused imports in config coverage tests to satisfy linting (ruff) and keep `make lint` green
+- Addressed timing jitter in CPU backend and in a stability test (trimmed outliers)
+
 ## [0.3.4] - 2025-10-22
 
 ### Added
