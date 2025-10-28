@@ -16,8 +16,9 @@ help:
 	@echo "  make docker-run-prod     Run a quick prod container verification"
 	@echo "  make compose-dev         Launch dev compose service"
 	@echo "  make compose-test        Run test compose service"
- 	@echo "  make publish-testpypi    Upload dist/* to TestPyPI (requires env vars)"
- 	@echo "  make publish-pypi        Upload dist/* to PyPI (requires env vars)"
+	@echo "  make publish-testpypi    Upload dist/* to TestPyPI (requires env vars)"
+	@echo "  make publish-pypi        Upload dist/* to PyPI (requires env vars)"
+ 	@echo "  make build-release       Build with explicit VERSION via setuptools_scm"
 
 # Container image coordinates (override OWNER on invocation)
 VERSION ?=
@@ -77,6 +78,13 @@ publish-pypi:
 		echo "TWINE_USERNAME/TWINE_PASSWORD must be set"; exit 1; \
 	fi
 	twine upload dist/*
+
+build-release:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Please provide VERSION=X.Y.Z"; exit 1; \
+	fi
+	@echo "Building with version $(VERSION) via setuptools_scm..."
+	env SETUPTOOLS_SCM_PRETEND_VERSION=$(VERSION) python3 -m build
 
 # -----------------------------
 # Docker / Compose helpers
