@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Updated Bell state demo to correctly interpret measurement bitstrings when `measure_all()` adds an extra classical register; verification now extracts the 2-qubit outcomes reliably
-- Aligned README "Comprehensive Benchmark Results" and "Project Status" with current test results (283 passed, 40 skipped)
+- Aligned README "Comprehensive Benchmark Results" and "Project Status" with current test results (291 passed, 32 skipped)
 - Removed unused legacy benchmark parser helpers from CLI to avoid duplication
 
 ### Fixed

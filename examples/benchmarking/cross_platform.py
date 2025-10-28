@@ -25,7 +25,7 @@ def create_benchmark_circuits():
     bell.h(0)
     bell.cx(0, 1)
     bell.measure_all()
-    circuits['bell'] = bell
+    circuits["bell"] = bell
 
     # GHZ State (multi-qubit Clifford)
     ghz = QuantumCircuit(8, 8)
@@ -33,7 +33,7 @@ def create_benchmark_circuits():
     for i in range(1, 8):
         ghz.cx(0, i)
     ghz.measure_all()
-    circuits['ghz'] = ghz
+    circuits["ghz"] = ghz
 
     # QAOA Circuit (8-qubit variational)
     qaoa = QuantumCircuit(8, 8)
@@ -51,7 +51,7 @@ def create_benchmark_circuits():
         for i in range(8):
             qaoa.rx(0.3, i)
     qaoa.measure_all()
-    circuits['qaoa'] = qaoa
+    circuits["qaoa"] = qaoa
 
     # Random Circuit (non-Clifford)
     random_circ = QuantumCircuit(6, 6)
@@ -64,9 +64,9 @@ def create_benchmark_circuits():
         if control != target:
             random_circ.cx(control, target)
         qubit = np.random.randint(6)
-        random_circ.rz(np.random.uniform(0, 2*np.pi), qubit)
+        random_circ.rz(np.random.uniform(0, 2 * np.pi), qubit)
     random_circ.measure_all()
-    circuits['random'] = random_circ
+    circuits["random"] = random_circ
 
     return circuits
 
@@ -79,21 +79,16 @@ def benchmark_circuit(circuit, backend, shots=1000):
         end_time = time.perf_counter()
 
         return {
-            'success': True,
-            'execution_time': end_time - start_time,
-            'backend_used': result.backend_used.value,
-            'shots': shots,
-            'counts': dict(result.counts),
-            'unique_outcomes': len(result.counts),
-            'throughput': shots / (end_time - start_time)
+            "success": True,
+            "execution_time": end_time - start_time,
+            "backend_used": result.backend_used.value,
+            "shots": shots,
+            "counts": dict(result.counts),
+            "unique_outcomes": len(result.counts),
+            "throughput": shots / (end_time - start_time),
         }
     except Exception as e:
-        return {
-            'success': False,
-            'error': str(e),
-            'backend_requested': backend,
-            'shots': shots
-        }
+        return {"success": False, "error": str(e), "backend_requested": backend, "shots": shots}
 
 
 def run_cross_platform_benchmark(algorithms=None, backends=None, shots=1000):
@@ -109,10 +104,10 @@ def run_cross_platform_benchmark(algorithms=None, backends=None, shots=1000):
         Dictionary with benchmark results
     """
     if algorithms is None:
-        algorithms = ['bell', 'ghz', 'qaoa', 'random']
+        algorithms = ["bell", "ghz", "qaoa", "random"]
 
     if backends is None:
-        backends = ['auto', 'stim', 'qiskit', 'mps', 'tensor_network']
+        backends = ["auto", "stim", "qiskit", "mps", "tensor_network"]
 
     print("Running cross-platform benchmark...")
     print(f"Algorithms: {algorithms}")
@@ -125,17 +120,13 @@ def run_cross_platform_benchmark(algorithms=None, backends=None, shots=1000):
 
     # Initialize results structure
     results = {
-        'timestamp': datetime.now().isoformat(),
-        'system_info': {
-            'platform': time.platform(),
-            'python_version': time.python_version(),
+        "timestamp": datetime.now().isoformat(),
+        "system_info": {
+            "platform": time.platform(),
+            "python_version": time.python_version(),
         },
-        'config': {
-            'algorithms': algorithms,
-            'backends': backends,
-            'shots': shots
-        },
-        'results': {}
+        "config": {"algorithms": algorithms, "backends": backends, "shots": shots},
+        "results": {},
     }
 
     # Run benchmarks
@@ -147,19 +138,19 @@ def run_cross_platform_benchmark(algorithms=None, backends=None, shots=1000):
         circuit = circuits[alg_name]
         print(f"\nBenchmarking {alg_name} ({circuit.num_qubits} qubits, {circuit.depth()} depth):")
 
-        results['results'][alg_name] = {
-            'circuit_info': {
-                'qubits': circuit.num_qubits,
-                'depth': circuit.depth(),
-                'gate_counts': dict(circuit.count_ops())
+        results["results"][alg_name] = {
+            "circuit_info": {
+                "qubits": circuit.num_qubits,
+                "depth": circuit.depth(),
+                "gate_counts": dict(circuit.count_ops()),
             },
-            'backends': {}
+            "backends": {},
         }
 
         for backend in backends:
             print(f"  {backend:15} ... ", end="", flush=True)
 
-            if backend == 'auto':
+            if backend == "auto":
                 # Use automatic routing
                 try:
                     start_time = time.perf_counter()
@@ -167,33 +158,28 @@ def run_cross_platform_benchmark(algorithms=None, backends=None, shots=1000):
                     end_time = time.perf_counter()
 
                     backend_result = {
-                        'success': True,
-                        'execution_time': end_time - start_time,
-                        'backend_used': result.backend_used.value,
-                        'shots': shots,
-                        'counts': dict(result.counts),
-                        'unique_outcomes': len(result.counts),
-                        'throughput': shots / (end_time - start_time),
-                        'auto_routing': True
+                        "success": True,
+                        "execution_time": end_time - start_time,
+                        "backend_used": result.backend_used.value,
+                        "shots": shots,
+                        "counts": dict(result.counts),
+                        "unique_outcomes": len(result.counts),
+                        "throughput": shots / (end_time - start_time),
+                        "auto_routing": True,
                     }
                     print(f"OK ({result.backend_used.value})")
                 except Exception as e:
-                    backend_result = {
-                        'success': False,
-                        'error': str(e),
-                        'backend_requested': 'auto',
-                        'shots': shots
-                    }
+                    backend_result = {"success": False, "error": str(e), "backend_requested": "auto", "shots": shots}
                     print(f"FAILED ({e})")
             else:
                 # Use specific backend
                 backend_result = benchmark_circuit(circuit, backend, shots)
-                if backend_result['success']:
+                if backend_result["success"]:
                     print("OK")
                 else:
                     print("FAILED")
 
-            results['results'][alg_name]['backends'][backend] = backend_result
+            results["results"][alg_name]["backends"][backend] = backend_result
 
     return results
 
@@ -219,10 +205,10 @@ def export_benchmark_report(algorithms, backends, shots=1000, fmt="json"):
 
     # Create export-ready report
     report = {
-        'date': results['timestamp'],
-        'algorithms': results['config']['algorithms'],
-        'hardware': results['system_info'],
-        'results': results['results']
+        "date": results["timestamp"],
+        "algorithms": results["config"]["algorithms"],
+        "hardware": results["system_info"],
+        "results": results["results"],
     }
 
     return report
@@ -236,7 +222,7 @@ def main():
     # Save results to JSON file
     output_file = f"cross_platform_benchmark_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
-    with open(output_file, 'w') as f:
+    with open(output_file, "w") as f:
         json.dump(results, f, indent=2, default=str)
 
     print(f"\nBenchmark results saved to: {output_file}")
@@ -245,13 +231,13 @@ def main():
     print("\nSummary:")
     print("=" * 30)
 
-    for alg_name, alg_data in results['results'].items():
+    for alg_name, alg_data in results["results"].items():
         print(f"\n{alg_name.upper()}:")
         successful_backends = []
         failed_backends = []
 
-        for backend_name, backend_data in alg_data['backends'].items():
-            if backend_data['success']:
+        for backend_name, backend_data in alg_data["backends"].items():
+            if backend_data["success"]:
                 successful_backends.append(backend_name)
             else:
                 failed_backends.append(backend_name)

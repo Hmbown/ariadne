@@ -21,24 +21,20 @@ def demo_advanced_benchmarking():
     suite = EnhancedBenchmarkSuite()
 
     # Run benchmarks for different algorithms
-    algorithms = ['bell', 'ghz']
+    algorithms = ["bell", "ghz"]
     qubit_counts = [2, 3, 4]
 
     print("Running benchmarks...")
     for alg in algorithms:
         for qubits in qubit_counts:
             print(f"\nBenchmarking {alg} with {qubits} qubits:")
-            results = suite.benchmark_single_algorithm(
-                algorithm_name=alg,
-                qubit_count=qubits,
-                shots=100
-            )
+            results = suite.benchmark_single_algorithm(algorithm_name=alg, qubit_count=qubits, shots=100)
 
             for i, result in enumerate(results):
                 if result.success:
-                    print(f"  Iteration {i+1}: {result.execution_time:.4f}s, {result.throughput:.2f} shots/s")
+                    print(f"  Iteration {i + 1}: {result.execution_time:.4f}s, {result.throughput:.2f} shots/s")
                 else:
-                    print(f"  Iteration {i+1}: FAILED - {result.error_message}")
+                    print(f"  Iteration {i + 1}: FAILED - {result.error_message}")
 
     print(f"\nCollected {len(suite.results)} benchmark results")
 
@@ -47,10 +43,7 @@ def demo_advanced_benchmarking():
 
     # Compare performance of different backends
     comparison = suite.benchmark_backend_comparison(
-        algorithm_name='bell',
-        qubit_count=3,
-        backends=['auto', 'qiskit'],
-        shots=100
+        algorithm_name="bell", qubit_count=3, backends=["auto", "qiskit"], shots=100
     )
 
     print("Backend Performance Comparison:")
@@ -65,9 +58,9 @@ def demo_advanced_benchmarking():
 
     # Test scalability across qubit counts
     scalability_result = suite.scalability_test(
-        algorithm_name='bell',
+        algorithm_name="bell",
         qubit_range=(2, 4, 1),  # Start=2, Stop=4, Step=1
-        shots=100
+        shots=100,
     )
 
     print(f"Scalability test for {scalability_result.algorithm}:")
@@ -90,10 +83,10 @@ def demo_advanced_benchmarking():
 
     # Run a more comprehensive benchmark
     comprehensive_suite = run_comprehensive_benchmark(
-        algorithms=['bell'],  # Small example
-        backends=['auto'],    # Use auto routing
+        algorithms=["bell"],  # Small example
+        backends=["auto"],  # Use auto routing
         qubit_counts=[2, 3],  # Small range for demo
-        shots=50            # Fewer shots for faster demo
+        shots=50,  # Fewer shots for faster demo
     )
 
     print(f"Comprehensive benchmark completed with {len(comprehensive_suite.results)} results")
@@ -102,7 +95,7 @@ def demo_advanced_benchmarking():
     print("-" * 32)
 
     # Use convenience function to compare backends
-    backend_comparison = compare_backends('ghz', 3, ['auto', 'qiskit'])
+    backend_comparison = compare_backends("ghz", 3, ["auto", "qiskit"])
     print("Backend comparison results:")
     for backend, result in backend_comparison.items():
         if result.success:
@@ -117,7 +110,7 @@ def demo_advanced_benchmarking():
     import os
     import tempfile
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         temp_path = f.name
 
     try:
@@ -127,6 +120,7 @@ def demo_advanced_benchmarking():
         # Read and show first part of exported results
         with open(temp_path) as f:
             import json
+
             results = json.load(f)
             print(f"Exported {len(results)} benchmark results")
     finally:
@@ -145,7 +139,7 @@ def demo_advanced_benchmarking():
     for alg_name in available_algorithms[:5]:  # Limit to first 5 for demo
         try:
             info = explorer.get_algorithm_info(alg_name)
-            props = info['circuit_properties']
+            props = info["circuit_properties"]
             print(f"  {alg_name}: {props['n_qubits']} qubits, depth {props['depth']}, {props['size']} gates")
         except Exception as e:
             print(f"  {alg_name}: Error - {str(e)}")
@@ -154,6 +148,7 @@ def demo_advanced_benchmarking():
     print("ADVANCED BENCHMARKING TUTORIAL COMPLETE")
     print("Ariadne provides comprehensive tools for quantum algorithm analysis!")
     print("=" * 60)
+
 
 if __name__ == "__main__":
     demo_advanced_benchmarking()

@@ -182,19 +182,19 @@ def circuits_suite() -> list:
     circuits = []
     # Clifford
     for n in [8, 16, 32]:
-        S.append(ghz(n))
+        circuits.append(ghz(n))
     for n in [12, 24]:
-        S.append(random_clifford(n, depth=4, seed=n))
-    S.append(repetition_code(3))
+        circuits.append(random_clifford(n, depth=4, seed=n))
+    circuits.append(repetition_code(3))
     # Low entanglement
     for n in [12, 24]:
-        S.append(low_entanglement_chain(n, depth=6, seed=n))
+        circuits.append(low_entanglement_chain(n, depth=6, seed=n))
     # General
     for n in [8, 16, 24]:
-        S.append(random_universal(n, depth=8, seed=n))
+        circuits.append(random_universal(n, depth=8, seed=n))
     # Param
-    S.append(parameterized_bound(4, 0.3))
-    return S
+    circuits.append(parameterized_bound(4, 0.3))
+    return circuits
 
 
 def main():
@@ -258,7 +258,7 @@ def main():
 
         # AUTO runs
         try:
-            for r in range(args.repeats):
+            for _r in range(args.repeats):
                 used, elapsed, counts, _res = run_sim(qc, args.shots, backend=None)
                 if elapsed < best_auto_time:
                     best_auto_time, best_auto, last_auto_counts = elapsed, used, counts

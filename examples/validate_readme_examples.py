@@ -21,7 +21,7 @@ def test_30_second_demo():
         # 40-qubit GHZ (stabilizer circuit)
         qc = QuantumCircuit(40, 40)
         qc.h(0)
-        [qc.cx(i, i+1) for i in range(39)]
+        [qc.cx(i, i + 1) for i in range(39)]
         qc.measure_all()
 
         result = simulate(qc, shots=1000)

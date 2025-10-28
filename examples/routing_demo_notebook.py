@@ -20,7 +20,7 @@ from ariadne import explain_routing, simulate
 
 def benchmark_circuit(name: str, circuit: QuantumCircuit, shots: int = 1000) -> dict[str, Any]:
     """Benchmark a single circuit and return detailed results."""
-    print(f"\n{'='*20} {name} {'='*20}")
+    print(f"\n{'=' * 20} {name} {'=' * 20}")
     print(f"Circuit: {circuit.num_qubits} qubits, depth {circuit.depth()}")
 
     # Get routing explanation
@@ -29,7 +29,7 @@ def benchmark_circuit(name: str, circuit: QuantumCircuit, shots: int = 1000) -> 
 
     # Measure execution
     start_time = time.time()
-    start_memory = 0  # Could add memory profiling here
+    # start_memory = 0  # Could add memory profiling here
 
     try:
         result = simulate(circuit, shots=shots)
@@ -54,18 +54,13 @@ def benchmark_circuit(name: str, circuit: QuantumCircuit, shots: int = 1000) -> 
             "throughput": throughput,
             "explanation": explanation,
             "fallback_reason": result.fallback_reason,
-            "sample_counts": dict(list(result.counts.items())[:3])
+            "sample_counts": dict(list(result.counts.items())[:3]),
         }
 
     except Exception as e:
         end_time = time.time()
         print(f"❌ FAILED: {e}")
-        return {
-            "success": False,
-            "error": str(e),
-            "explanation": explanation,
-            "execution_time": end_time - start_time
-        }
+        return {"success": False, "error": str(e), "explanation": explanation, "execution_time": end_time - start_time}
 
 
 def create_large_clifford_circuit(n_qubits: int = 35) -> QuantumCircuit:
@@ -144,9 +139,9 @@ def main():
     results["general"] = benchmark_circuit("General Circuit (T gates)", general)
 
     # Summary
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("BENCHMARK SUMMARY")
-    print("="*60)
+    print("=" * 60)
 
     for name, result in results.items():
         if result["success"]:
@@ -161,9 +156,9 @@ def main():
             print(f"\n{name}:")
             print(f"   {result['explanation']}")
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("KEY INSIGHTS")
-    print("="*60)
+    print("=" * 60)
     print("• Ariadne automatically routes to optimal backends")
     print("• Large Clifford → Stim (enables scaling beyond standard simulators)")
     print("• Low-entanglement → MPS/TN (memory efficient)")
@@ -179,6 +174,7 @@ if __name__ == "__main__":
 
     # Could save results to JSON for CI artifacts
     import json
+
     with open("routing_demo_results.json", "w") as f:
         json.dump(benchmark_results, f, indent=2, default=str)
     print("\n📊 Results saved to routing_demo_results.json")

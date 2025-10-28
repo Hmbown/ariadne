@@ -33,8 +33,8 @@ def demonstrate_ux_improvements():
 
     # Show available algorithms
     print(f"Available quantum algorithms: {len(list_algorithms())} total")
-    foundational = get_algorithms_by_category('foundational')
-    search = get_algorithms_by_category('search')
+    foundational = get_algorithms_by_category("foundational")
+    search = get_algorithms_by_category("search")
     print(f"  Foundational: {foundational}")
     print(f"  Search: {search}")
 
@@ -58,10 +58,10 @@ def demonstrate_ux_improvements():
     print(f"Bell state routing explanation: {bell_result.routing_explanation}")
 
     # Compare different algorithms
-    algorithms_to_try = ['bell', 'ghz', 'qft']
+    algorithms_to_try = ["bell", "ghz", "qft"]
     for alg_name in algorithms_to_try:
         try:
-            result, _ = run_educational_simulation(alg_name, n_qubits=3 if alg_name != 'bell' else 2, verbose=False)
+            result, _ = run_educational_simulation(alg_name, n_qubits=3 if alg_name != "bell" else 2, verbose=False)
             print(f"{alg_name.upper()}: {result.backend_used.value} -> {result.routing_explanation[:60]}...")
         except Exception as e:
             print(f"{alg_name.upper()}: Error - {e}")
@@ -70,14 +70,14 @@ def demonstrate_ux_improvements():
     print("-" * 40)
 
     # Explore an algorithm in detail
-    explore_algorithm_step_by_step('qft', n_qubits=3)
+    explore_algorithm_step_by_step("qft", n_qubits=3)
 
     print("\n4. SIMPLIFIED EDUCATIONAL WORKFLOWS")
     print("-" * 40)
 
     # Show how educational content is integrated
     print("Running educational simulation with automatic content retrieval...")
-    result, edu_content = run_educational_simulation('grover', n_qubits=4, shots=100, verbose=True)
+    result, edu_content = run_educational_simulation("grover", n_qubits=4, shots=100, verbose=True)
 
     print("\n5. PERFORMANCE ANALYSIS")
     print("-" * 30)

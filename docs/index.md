@@ -8,57 +8,66 @@ Ariadne is a zero-configuration quantum simulator bundle that automatically rout
 
 Select the documentation path that best matches your role:
 
-#### [For Classroom Instructors](./getting-started/for-instructors.md)
-Learn how to set up Ariadne for classroom demonstrations, student exercises, and educational activities.
-
-#### [For Research Scientists](./getting-started/for-researchers.md)
-Discover advanced features, performance analysis tools, and reproducible benchmarking capabilities.
-
-#### [For DevOps Engineers](./getting-started/for-devops.md)
-Explore installation, configuration, and integration with CI/CD pipelines.
+- [For Classroom Instructors](./getting-started/for-instructors.md) — turnkey classroom setups, lesson plans, and grading workflows.
+- [For Research Scientists](./getting-started/for-researchers.md) — performance analysis, reproducible benchmarking, and publication tooling.
+- [For DevOps Engineers](./getting-started/for-devops.md) — deployment, observability, and CI/CD integration guidance.
 
 ---
 
 ## Quick Navigation
 
-- [Getting Started](./getting-started/for-instructors.md) - Begin your journey with Ariadne
-- [Core Concepts](./user-guide/core-concepts.md) - Understand how Ariadne works
-- [Algorithm Library](./tutorials/education/algorithms.md) - Explore the 15+ quantum algorithms
-- [API Reference](./user-guide/api-reference.md) - Detailed API documentation
-- [CLI Guide](./user-guide/cli-reference.md) - Command-line interface reference
-- [Troubleshooting](./reference/troubleshooting.md) - Common issues and solutions
+- **Install & Launch**
+  - [Quick Start](./quickstart.md) — run your first routed simulation in minutes.
+  - [Installation Summary](./installation_summary.md) — copy-paste commands for every platform.
+  - [Comprehensive Installation](./comprehensive_installation.md) — full dependency matrix and advanced setups.
+  - [Troubleshooting](./troubleshooting.md) — unblock common installation and runtime issues fast.
+- **Understand the Router**
+  - [Routing Decisions Explained](./router_decisions.md) — walkthrough of the prioritized filter chain and scoring engine.
+  - [Capability Matrix](./capability_matrix.md) — backend feature comparison at a glance.
+  - [Performance Guide](./PERFORMANCE_GUIDE.md) — tuning tips for speed, memory, and accuracy.
+- **Learn & Teach**
+  - [Quantum Computing Primer](./quantum_computing_primer.md) — crash course for new learners.
+  - [Algorithms Catalog](./algorithms.md) — curated list of 15+ built-in quantum algorithms.
+  - [Examples Repository](../examples/README.md) — notebooks and scripts for education, benchmarking, and production use.
+- **Develop & Contribute**
+  - [Developer Guide](./guides/developer_guide.md) — architecture overview and development workflow.
+  - [Release Notes](./project/RELEASE_NOTES_v0.4.1.md) — latest changes and migration tips.
+  - [CONTRIBUTING](./project/CONTRIBUTING.md) — how to file issues, propose features, and open pull requests.
+- **API Reference**
+  - [Sphinx API Docs](./source/index.rst) — auto-generated reference for the entire public API.
+  - [Routing Rules](./source/routing_rules.md) — deep dive into router heuristics and configuration options.
 
 ---
 
 ## Available Quantum Algorithms
 
-Ariadne includes 15+ quantum algorithms across multiple categories:
+Ariadne ships with 15+ ready-to-run algorithms across multiple categories:
 
-**Foundational:**
+**Foundational**
 - Bell States (entanglement)
 - GHZ States (multipartite entanglement)
 - Quantum Fourier Transform (QFT)
 - Quantum Phase Estimation (QPE)
 
-**Search Algorithms:**
+**Search Algorithms**
 - Grover's Search (quadratic speedup)
 - Bernstein-Vazirani (linear speedup)
 
-**Optimization:**
+**Optimization**
 - QAOA (Quantum Approximate Optimization Algorithm)
 - VQE (Variational Quantum Eigensolver)
 
-**Error Correction:**
+**Error Correction**
 - Steane Code [[7,1,3]] CSS code
 - Surface Code (simplified)
 
-**Machine Learning:**
-- QSVM (Quantum Support Vector Machine)
-- VQC (Variational Quantum Classifier)
+**Machine Learning**
+- Quantum Support Vector Machine (QSVM)
+- Variational Quantum Classifier (VQC)
 - Quantum Neural Network
 
-**Specialized:**
+**Specialized**
 - Deutsch-Jozsa (constant vs balanced functions)
 - Simon's Algorithm (period finding)
 - Quantum Walk (search enhancement)
-- Amplitude Amplification (generalization of Grover)
+- Amplitude Amplification (Grover generalization)

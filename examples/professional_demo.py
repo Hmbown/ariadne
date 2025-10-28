@@ -23,16 +23,13 @@ def benchmark_backends(circuit: QuantumCircuit, shots: int = 1000) -> dict[str, 
             execution_time = time.time() - start_time
 
             results[backend_name] = {
-                'success': True,
-                'time': execution_time,
-                'backend_used': result.backend_used,
-                'shot_count': len(result.get_counts()) if hasattr(result, 'get_counts') else shots
+                "success": True,
+                "time": execution_time,
+                "backend_used": result.backend_used,
+                "shot_count": len(result.get_counts()) if hasattr(result, "get_counts") else shots,
             }
         except Exception as e:
-            results[backend_name] = {
-                'success': False,
-                'error': str(e)
-            }
+            results[backend_name] = {"success": False, "error": str(e)}
 
     return results
 
@@ -48,20 +45,20 @@ def create_algorithm_circuits() -> dict[str, QuantumCircuit]:
         for j in range(i + 1, 12):
             qft_circuit.cp(2 * 3.14159 / (2 ** (j - i + 1)), i, j)
     qft_circuit.measure_all()
-    circuits['QFT'] = qft_circuit
+    circuits["QFT"] = qft_circuit
 
     # Bernstein-Vazirani Algorithm
     bv_circuit = QuantumCircuit(8, 8)
-    secret = '10110101'  # Secret string
+    secret = "10110101"  # Secret string
     bv_circuit.h(range(7))
     bv_circuit.x(7)
     bv_circuit.h(7)
     for i, bit in enumerate(secret[:-1]):
-        if bit == '1':
+        if bit == "1":
             bv_circuit.cx(i, 7)
     bv_circuit.h(range(7))
     bv_circuit.measure_all()
-    circuits['Bernstein-Vazirani'] = bv_circuit
+    circuits["Bernstein-Vazirani"] = bv_circuit
 
     # Random Clifford Circuit
     cliff_circuit = QuantumCircuit(20, 20)
@@ -70,7 +67,7 @@ def create_algorithm_circuits() -> dict[str, QuantumCircuit]:
         cliff_circuit.s(1)
         cliff_circuit.cx(0, 1)
     cliff_circuit.measure_all()
-    circuits['Clifford'] = cliff_circuit
+    circuits["Clifford"] = cliff_circuit
 
     return circuits
 

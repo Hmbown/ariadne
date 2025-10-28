@@ -97,7 +97,7 @@ result = simulate(quantum_circuit, shots=1000)  # That's it!
 
 ## Performance Highlights
 
-Real benchmark results from the comprehensive test suite (283 tests passing, 40 skipped):
+Real benchmark results from the comprehensive test suite (291 tests passing, 32 skipped):
 
 | Circuit Type | Backend Used | Execution Time | Throughput |
 |--------------|--------------|----------------|------------|
@@ -305,12 +305,12 @@ result = simulate(vqe_circuit, shots=8192)
 
 ## 🎯 Comprehensive Benchmark Results
 
-We've conducted extensive benchmarking of Ariadne's routing system to validate its correctness, performance, and reliability. Here are the key findings from 283 passing tests (40 skipped):
+We've conducted extensive benchmarking of Ariadne's routing system to validate its correctness, performance, and reliability. Here are the key findings from 291 passing tests (32 skipped):
 
 ### ✅ Test Results Summary
 
-- **283 tests passing** ✅
-- **40 tests skipped** (optional dependencies not available)
+- **291 tests passing** ✅
+- **32 tests skipped** (optional dependencies not available)
 - **13/13 benchmark tests passed** ✅
 
 ### ✅ Correctness Validation
@@ -363,7 +363,7 @@ From benchmark results:
 
 Ariadne is actively developing with:
 
-1. **Core Functionality Working**: 283 tests passing (40 skipped) demonstrate robust core features
+1. **Core Functionality Working**: 291 tests passing (32 skipped) demonstrate robust core features
 2. **Realistic Performance Claims**: Benchmarks show real throughput data instead of exaggerated speedup claims
 3. **Honest Documentation**: Features marked as "experimental" where applicable
 4. **Working CI/CD**: Tests run successfully with proper dependency management
@@ -624,7 +624,7 @@ result = simulate(
 
 ## 📊 Project Status
 
-- ✅ **Core Functionality Working** - 283 tests passing, 40 skipped; comprehensive test suite
+- ✅ **Core Functionality Working** - 291 tests passing, 32 skipped; comprehensive test suite
 - ✅ **Cross-Platform** - Windows, macOS, Linux support
 - ✅ **Stim Backend** - Fully functional, excellent for Clifford circuits
 - ✅ **MPS Backend** - Working for low-entanglement circuits

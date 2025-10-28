@@ -56,5 +56,6 @@ def main():
         print(f"❌ Quick check failed: {e}")
         return 1
 
+
 if __name__ == "__main__":
     sys.exit(main())

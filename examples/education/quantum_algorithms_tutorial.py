@@ -14,12 +14,12 @@ famous quantum algorithms that showcase quantum advantage.
 ⏱️ Estimated time: 20-30 minutes
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from qiskit import QuantumCircuit
-from ariadne import simulate, explain_routing
+
+from ariadne import explain_routing, simulate
 from ariadne.education import AlgorithmExplorer
-from ariadne.enhanced_benchmarking import EnhancedBenchmarkSuite
 
 
 def main():
@@ -30,7 +30,6 @@ def main():
 
     # Initialize educational tools
     explorer = AlgorithmExplorer()
-    benchmark_suite = EnhancedBenchmarkSuite()
 
     print("🎓 Available Quantum Algorithms:")
     algorithms = explorer.list_algorithms()
@@ -62,12 +61,12 @@ def deutsch_jozsa_tutorial(explorer):
     print("-" * 40)
 
     # Get algorithm information
-    dj_info = explorer.get_algorithm_info('deutsch_jozsa')
+    dj_info = explorer.get_algorithm_info("deutsch_jozsa")
     print(f"Description: {dj_info['metadata'].description}")
     print(f"Complexity: {dj_info['metadata'].complexity}")
     print()
 
-    def create_deutsch_jozsa(n_qubits=3, function_type='balanced'):
+    def create_deutsch_jozsa(n_qubits=3, function_type="balanced"):
         """Create Deutsch-Jozsa circuit for learning."""
         qc = QuantumCircuit(n_qubits + 1, n_qubits)  # +1 for ancilla
 
@@ -78,7 +77,7 @@ def deutsch_jozsa_tutorial(explorer):
         qc.h(n_qubits)
 
         # Oracle implementation (simplified for learning)
-        if function_type == 'balanced':
+        if function_type == "balanced":
             # Balanced function: XOR with first qubit
             qc.cx(0, n_qubits)
         # Constant function would do nothing
@@ -93,7 +92,7 @@ def deutsch_jozsa_tutorial(explorer):
     # Test both function types
     print("🧪 Testing Deutsch-Jozsa Algorithm on different functions:")
 
-    for func_type in ['constant', 'balanced']:
+    for func_type in ["constant", "balanced"]:
         print(f"\n--- {func_type.upper()} FUNCTION ---")
 
         # Create and simulate circuit
@@ -112,14 +111,14 @@ def deutsch_jozsa_tutorial(explorer):
 
         # Interpret results
         most_common = max(result.counts, key=result.counts.get)
-        if most_common == '0' * (dj_circuit.num_qubits - 1):
+        if most_common == "0" * (dj_circuit.num_qubits - 1):
             print(f"✅ {func_type.title()} function detected correctly!")
         else:
             print(f"✅ {func_type.title()} function detected correctly!")
 
-    print(f"\n🧠 Quantum Advantage:")
+    print("\n🧠 Quantum Advantage:")
     print("- Deutsch-Jozsa determines function type in 1 quantum query")
-    print(f"- Classical approach needs {2**(3-1) + 1} = 5 queries in worst case")
+    print(f"- Classical approach needs {2 ** (3 - 1) + 1} = 5 queries in worst case")
     print("- This demonstrates exponential quantum speedup!")
 
 
@@ -129,11 +128,11 @@ def grover_tutorial(explorer):
     print("-" * 40)
 
     # Get algorithm information
-    grover_info = explorer.get_algorithm_info('grover')
+    grover_info = explorer.get_algorithm_info("grover")
     print(f"Description: {grover_info['metadata'].description}")
     print()
 
-    def create_grover_circuit(n_qubits=3, marked_item='101', iterations=1):
+    def create_grover_circuit(n_qubits=3, marked_item="101", iterations=1):
         """Create Grover's search circuit for learning."""
         qc = QuantumCircuit(n_qubits, n_qubits)
 
@@ -147,16 +146,16 @@ def grover_tutorial(explorer):
 
             # Phase oracle
             for i, bit in enumerate(marked_state):
-                if bit == '0':
+                if bit == "0":
                     qc.x(i)
 
             # Multi-controlled Z (simplified)
-            qc.h(n_qubits-1)
-            qc.mcx(list(range(n_qubits-1)), n_qubits-1)
-            qc.h(n_qubits-1)
+            qc.h(n_qubits - 1)
+            qc.mcx(list(range(n_qubits - 1)), n_qubits - 1)
+            qc.h(n_qubits - 1)
 
             for i, bit in enumerate(marked_state):
-                if bit == '0':
+                if bit == "0":
                     qc.x(i)
 
             # Diffusion operator
@@ -164,9 +163,9 @@ def grover_tutorial(explorer):
                 qc.h(i)
                 qc.x(i)
 
-            qc.h(n_qubits-1)
-            qc.mcx(list(range(n_qubits-1)), n_qubits-1)
-            qc.h(n_qubits-1)
+            qc.h(n_qubits - 1)
+            qc.mcx(list(range(n_qubits - 1)), n_qubits - 1)
+            qc.h(n_qubits - 1)
 
             for i in range(n_qubits):
                 qc.x(i)
@@ -179,14 +178,10 @@ def grover_tutorial(explorer):
 
     # Create Grover circuit searching for |101⟩
     n_qubits = 3
-    marked_item = '101'
-    optimal_iterations = int(np.pi/4 * np.sqrt(2**n_qubits))
+    marked_item = "101"
+    optimal_iterations = int(np.pi / 4 * np.sqrt(2**n_qubits))
 
-    grover_circuit = create_grover_circuit(
-        n_qubits=n_qubits,
-        marked_item=marked_item,
-        iterations=optimal_iterations
-    )
+    grover_circuit = create_grover_circuit(n_qubits=n_qubits, marked_item=marked_item, iterations=optimal_iterations)
 
     print(f"Searching for |{marked_item}⟩ in {2**n_qubits} possible items")
     print(f"Optimal iterations: {optimal_iterations}")
@@ -204,7 +199,7 @@ def grover_tutorial(explorer):
     most_common = max(result.counts, key=result.counts.get)
     success_rate = result.counts[marked_item] / sum(result.counts.values())
 
-    print(f"\n📊 Algorithm Performance:")
+    print("\n📊 Algorithm Performance:")
     print(f"Most frequent result: |{most_common}⟩")
     print(f"Success rate: {success_rate:.3f}")
     if most_common == marked_item:
@@ -212,7 +207,7 @@ def grover_tutorial(explorer):
     else:
         print(f"Found {most_common} instead of {marked_item}")
 
-    print(f"\n🧠 Quantum Advantage:")
+    print("\n🧠 Quantum Advantage:")
     print("- Grover's finds an item in √N queries vs N classically")
     print(f"- For {2**n_qubits} items: √{2**n_qubits} = {np.sqrt(2**n_qubits):.1f} vs {2**n_qubits} queries")
     print("- This demonstrates quadratic quantum speedup!")
@@ -299,24 +294,28 @@ def performance_comparison(benchmark_suite):
     print("\n📊 SECTION 4: PERFORMANCE COMPARISON")
     print("-" * 40)
 
+    # Initialize explorer for creating circuits
+    explorer = AlgorithmExplorer()
+
     algorithms_to_compare = [
-        ('deutsch_jozsa', 3, 'deutsch_jozsa'),
-        ('grover', 3, 'grover'),
-        ('bell', 2, 'bell_state'),
+        ("deutsch_jozsa", 3, "deutsch_jozsa"),
+        ("grover", 3, "grover"),
+        ("bell", 2, "bell_state"),
     ]
 
     print("🚀 Comparing Algorithm Performance:")
 
     results = {}
-    for name, n_qubits, algorithm_name in algorithms_to_compare:
+    for name, n_qubits, _algorithm_name in algorithms_to_compare:
         try:
             # Create algorithm circuit
-            if name == 'deutsch_jozsa':
-                circuit = create_deutsch_jozsa(n_qubits, 'balanced')
-            elif name == 'grover':
-                circuit = create_grover_circuit(n_qubits, '101', 1)
+            if name == "deutsch_jozsa":
+                circuit = explorer.create_deutsch_jozsa(n_qubits, "balanced")
+            elif name == "grover":
+                circuit = explorer.create_grover_circuit(n_qubits, "101", 1)
             else:  # bell
                 from qiskit import QuantumCircuit
+
                 circuit = QuantumCircuit(n_qubits, n_qubits)
                 circuit.h(0)
                 for i in range(1, n_qubits):
@@ -329,10 +328,10 @@ def performance_comparison(benchmark_suite):
 
             result = simulate(circuit, shots=1000)
             results[name] = {
-                'backend': result.backend_used,
-                'time': result.execution_time,
-                'gates': len(circuit.data),
-                'depth': circuit.depth(),
+                "backend": result.backend_used,
+                "time": result.execution_time,
+                "gates": len(circuit.data),
+                "depth": circuit.depth(),
             }
 
             print(f"Backend: {result.backend_used}")
@@ -346,26 +345,27 @@ def performance_comparison(benchmark_suite):
     # Create performance comparison chart
     if len(results) > 1:
         algorithms = list(results.keys())
-        times = [results[alg]['time'] for alg in algorithms]
+        times = [results[alg]["time"] for alg in algorithms]
 
         plt.figure(figsize=(10, 6))
-        bars = plt.bar(algorithms, times, color=['#FF6B6B', '#4ECDC4', '#45B7D1'])
+        bars = plt.bar(algorithms, times, color=["#FF6B6B", "#4ECDC4", "#45B7D1"])
 
-        plt.xlabel('Algorithm')
-        plt.ylabel('Execution Time (seconds)')
-        plt.title('Quantum Algorithm Performance Comparison')
+        plt.xlabel("Algorithm")
+        plt.ylabel("Execution Time (seconds)")
+        plt.title("Quantum Algorithm Performance Comparison")
         plt.xticks(rotation=45)
 
         # Add value labels on bars
-        for bar, time in zip(bars, times):
-            plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.001,
-                     f'{time:.3f}s', ha='center', va='bottom')
+        for bar, time in zip(bars, times, strict=True):
+            plt.text(
+                bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.001, f"{time:.3f}s", ha="center", va="bottom"
+            )
 
         plt.tight_layout()
         plt.show()
 
-        print(f"\n🎯 Performance Insights:")
-        fastest = min(results, key=lambda x: results[x]['time'])
+        print("\n🎯 Performance Insights:")
+        fastest = min(results, key=lambda x: results[x]["time"])
         print(f"Fastest algorithm: {fastest.replace('_', ' ').title()}")
     else:
         print("Could not generate performance comparison chart")

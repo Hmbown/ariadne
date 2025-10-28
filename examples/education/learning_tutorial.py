@@ -29,11 +29,11 @@ print("\n2. QUANTUM CONCEPT EXPLORATION")
 print("-" * 35)
 
 # Explore quantum concepts
-superposition_builder = explore_quantum_concept('superposition')
+superposition_builder = explore_quantum_concept("superposition")
 print("Superposition Circuit:")
 print(superposition_builder.get_circuit().draw())
 
-entanglement_builder = explore_quantum_concept('entanglement')
+entanglement_builder = explore_quantum_concept("entanglement")
 print("\nEntanglement Circuit:")
 print(entanglement_builder.get_circuit().draw())
 
@@ -46,14 +46,14 @@ available_algorithms = explorer.list_algorithms()
 print(f"Available algorithms: {available_algorithms[:10]}...")  # Show first 10
 
 # Explore a specific algorithm
-if 'bell' in available_algorithms:
+if "bell" in available_algorithms:
     print("\nLearning about the Bell algorithm:")
-    info = explorer.get_algorithm_info('bell')
+    info = explorer.get_algorithm_info("bell")
     print(f"Description: {info['metadata'].description}")
     print(f"Complexity: {info['metadata'].complexity}")
 
     # Create learning path
-    learning_path = explorer.create_learning_path('bell', n_qubits=2)
+    learning_path = explorer.create_learning_path("bell", n_qubits=2)
     print(f"Created learning path with {len(learning_path)} steps")
 
 print("\n4. EDUCATION DASHBOARD")
@@ -67,9 +67,9 @@ print("\n5. PRACTICAL EXAMPLE: Comparing Algorithms")
 print("-" * 43)
 
 # Compare two algorithms
-if 'bell' in available_algorithms and 'ghz' in available_algorithms:
+if "bell" in available_algorithms and "ghz" in available_algorithms:
     try:
-        dashboard.compare_algorithms_interactive(['bell', 'ghz'])
+        dashboard.compare_algorithms_interactive(["bell", "ghz"])
         print("Comparison completed")
     except Exception:
         print("Comparison display failed (likely non-IPython environment)")
@@ -81,11 +81,7 @@ print("-" * 24)
 suite = EnhancedBenchmarkSuite()
 
 # Test a simple algorithm
-results = suite.benchmark_single_algorithm(
-    algorithm_name='bell',
-    qubit_count=2,
-    shots=100
-)
+results = suite.benchmark_single_algorithm(algorithm_name="bell", qubit_count=2, shots=100)
 
 if results and results[0].success:
     print(f"Bell state simulation: {results[0].execution_time:.4f}s")

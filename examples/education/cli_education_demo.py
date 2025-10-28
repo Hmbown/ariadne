@@ -17,11 +17,12 @@ def run_cli_command(cmd):
             shell=True,
             capture_output=True,
             text=True,
-            cwd=Path(__file__).parent.parent  # Run from project root
+            cwd=Path(__file__).parent.parent,  # Run from project root
         )
         return result.stdout, result.stderr, result.returncode
     except Exception as e:
         return "", str(e), 1
+
 
 def demo_cli_education_features():
     """Demonstrate the CLI education features."""
@@ -62,7 +63,7 @@ measure q[0] -> c[0];
 measure q[1] -> c[1];
 """
     circuit_file = "demo_bell.qasm"
-    with open(circuit_file, 'w') as f:
+    with open(circuit_file, "w") as f:
         f.write(circuit_content)
 
     try:
@@ -82,13 +83,16 @@ measure q[1] -> c[1];
 
     print("\n7. SCALABILITY BENCHMARK")
     print("-" * 24)
-    stdout, stderr, code = run_cli_command("python -m ariadne.cli.main benchmark-suite --algorithms bell,ghz --backends auto,qiskit --shots 100")
+    stdout, stderr, code = run_cli_command(
+        "python -m ariadne.cli.main benchmark-suite --algorithms bell,ghz --backends auto,qiskit --shots 100"
+    )
     print(stdout)
 
     print("\n" + "=" * 70)
     print("DEMO COMPLETE")
     print("The Ariadne CLI provides extensive educational and benchmarking features!")
     print("=" * 70)
+
 
 if __name__ == "__main__":
     demo_cli_education_features()

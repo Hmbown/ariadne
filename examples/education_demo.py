@@ -34,10 +34,19 @@ def demonstrate_education_features():
     for category in get_algorithms_by_category.__code__.co_varnames:
         # Since we don't have a direct function to list categories,
         # we'll just show a few examples
-        if category in ['foundational', 'search', 'optimization', 'error_correction', 'machine_learning', 'specialized']:
+        if category in [
+            "foundational",
+            "search",
+            "optimization",
+            "error_correction",
+            "machine_learning",
+            "specialized",
+        ]:
             category_algorithms = get_algorithms_by_category(category)
             if category_algorithms:
-                print(f"  {category.title()}: {', '.join(category_algorithms[:5])}{'...' if len(category_algorithms) > 5 else ''}")
+                print(
+                    f"  {category.title()}: {', '.join(category_algorithms[:5])}{'...' if len(category_algorithms) > 5 else ''}"
+                )
 
     print(f"\n  Full list: {', '.join(algorithms)}")
 
