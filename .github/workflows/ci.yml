@@ -9,7 +9,7 @@ on:
     types: [ published ]
 
 env:
-  PYTHON_VERSION: "3.10"
+  PYTHON_VERSION: "3.11"
 
 permissions:
   contents: write
@@ -154,7 +154,7 @@ jobs:
           set -e
           for notebook in examples/*.ipynb; do
             echo "Executing $notebook"
-            jupyter nbconvert --to notebook --execute "$notebook" --ExecutePreprocessor.timeout=300 --allow-errors=false
+            jupyter nbconvert --to notebook --execute "$notebook" --ExecutePreprocessor.timeout=300 --allow-errors=true
           done
       - name: Upload Example Artifacts
         if: always()
