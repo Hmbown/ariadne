@@ -263,19 +263,15 @@ def demonstrate_speed_comparison():
     # Create a Clifford circuit that should be very fast with Stim
     clifford_circuit = create_clifford_circuit(8)
 
-    router = QuantumRouter()
-
-    # Time different approaches
-    import time
-
     # Method 1: Naive Qiskit (always)
     start = time.time()
-    result1 = router._simulate_qiskit(clifford_circuit, 1000)
+    from ariadne import simulate
+    result1 = simulate(clifford_circuit, 1000, backend='qiskit')
     qiskit_time = time.time() - start
 
     # Method 2: Intelligent routing
     start = time.time()
-    result2 = router.simulate(clifford_circuit, 1000)
+    result2 = simulate(clifford_circuit, 1000)
     intelligent_time = time.time() - start
 
     speedup = qiskit_time / intelligent_time if intelligent_time > 0 else float("inf")
@@ -284,7 +280,7 @@ def demonstrate_speed_comparison():
     console.print(f"  • Naive Qiskit time: {qiskit_time:.3f}s")
     console.print(f"  • Intelligent routing time: {intelligent_time:.3f}s")
     console.print(f"  • Speedup: {speedup:.1f}x")
-    console.print(f"  • Sample naive counts: {dict(list(result1.items())[:3])}")
+    console.print(f"  • Sample naive counts: {dict(list(result1.counts.items())[:3])}")
 
     if result2.routing_decision.recommended_backend == BackendType.STIM:
         console.print(f"  • Backend chosen: {result2.backend_used.value} (optimal for Clifford)")

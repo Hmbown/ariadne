@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-10-28 22:23:56",
+  "timestamp": "2025-10-29 15:29:21",
   "total_tests": 13,
   "passed": 13,
   "failed": 0,
@@ -7,7 +7,7 @@
     {
       "circuit_name": "small_clifford_ghz",
       "backend_used": "stim",
-      "execution_time": 0.05351545798475854,
+      "execution_time": 0.048888707999140024,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -19,7 +19,7 @@
     {
       "circuit_name": "small_clifford_ladder",
       "backend_used": "stim",
-      "execution_time": 0.007656208006665111,
+      "execution_time": 0.0017477920046076179,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -31,7 +31,7 @@
     {
       "circuit_name": "medium_clifford_ghz",
       "backend_used": "stim",
-      "execution_time": 0.011461333022452891,
+      "execution_time": 0.0018275839975103736,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -43,7 +43,7 @@
     {
       "circuit_name": "medium_clifford_stabilizer",
       "backend_used": "stim",
-      "execution_time": 0.012061875022482127,
+      "execution_time": 0.0017494999920018017,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -55,7 +55,7 @@
     {
       "circuit_name": "large_clifford_ghz",
       "backend_used": "stim",
-      "execution_time": 0.026697541994508356,
+      "execution_time": 0.0034030830138362944,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -67,7 +67,7 @@
     {
       "circuit_name": "large_clifford_surface_code",
       "backend_used": "stim",
-      "execution_time": 0.040050874988082796,
+      "execution_time": 0.004471124993870035,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -79,7 +79,7 @@
     {
       "circuit_name": "small_non_clifford",
       "backend_used": "mps",
-      "execution_time": 0.6747385829803534,
+      "execution_time": 0.7187340829987079,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -91,7 +91,7 @@
     {
       "circuit_name": "medium_non_clifford",
       "backend_used": "tensor_network",
-      "execution_time": 0.30435958300950006,
+      "execution_time": 0.2856908329995349,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -103,7 +103,7 @@
     {
       "circuit_name": "mixed_vqe_ansatz",
       "backend_used": "mps",
-      "execution_time": 0.41844870799104683,
+      "execution_time": 0.42955429101129994,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -115,7 +115,7 @@
     {
       "circuit_name": "mixed_qaoa",
       "backend_used": "pennylane",
-      "execution_time": 2.3302971250086557,
+      "execution_time": 1.3709915000072215,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -127,7 +127,7 @@
     {
       "circuit_name": "single_qubit",
       "backend_used": "stim",
-      "execution_time": 0.0017508750024717301,
+      "execution_time": 0.00105870800325647,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -139,7 +139,7 @@
     {
       "circuit_name": "no_gates",
       "backend_used": "stim",
-      "execution_time": 0.0022960409987717867,
+      "execution_time": 0.001072082988684997,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -151,7 +151,7 @@
     {
       "circuit_name": "measurement_only",
       "backend_used": "stim",
-      "execution_time": 0.0022063749784138054,
+      "execution_time": 0.00102766600321047,
       "success": true,
       "error": null,
       "shots": 1000,

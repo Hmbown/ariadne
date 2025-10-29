@@ -5,7 +5,10 @@ from __future__ import annotations
 
 from qiskit import QuantumCircuit
 
+from qiskit import QuantumCircuit
+
 from ariadne import QuantumRouter, simulate
+from ariadne.route.analyze import analyze_circuit
 
 
 def main() -> None:
@@ -20,14 +23,18 @@ def main() -> None:
             qc.cx(idx, idx + 1)
     qc.measure_all()
 
+    # Analyze circuit using the analyze_circuit function
+    analysis = analyze_circuit(qc)
+
+    # Get routing decision separately
     router = QuantumRouter()
-    analysis = router.analyze_circuit(qc)
+    routing_decision = router.select_optimal_backend(qc)
 
     print("\n📊 Circuit Analysis:")
-    print(f"  • Entropy: {analysis['entropy']:.2f} bits")
-    print(f"  • Is Clifford? {analysis['is_clifford']}")
-    print(f"  • Recommended backend: {analysis['backend']}")
-    print(f"  • Expected speedup: {analysis['estimated_speedup']}x")
+    print(f"  • Gate entropy: {analysis['gate_entropy']:.2f} bits")
+    print(f"  • Is Clifford? {analysis.get('is_clifford', 'N/A')}")
+    print(f"  • Recommended backend: {routing_decision.recommended_backend.value}")
+    print(f"  • Expected speedup: {routing_decision.expected_speedup:.1f}x")
 
     print("\n2️⃣ Running simulation...")
     result = simulate(qc, shots=1000)

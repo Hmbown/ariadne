@@ -3,7 +3,7 @@
 # Ariadne
 **Intelligent Quantum Simulator Router**
 
-*The Google Maps for quantum circuit simulation, automatically finding the fastest path for your quantum circuits.*
+*Automatic backend selection for quantum circuit simulation based on circuit analysis.*
 
 [![PyPI version](https://img.shields.io/pypi/v/ariadne-router.svg)](https://pypi.org/project/ariadne-router/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -68,30 +68,16 @@
 
 ## What is Ariadne?
 
-**Stop wasting hours choosing quantum simulators.** Ariadne automatically routes your quantum circuits to the optimal backend, giving you maximum performance with zero configuration.
+Ariadne automatically selects the optimal quantum simulation backend for your circuits based on analysis of circuit properties. Instead of manually choosing between different simulators, Ariadne evaluates your circuit and routes it to the most appropriate backend.
 
-Think of it as **Google Maps for quantum computing** - you provide the destination (your quantum circuit), and Ariadne finds the fastest route (optimal backend).
-
-**One line of code. Intelligent backend selection for optimal performance.**
+**Simple usage:**
 
 ```python
 from ariadne import simulate
-result = simulate(quantum_circuit, shots=1000)  # That's it!
+result = simulate(quantum_circuit, shots=1000)
 ```
 
-**Before Ariadne:**
-- Spend hours researching which backend to use
-- Deal with complex installation and configuration
-- Manually optimize for each circuit type
-- Circuits crash or run painfully slow
-- Different setups for different platforms
-
-**After Ariadne:**
-- Write your circuit once
-- Ariadne analyzes it in milliseconds
-- Automatic routing to the optimal backend
-- Consistent performance across platforms
-- Zero configuration required
+Ariadne analyzes quantum circuits using information theory principles and topology analysis to determine the optimal simulation backend, handling the complexity of backend selection automatically.
 
 ---
 
@@ -101,33 +87,31 @@ Real benchmark results from the comprehensive test suite (319 tests passing, 32 
 
 | Circuit Type | Backend Used | Execution Time | Throughput |
 |--------------|--------------|----------------|------------|
-| **Small Clifford (10 qubits)** | Stim | ~0.002s | ~550,000 shots/sec |
-| **Medium Clifford (16 qubits)** | Stim | ~0.001s | ~1,000,000 shots/sec |
-| **Large Clifford (25 qubits)** | Stim | ~0.027s | ~37,000 shots/sec |
-| **Low-entanglement circuits (6-10 qubits)** | MPS/Tensor Network | 0.30–0.70s | ~1,400–3,300 shots/sec |
-| **General circuits** | Qiskit/MPS | Varies | Varies by backend |
+| **Clifford circuits (all sizes)** | Stim | ~0.001s - ~0.005s | ~200,000 - ~900,000 shots/sec |
+| **Small non-Clifford (3 qubits)** | MPS | ~0.719s | ~1,390 shots/sec |
+| **Medium non-Clifford (8 qubits)** | Tensor Network | ~0.286s | ~3,500 shots/sec |
+| **VQE Ansatz circuits** | MPS | ~0.430s | ~2,325 shots/sec |
+| **QAOA circuits** | PennyLane | ~1.371s | ~729 shots/sec |
 
 **Benchmarks measured on Apple Silicon (M4 Max). Actual performance varies by circuit type, hardware, and available backends.** See the [benchmark results](benchmarks/results/reproducible_benchmark_report.md) for detailed reproducible results.
 
 ---
 
-## 🎯 Perfect For Your Use Case
+## 🎯 Use Cases
 
 ### 🎓 **Students & Educators**
-- **Learn quantum computing without backend complexity**
-- **Interactive tutorials and educational tools**
-- **Cross-platform consistency (Windows, macOS, Linux)**
-- **Start with our [Quantum Computing Primer](docs/quantum_computing_primer.md)**
+- Learn quantum computing without backend complexity
+- Interactive tutorials and educational tools
+- Cross-platform consistency (Windows, macOS, Linux)
 
 ### 🔬 **Researchers**
-- **Reproduce published results with automatic optimization**
-- **Scale to circuits that crash other simulators**
-- **Focus on science, not simulator configuration**
+- Reproduce published results with automatic backend selection
+- Focus on research rather than simulator configuration
+- Compare results across different backends
 
 ### ⚙️ **Developers & Engineers**
-- **Integrate quantum simulation into existing workflows**
-- **Production-ready with enterprise support**
-- **Automatic scaling from your laptop to powerful multi-core servers**
+- Integrate quantum simulation into existing workflows
+- Consistent interface across different simulation backends
 
 ---
 
@@ -175,7 +159,7 @@ print(f"Why: {explain_routing(qc)}")
 ```
 Backend: stim
 Time: 0.012s
-Why: Clifford circuit detected → routed to Stim for 1000× speedup
+Why: Clifford circuit detected → routed to Stim for optimal performance
 ```
 
 ---
@@ -267,17 +251,19 @@ See [`docs/topology_analysis.md`](docs/topology_analysis.md) for detailed topolo
 
 ### Backend Capabilities & References
 
-Ariadne leverages several powerful quantum simulation backends, each with specific strengths:
+Ariadne supports several quantum simulation backends, each with specific characteristics:
 
-- **[Stim](https://github.com/quantumlib/Stim)**: A fast stabilizer circuit simulator that excels at Clifford circuits (common in error correction). This is where Ariadne achieves its largest speedups.
+- **[Stim](https://github.com/quantumlib/Stim)**: A fast stabilizer circuit simulator optimized for Clifford circuits (H, S, CNOT, Pauli gates).
 
-- **[Qiskit Aer](https://qiskit.github.io/qiskit-aer/)**: A high-performance simulator for quantum circuits with various methods including statevector, density matrix, and tensor network simulation.
+- **[Qiskit Aer](https://qiskit.github.io/qiskit-aer/)**: A general-purpose simulator for quantum circuits with various simulation methods.
 
-- **[Tensor Networks/MPS](https://pennylane.ai/qml/demos/tutorial_How_to_simulate_quantum_circuits_with_tensor_networks.html)**: Efficient for low-entanglement quantum circuits where the amount of quantum entanglement grows slowly with qubit count.
+- **[Matrix Product State (MPS)](https://pennylane.ai/qml/glossary/matrix_product_state.html)**: Efficient for low-entanglement quantum circuits where entanglement grows slowly with qubit count.
 
-- **[JAX-Metal](https://developer.apple.com/metal/jax/)**: Apple's GPU acceleration framework that provides significant speedups on Apple Silicon Macs.
+- **[Tensor Networks](https://pennylane.ai/qml/demos/tutorial_How_to_simulate_quantum_circuits_with_tensor_networks.html)**: Suitable for circuits with specific structural properties that allow efficient tensor decomposition.
 
-- **[CUDA](https://developer.nvidia.com/cuda-zone)**: NVIDIA's parallel computing platform that enables GPU acceleration for quantum simulation on NVIDIA hardware.
+- **[JAX-Metal](https://developer.apple.com/metal/jax/)**: Experimental Apple Silicon acceleration through JAX.
+
+- **[CUDA](https://developer.nvidia.com/cuda-zone)**: Experimental NVIDIA GPU acceleration (when available).
 
 ---
 
@@ -293,7 +279,7 @@ qc = create_surface_code(50)  # 50 qubits, 1000+ gates
 result = simulate(qc, shots=1000)
 
 # Results: Stim backend selected automatically
-# Execution time: 0.045s vs 45.2s with Qiskit (1000× speedup)
+# Execution time: 0.004s vs much slower with other backends (when they can handle the circuit)
 ```
 
 ### Quantum Algorithm Performance
@@ -333,22 +319,24 @@ We've conducted extensive benchmarking of Ariadne's routing system to validate i
 #### Clifford Circuits (Stim Backend)
 | Circuit Type | Backend | Execution Time | Throughput |
 |--------------|---------|----------------|------------|
-| **Small Clifford (3-4 qubits)** | Stim | 0.007-0.011s | ~100,000-150,000 shots/sec |
-| **Medium Clifford (8-10 qubits)** | Stim | 0.010-0.012s | ~100,000 shots/sec |
-| **Large Clifford (25 qubits)** | Stim | 0.024-0.041s | ~25,000-40,000 shots/sec |
+| **Small Clifford (various sizes)** | Stim | 0.001-0.005s | ~200,000-900,000 shots/sec |
+| **Single qubit circuits** | Stim | ~0.001s | ~900,000+ shots/sec |
+| **Large Clifford circuits** | Stim | ~0.003-0.005s | ~220,000-400,000 shots/sec |
 
-#### Low-Entanglement Circuits (MPS Backend)
+#### Non-Clifford Circuits (MPS/Tensor Network/PennyLane Backends)
 | Circuit Type | Backend | Execution Time | Throughput |
 |--------------|---------|----------------|------------|
-| **Small (3 qubits, depth 7)** | MPS | 1.17s | ~857 shots/sec |
-| **Medium (8 qubits, depth 21)** | MPS | 0.82s | ~1,214 shots/sec |
-| **VQE Ansatz (6 qubits)** | MPS | 0.64s | ~1,568 shots/sec |
-| **QAOA (4 qubits)** | MPS | 0.40s | ~2,511 shots/sec |
+| **Small non-Clifford (3 qubits)** | MPS | 0.719s | ~1,390 shots/sec |
+| **Medium non-Clifford (8 qubits)** | Tensor Network | 0.286s | ~3,500 shots/sec |
+| **VQE Ansatz circuits** | MPS | 0.430s | ~2,325 shots/sec |
+| **QAOA circuits** | PennyLane | 1.371s | ~729 shots/sec |
 
 ### 📊 Routing Distribution
-From benchmark results:
+From benchmark results (13 test circuits):
 - **Stim**: 69.2% (9/13 circuits - Clifford circuits)
-- **MPS**: 30.8% (4/13 circuits - low-entanglement circuits)
+- **MPS**: 15.4% (2/13 circuits - non-Clifford circuits)
+- **Tensor Network**: 7.7% (1/13 circuits - medium non-Clifford circuits)
+- **PennyLane**: 7.7% (1/13 circuits - QAOA circuits)
 
 ### 🔧 Hardware Environment
 - **Platform**: macOS (Apple Silicon)
@@ -446,30 +434,27 @@ print(f"VQE results: {result.counts}")
 
 ## 🔧 Advanced Features
 
-### Custom Routing Strategies
+### Routing Strategies
 
 ```python
 from ariadne import RoutingStrategy, ComprehensiveRoutingTree
 
-# Optimize for specific constraints
+# Configure routing for specific constraints
 router = ComprehensiveRoutingTree()
 
-# Speed-first routing (default)
+# Use default routing strategy
+result = router.simulate(qc)
+
+# Route based on specific strategy
 result = router.simulate(qc, strategy=RoutingStrategy.SPEED_FIRST)
-
-# Memory-efficient for large circuits
-result = router.simulate(qc, strategy=RoutingStrategy.MEMORY_EFFICIENT)
-
-# Accuracy-first for critical applications
-result = router.simulate(qc, strategy=RoutingStrategy.ACCURACY_FIRST)
 ```
 
-### Backend Comparison & Validation
+### Backend Comparison
 
 ```python
 from ariadne.enhanced_benchmarking import EnhancedBenchmarkSuite
 
-# Compare all backends for your circuit
+# Compare backends for your circuit
 suite = EnhancedBenchmarkSuite()
 comparison = suite.benchmark_backend_comparison(
     circuit=your_circuit,
@@ -477,11 +462,9 @@ comparison = suite.benchmark_backend_comparison(
     shots=1000
 )
 
-# Validate results across backends
+# Compare execution times
 for backend, result in comparison.items():
     print(f"{backend}: {result.execution_time:.3f}s")
-    print(f"  Fidelity: {result.fidelity:.4f}")
-    print(f"  Memory used: {result.memory_usage_mb:.1f}MB")
 ```
 
 ---
@@ -491,24 +474,20 @@ for backend, result in comparison.items():
 | Feature | Ariadne | Qiskit Aer | Cirq | PennyLane | Stim (Direct) |
 |---------|---------|------------|------|-----------|---------------|
 | **Automatic Backend Selection** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Zero Configuration** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Multiple Backend Support** | ✅ | Limited to one at a time | Limited to one at a time | Limited to one at a time | ✅ (Clifford only) |
 | **Educational Tools** | ✅ | Limited | Limited | ✅ | ❌ |
-| **Hardware Acceleration** | ✅ Auto-detect | Manual setup | Manual setup | Manual setup | ❌ |
-| **Large Circuit Support** | ✅ | ❌ (crashes) | ❌ | ❌ | ✅ (Clifford only) |
 | **Cross-Platform** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Performance** | **Optimal** | Good | Good | Good | Excellent (Clifford only) |
 
-**When to choose Ariadne:**
-- You want maximum performance without manual tuning
+**When to use Ariadne:**
+- You want automatic backend selection based on circuit analysis
 - You're teaching/learning quantum computing
-- You need to simulate circuits that crash other tools
-- You want consistent results across different hardware
-- You're building production quantum applications
+- You want to compare results across different simulation methods
+- You want consistent interface across backends
 
-**When NOT to choose Ariadne:**
+**When NOT to use Ariadne:**
 - You need fine-grained control over specific backend parameters
 - You're doing research on simulator algorithms themselves
-- You have very specific hardware requirements
+- You want to use a specific simulator directly
 
 ---
 
@@ -584,32 +563,30 @@ pytest  # Run tests
 
 ---
 
-## 📈 Performance Tuning
+## 📈 Backend Selection
 
-### For Maximum Speed
+### Understanding Automatic Selection
 
 ```python
-# Ariadne automatically optimizes, but you can help:
+# View circuit analysis that informs routing decisions
 from ariadne import analyze_circuit
 
-# Check what Ariadne sees in your circuit
 analysis = analyze_circuit(your_circuit)
-print(f"Detected properties: {analysis.properties}")
+print(f"Circuit properties: {analysis}")
 
-# Force specific backend if you know better
+# Force specific backend when needed
 result = simulate(your_circuit, backend='stim')  # For Clifford circuits
 ```
 
-### For Large Circuits
+### Routing Strategies
 
 ```python
-# Reduce memory usage for 30+ qubit circuits
+# Use specific routing strategies when needed
 from ariadne import RoutingStrategy
 
 result = simulate(
-    large_circuit,
-    shots=100,  # Fewer shots
-    strategy=RoutingStrategy.MEMORY_EFFICIENT
+    circuit,
+    strategy=RoutingStrategy.SPEED_FIRST
 )
 ```
 
@@ -635,14 +612,12 @@ result = simulate(
 
 ## 📊 Project Status
 
-- ✅ **Core Functionality Working** - 319 tests passing, 32 skipped; comprehensive test suite
+- ✅ **Core Functionality** - 326 tests passing, 25 skipped; comprehensive test suite
 - ✅ **Cross-Platform** - Windows, macOS, Linux support
-- ✅ **Stim Backend** - Fully functional, excellent for Clifford circuits
-- ✅ **MPS Backend** - Working for low-entanglement circuits
-- ✅ **Educational Tools** - 15+ algorithms, interactive tutorials
+- ✅ **Backend Support** - Stim, MPS, tensor network, Qiskit, and other backends
+- ✅ **Educational Tools** - Interactive tutorials and algorithm examples
 - ⚠️ **Hardware Acceleration** - JAX-Metal and CUDA marked experimental
-- ✅ **CI/CD** - Fixed pipeline, tests running successfully
-- 🔄 **Active Development** - Improving routing logic and adding features
+- 🔄 **Active Development** - Continuing improvements to routing algorithms
 
 ---
 
@@ -658,11 +633,7 @@ Apache 2.0 - see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-**Built for the quantum computing community** 🌟
-
-[⭐ Star us on GitHub](https://github.com/Hmbown/ariadne) •
-[📦 PyPI Package](https://pypi.org/project/ariadne-router/) •
-[🐦 Follow Updates](https://twitter.com/ariadne_quantum) •
-[💼 Enterprise Support](mailto:hunter@shannonlabs.dev)
+[⭐ Star on GitHub](https://github.com/Hmbown/ariadne) •
+[📦 PyPI Package](https://pypi.org/project/ariadne-router/)
 
 </div>
