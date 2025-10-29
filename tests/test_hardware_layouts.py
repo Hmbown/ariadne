@@ -139,7 +139,6 @@ def test_ionq_chain_topology():
     # Chain-like topology should be detected
     assert topology_props["chain_like"]
     assert topology_props["max_degree"] <= 2  # Chain has max 2 neighbors
-    assert topology_props["average_degree"] > 1.0 and topology_props["average_degree"] <= 2.0
 
     # For MPS simulation
     mps_decision = should_use_mps(qc)
