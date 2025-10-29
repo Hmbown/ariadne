@@ -154,7 +154,6 @@ jobs:
   windows-cuda:
     name: Windows CUDA Tests
     runs-on: windows-latest
-    if: contains(runner.labels, 'gpu')  # Use GPU runner if available
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
