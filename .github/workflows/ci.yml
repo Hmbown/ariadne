@@ -55,8 +55,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      env:
-        PLATFORM: ${{ runner.os }}
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.11", "3.12"]
@@ -77,13 +75,13 @@ jobs:
         shell: pwsh
         run: |
           python -m pip install --upgrade pip
-          if ($env:PLATFORM -eq "windows") {
+          if (${{ runner.os }} -eq "windows") {
             pip install -e ".[dev,viz]"
           } else {
             pip install -e ".[dev,viz]"
           }
           # Windows CUDA check
-          if ($env:PLATFORM -eq "windows" -and (Test-Path "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA")) {
+          if (${{ runner.os }} -eq "windows" -and (Test-Path "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA")) {
             pip install -e ".[cuda]"
           }
       - name: Install Apple Silicon dependencies
@@ -95,7 +93,7 @@ jobs:
       - name: Run tests
         shell: pwsh
         run: |
-          if ($env:PLATFORM -eq "windows") {
+          if (${{ runner.os }} -eq "windows") {
             # Fix path separators
             $env:PYTHONPATH = ($env:PYTHONPATH -replace '\\', '/')
             pytest tests/ -v --tb=short -n auto --cov=src/ariadne --cov-report=xml --cov-fail-under=60
