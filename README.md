@@ -247,6 +247,15 @@ graph TD
 
 Ariadne analyzes your circuit in milliseconds and selects the optimal backend:
 
+**Topology-Aware Routing:**
+Ariadne automatically detects circuit topology patterns to optimize backend selection:
+- **Chain topologies** (IonQ-style): Linear nearest-neighbor connectivity → MPS backend
+- **2D/3D grids** (Rigetti/Google-style): Bounded degree connectivity → Tensor Network
+- **Heavy-hex** (IBM-style): Specialized lattice patterns → optimized routing
+- **Mixed sparse/dense**: Adaptive selection based on connectivity analysis
+
+See [`docs/topology_analysis.md`](docs/topology_analysis.md) for detailed topology detection capabilities.
+
 | Backend | Best For | Typical Throughput | When It Works |
 |---------|----------|-------------------|---------------|
 | **Stim** | Clifford circuits, error correction | ~100,000 shots/sec | Circuit contains only H, S, CNOT, Pauli gates |
@@ -372,6 +381,8 @@ Ariadne is actively developing with:
 ---
 
 ## 🎓 Educational Examples
+
+**Interactive Topology Demo:** Try [`examples/06_enhanced_routing_demo.ipynb`](examples/06_enhanced_routing_demo.ipynb) for hands-on topology analysis demonstrations.
 
 ### Learn Quantum Algorithms Step-by-Step
 
