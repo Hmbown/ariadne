@@ -72,18 +72,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Install dependencies
-        shell: pwsh
         run: |
           python -m pip install --upgrade pip
-          if (${{ runner.os }} -eq "windows") {
-            pip install -e ".[dev,viz]"
-          } else {
-            pip install -e ".[dev,viz]"
-          }
-          # Windows CUDA check
-          if (${{ runner.os }} -eq "windows" -and (Test-Path "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA")) {
+          pip install -e ".[dev,viz]"
+          # Windows CUDA check (optional)
+          if [ "${{ runner.os }}" = "windows" ] && [ -d "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA" ]; then
             pip install -e ".[cuda]"
-          }
+          fi
       - name: Install Apple Silicon dependencies
         if: runner.os == 'macOS'
         run: |
@@ -91,15 +86,8 @@ jobs:
           # Verify Metal
           python -c "import jax; print(jax.devices())"
       - name: Run tests
-        shell: pwsh
         run: |
-          if (${{ runner.os }} -eq "windows") {
-            # Fix path separators
-            $env:PYTHONPATH = ($env:PYTHONPATH -replace '\\', '/')
-            pytest tests/ -v --tb=short -n auto --cov=src/ariadne --cov-report=xml --cov-fail-under=60
-          } else {
-            pytest tests/ -v --tb=short -n auto --cov=src/ariadne --cov-report=xml --cov-fail-under=60
-          }
+          pytest tests/ -v --tb=short -n auto --cov=src/ariadne --cov-report=xml --cov-fail-under=60
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
@@ -279,4 +267,3 @@ jobs:
   #     - name: Deploy to GitHub Pages
   #       id: deployment
   #       uses: actions/deploy-pages@v4
-# Test
