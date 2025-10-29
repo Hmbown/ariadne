@@ -165,7 +165,7 @@ def check_documentation(root: Path) -> list[CheckResult]:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run local release readiness checks")
-    parser.add_argument("--version", help="Expected release version (e.g. 0.3.4)")
+    parser.add_argument("--version", help="Expected release version (e.g. 0.4.1)")
     return parser.parse_args(argv)
 
 

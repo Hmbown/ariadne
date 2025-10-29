@@ -230,7 +230,7 @@ class PerformanceStabilityTest(ValidationTest):
             execution_times: list[float] = []
             results_consistency: list[float] = []
 
-            reference_counts = None
+            reference_counts: dict[str, int] | None = None
 
             for _i in range(num_runs):
                 start_time = time.time()
@@ -246,8 +246,8 @@ class PerformanceStabilityTest(ValidationTest):
                 reference_counts = counts
 
             # Calculate stability metrics
-            time_stability = 1.0 - (np.std(execution_times) / np.mean(execution_times))
-            result_stability = np.mean(results_consistency) if results_consistency else 1.0
+            time_stability = 1.0 - (float(np.std(execution_times)) / float(np.mean(execution_times)))
+            result_stability = float(np.mean(results_consistency)) if results_consistency else 1.0
 
             overall_stability = (time_stability + result_stability) / 2
             passed = overall_stability >= 0.8  # 80% stability threshold

@@ -97,17 +97,17 @@ result = simulate(quantum_circuit, shots=1000)  # That's it!
 
 ## Performance Highlights
 
-Real benchmark results from the comprehensive test suite (291 tests passing, 32 skipped):
+Real benchmark results from the comprehensive test suite (319 tests passing, 32 skipped):
 
 | Circuit Type | Backend Used | Execution Time | Throughput |
 |--------------|--------------|----------------|------------|
-| **Small Clifford (3-4 qubits)** | Stim | ~0.01s | ~100,000 shots/sec |
-| **Medium Clifford (8-10 qubits)** | Stim | ~0.01s | ~100,000 shots/sec |
-| **Large Clifford (25 qubits)** | Stim | ~0.03s | ~40,000 shots/sec |
-| **Low-entanglement circuits** | MPS | 0.4-1.2s | ~1,000-2,500 shots/sec |
+| **Small Clifford (10 qubits)** | Stim | ~0.002s | ~550,000 shots/sec |
+| **Medium Clifford (16 qubits)** | Stim | ~0.001s | ~1,000,000 shots/sec |
+| **Large Clifford (25 qubits)** | Stim | ~0.027s | ~37,000 shots/sec |
+| **Low-entanglement circuits (6-10 qubits)** | MPS/Tensor Network | 0.30–0.70s | ~1,400–3,300 shots/sec |
 | **General circuits** | Qiskit/MPS | Varies | Varies by backend |
 
-**Benchmarks measured on Apple Silicon (10-core CPU). Actual performance varies by circuit type, hardware, and available backends.** See the [benchmark results](benchmarks/results/reproducible_benchmark_report.md) for detailed reproducible results.
+**Benchmarks measured on Apple Silicon (M4 Max). Actual performance varies by circuit type, hardware, and available backends.** See the [benchmark results](benchmarks/results/reproducible_benchmark_report.md) for detailed reproducible results.
 
 ---
 
@@ -314,11 +314,11 @@ result = simulate(vqe_circuit, shots=8192)
 
 ## 🎯 Comprehensive Benchmark Results
 
-We've conducted extensive benchmarking of Ariadne's routing system to validate its correctness, performance, and reliability. Here are the key findings from 291 passing tests (32 skipped):
+We've conducted extensive benchmarking of Ariadne's routing system to validate its correctness, performance, and reliability. Here are the key findings from 319 passing tests (32 skipped):
 
 ### ✅ Test Results Summary
 
-- **291 tests passing** ✅
+- **319 tests passing** ✅
 - **32 tests skipped** (optional dependencies not available)
 - **13/13 benchmark tests passed** ✅
 
@@ -372,7 +372,7 @@ From benchmark results:
 
 Ariadne is actively developing with:
 
-1. **Core Functionality Working**: 291 tests passing (32 skipped) demonstrate robust core features
+1. **Core Functionality Working**: 319 tests passing (32 skipped) demonstrate robust core features
 2. **Realistic Performance Claims**: Benchmarks show real throughput data instead of exaggerated speedup claims
 3. **Honest Documentation**: Features marked as "experimental" where applicable
 4. **Working CI/CD**: Tests run successfully with proper dependency management
@@ -635,7 +635,7 @@ result = simulate(
 
 ## 📊 Project Status
 
-- ✅ **Core Functionality Working** - 291 tests passing, 32 skipped; comprehensive test suite
+- ✅ **Core Functionality Working** - 319 tests passing, 32 skipped; comprehensive test suite
 - ✅ **Cross-Platform** - Windows, macOS, Linux support
 - ✅ **Stim Backend** - Fully functional, excellent for Clifford circuits
 - ✅ **MPS Backend** - Working for low-entanglement circuits

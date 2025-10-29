@@ -18,7 +18,7 @@ help:
 	@echo "  make compose-test        Run test compose service"
 	@echo "  make publish-testpypi    Upload dist/* to TestPyPI (requires env vars)"
 	@echo "  make publish-pypi        Upload dist/* to PyPI (requires env vars)"
- 	@echo "  make build-release       Build with explicit VERSION via setuptools_scm"
+	@echo "  make build-release       Build with explicit VERSION via setuptools_scm"
 
 # Container image coordinates (override OWNER on invocation)
 VERSION ?=

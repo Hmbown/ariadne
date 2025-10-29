@@ -17,7 +17,7 @@ Available algorithm categories:
 
 from .base import AlgorithmParameters, AlgorithmRegistry, QuantumAlgorithm, algorithm
 from .error_correction import SteaneCode
-from .foundational import BellState, GHZState, QuantumFourierTransform
+from .foundational import BellState, GHZState, QuantumFourierTransform, QuantumPhaseEstimation
 from .machine_learning import QSVM
 from .optimization import QAOA, VQE
 from .search import BernsteinVazirani, GroverSearch
@@ -33,6 +33,7 @@ __all__ = [
     "BellState",
     "GHZState",
     "QuantumFourierTransform",
+    "QuantumPhaseEstimation",
     # Search algorithms
     "GroverSearch",
     "BernsteinVazirani",
@@ -63,6 +64,7 @@ def _register_algorithms() -> None:
     _registry.register("bell", BellState)
     _registry.register("ghz", GHZState)
     _registry.register("qft", QuantumFourierTransform)
+    _registry.register("qpe", QuantumPhaseEstimation)
 
     # Search
     _registry.register("grover", GroverSearch)

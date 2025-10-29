@@ -8,16 +8,20 @@ All notable changes to this project will be documented in this file.
 - Verified packaging builds cleanly (`sdist` and `wheel`) and metadata passes `twine check`
 - Improved CLI integration tests and help/version coverage
 - Expanded README with accurate test counts and clarified performance statements
+- Added canonical project URLs to `pyproject.toml` for PyPI metadata completeness
 
 ### Changed
+- Optimized Stim converter by emitting program text directly, reducing Clifford circuit conversion overhead from ~100 ms to microseconds
+- Raised minimum supported Python version to 3.11 to align with modern dependency support and strict zip iteration
 - Updated Bell state demo to correctly interpret measurement bitstrings when `measure_all()` adds an extra classical register; verification now extracts the 2-qubit outcomes reliably
-- Aligned README "Comprehensive Benchmark Results" and "Project Status" with current test results (291 passed, 32 skipped)
+- Aligned README "Comprehensive Benchmark Results" and "Project Status" with current test results (319 passed, 32 skipped)
 - Removed unused legacy benchmark parser helpers from CLI to avoid duplication
+- Refreshed benchmark artifacts with latest reproducible performance measurements on Apple Silicon (M4 Max)
 
 ### Fixed
 - Removed unused imports in config coverage tests to satisfy linting (ruff) and keep `make lint` green
 - Addressed timing jitter in CPU backend and in a stability test (trimmed outliers)
-- Final polish: code formatting for 3 test files and removal of unused type:ignore comment in performance_framework.py
+- Normalized performance stability calculations to plain Python floats to avoid NumPy scalar warnings
 
 ## [0.3.4] - 2025-10-22
 

@@ -78,7 +78,10 @@ def create_large_circuit(n_qubits: int = 15) -> QuantumCircuit:
     circuit = QuantumCircuit(n_qubits)
 
     # Create a complex variational circuit
-    ansatz = EfficientSU2(n_qubits, reps=2)
+    ansatz = EfficientSU2(n_qubits, reps=2).decompose()
+    if ansatz.parameters:
+        zero_params = dict.fromkeys(ansatz.parameters, 0.1)
+        ansatz = ansatz.assign_parameters(zero_params)
     circuit.compose(ansatz, inplace=True)
 
     # Add measurements
@@ -123,9 +126,10 @@ def demonstrate_routing():
     for name, circuit in circuits.items():
         console.print(f"\n[bold]Analyzing {name}...[/bold]")
 
-        # Analyze circuit
+        # Analyze circuit using the shared analyzer helper (the dedicated
+        # ``QuantumRouter.circuit_entropy`` helper was removed in 0.4.0).
         analysis = analyze_circuit(circuit)
-        entropy = router.circuit_entropy(circuit)
+        entropy = analysis.get("gate_entropy")
         console.print(f"  Clifford ratio: {analysis['clifford_ratio']:.2f}, depth {analysis['depth']}")
 
         # Get routing decision
@@ -137,10 +141,12 @@ def demonstrate_routing():
         execution_time = time.time() - start_time
 
         # Add to table
+        entropy_display = f"{entropy:.2f} bits" if entropy is not None else "—"
+
         table.add_row(
             name,
-            f"{entropy:.2f} bits",
-            f"{decision.recommended_backend.value}",
+            entropy_display,
+            decision.recommended_backend.value,
             f"{decision.confidence_score:.1%}",
             f"{decision.expected_speedup:.1f}x",
             f"{execution_time:.3f}s",
@@ -178,7 +184,8 @@ def show_circuit_analysis(result: dict[str, Any]):
     # Create analysis panel
     analysis_text = Text()
     analysis_text.append(f"Circuit: {name}\n", style="bold cyan")
-    analysis_text.append(f"Information Content: {entropy:.2f} bits\n", style="magenta")
+    entropy_line = f"{entropy:.2f} bits" if entropy is not None else "N/A"
+    analysis_text.append(f"Information Content: {entropy_line}\n", style="magenta")
     analysis_text.append(f"Optimal Backend: {backend.value}\n", style="green")
     analysis_text.append(f"Routing Confidence: {confidence:.1%}", style="yellow")
     analysis_text.append(f"Expected Speedup: {speedup:.1f}x vs Qiskit", style="red")
@@ -190,10 +197,10 @@ def show_circuit_analysis(result: dict[str, Any]):
     console.print(Panel(analysis_text, title=f"🔬 {name} Analysis", border_style="blue"))
 
 
-def get_backend_insights(backend: BackendType, entropy: float) -> str:
+def get_backend_insights(backend: BackendType, entropy: float | None) -> str:
     """Get insights about why a particular backend was chosen."""
     insights = {
-        BackendType.STIM: "Perfect for Clifford circuits - 1000x faster than general simulators",
+        BackendType.STIM: "Perfect for Clifford circuits – often 50-100× faster than general simulators",
         BackendType.QISKIT: "Reliable general-purpose simulator for mixed gate types",
         BackendType.TENSOR_NETWORK: "Memory efficient for large, sparse circuits",
         BackendType.JAX_METAL: "GPU-accelerated simulation with Apple Silicon optimization",
@@ -223,8 +230,9 @@ def demonstrate_information_theory():
 
     router = QuantumRouter()
 
-    # Show information theory calculations
-    entropy = router.circuit_entropy(circuit)
+    # Show information theory calculations using the analyzer helper.
+    analysis = analyze_circuit(circuit)
+    entropy = analysis.get("gate_entropy") or 0.0
     decision = router.select_optimal_backend(circuit)
 
     console.print("[bold]Circuit Analysis:[/bold]")
@@ -233,9 +241,7 @@ def demonstrate_information_theory():
     console.print(f"  • Information content: {entropy:.3f} bits of quantum information")
 
     console.print("\n[bold]Backend Capacities:[/bold]")
-    for backend in BackendType:
-        capacity = router.channel_capacity_match(circuit, backend)
-        console.print(f"  • {backend.value}: {capacity:.1%} capacity match")
+    console.print(f"  • Selected backend capacity match: {decision.channel_capacity_match:.1%}")
 
     console.print("\n[bold]Routing Decision:[/bold]")
     console.print(f"  • Optimal backend: {decision.recommended_backend.value}")
@@ -313,7 +319,7 @@ def main():
             Panel.fit(
                 "[bold green]🎉 Demo Complete![/bold green]\n\n"
                 "Ariadne successfully demonstrated intelligent routing:\n"
-                "• Clifford circuits → Stim (1000x speedup)\n"
+                "• Clifford circuits → Stim (50-100× speedup)\n"
                 "• Mixed circuits → Qiskit (reliable)\n"
                 "• Large circuits → Tensor networks (memory efficient)\n"
                 "• Apple Silicon → JAX/Metal (GPU acceleration)\n\n"

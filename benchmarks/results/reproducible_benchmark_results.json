@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-10-27 10:09:00",
+  "timestamp": "2025-10-28 22:23:56",
   "total_tests": 13,
   "passed": 13,
   "failed": 0,
@@ -7,7 +7,7 @@
     {
       "circuit_name": "small_clifford_ghz",
       "backend_used": "stim",
-      "execution_time": 0.011154124978929758,
+      "execution_time": 0.05351545798475854,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -19,7 +19,7 @@
     {
       "circuit_name": "small_clifford_ladder",
       "backend_used": "stim",
-      "execution_time": 0.007800915744155645,
+      "execution_time": 0.007656208006665111,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -31,7 +31,7 @@
     {
       "circuit_name": "medium_clifford_ghz",
       "backend_used": "stim",
-      "execution_time": 0.01126187527552247,
+      "execution_time": 0.011461333022452891,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -43,7 +43,7 @@
     {
       "circuit_name": "medium_clifford_stabilizer",
       "backend_used": "stim",
-      "execution_time": 0.011923666577786207,
+      "execution_time": 0.012061875022482127,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -55,7 +55,7 @@
     {
       "circuit_name": "large_clifford_ghz",
       "backend_used": "stim",
-      "execution_time": 0.026771167293190956,
+      "execution_time": 0.026697541994508356,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -67,7 +67,7 @@
     {
       "circuit_name": "large_clifford_surface_code",
       "backend_used": "stim",
-      "execution_time": 0.04103058436885476,
+      "execution_time": 0.040050874988082796,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -79,7 +79,7 @@
     {
       "circuit_name": "small_non_clifford",
       "backend_used": "mps",
-      "execution_time": 1.1683638747781515,
+      "execution_time": 0.6747385829803534,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -90,8 +90,8 @@
     },
     {
       "circuit_name": "medium_non_clifford",
-      "backend_used": "mps",
-      "execution_time": 0.8280987497419119,
+      "backend_used": "tensor_network",
+      "execution_time": 0.30435958300950006,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -103,7 +103,7 @@
     {
       "circuit_name": "mixed_vqe_ansatz",
       "backend_used": "mps",
-      "execution_time": 0.6406565839424729,
+      "execution_time": 0.41844870799104683,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -114,8 +114,8 @@
     },
     {
       "circuit_name": "mixed_qaoa",
-      "backend_used": "mps",
-      "execution_time": 0.40097324969246984,
+      "backend_used": "pennylane",
+      "execution_time": 2.3302971250086557,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -127,7 +127,7 @@
     {
       "circuit_name": "single_qubit",
       "backend_used": "stim",
-      "execution_time": 0.002178042195737362,
+      "execution_time": 0.0017508750024717301,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -139,7 +139,7 @@
     {
       "circuit_name": "no_gates",
       "backend_used": "stim",
-      "execution_time": 0.002755375113338232,
+      "execution_time": 0.0022960409987717867,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -151,7 +151,7 @@
     {
       "circuit_name": "measurement_only",
       "backend_used": "stim",
-      "execution_time": 0.002328250091522932,
+      "execution_time": 0.0022063749784138054,
       "success": true,
       "error": null,
       "shots": 1000,
@@ -162,11 +162,11 @@
     }
   ],
   "environment_info": {
-    "platform": "macOS-14.6.1-arm64-arm-64bit",
-    "python_version": "3.10.0 (v3.10.0:b494f5935c, Oct  4 2021, 14:59:19) [Clang 12.0.5 (clang-1205.0.22.11)]",
+    "platform": "macOS-26.0.1-arm64-arm-64bit",
+    "python_version": "3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:54:21) [Clang 16.0.6 ]",
     "architecture": "arm64",
     "processor": "arm",
-    "metal_available": false,
+    "metal_available": true,
     "cuda_available": false,
     "router_backends": [
       "stim",

@@ -49,7 +49,7 @@ RUN apt-get update && apt-get install -y \
 COPY --chown=ariadne:ariadne . ./ariadne/
 
 # Install Ariadne in development mode
-ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.3.4
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.4.1
 RUN cd ariadne && pip install --no-cache-dir -e ".[dev]"
 
 # Switch to non-root user
@@ -98,7 +98,7 @@ COPY --chown=ariadne:ariadne pyproject.toml ./ariadne/
 COPY --chown=ariadne:ariadne README.md ./ariadne/
 
 # Install Ariadne with core dependencies only
-ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.3.4
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.4.1
 RUN cd ariadne && pip install --no-cache-dir .
 
 # Switch to non-root user
@@ -142,7 +142,7 @@ RUN apt-get update && \
 COPY --chown=ariadne:ariadne . ./ariadne/
 
 # Install core Ariadne first
-ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.3.4
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.4.1
 RUN cd ariadne && pip install --no-cache-dir -e .
 
 # Install quantum platforms with single command for better stability
@@ -192,7 +192,7 @@ LABEL org.opencontainers.image.description="Intelligent quantum circuit routing 
 LABEL org.opencontainers.image.authors="Hunter Bown <hunter@shannonlabs.dev>"
 LABEL org.opencontainers.image.url="https://github.com/Hmbown/ariadne"
 LABEL org.opencontainers.image.source="https://github.com/Hmbown/ariadne"
-LABEL org.opencontainers.image.version="0.3.4"
+LABEL org.opencontainers.image.version="0.4.1"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 
 # Expose port for potential web interface (future)

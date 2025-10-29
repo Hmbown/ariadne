@@ -185,7 +185,7 @@ result = simulate(circuit)  # Automatically uses best backend! ⚡
 - **Students:** Focus on learning quantum concepts, not backend configuration
 - **Researchers:** Simulate circuits that crash other simulators
 - **Developers:** Consistent performance across platforms
-- **Everyone:** Get results 10-1000x faster automatically
+- **Everyone:** Get results 10-100x faster automatically
 
 ---
 
@@ -250,7 +250,7 @@ print(explain_routing(qc))
 3. **Quantum algorithms are faster:** They explore all possibilities at once through superposition
 4. **Quantum is fragile:** States collapse when observed, requiring error correction
 5. **Ariadne makes it easy:** Automatically routes to the best quantum simulator backend
-6. **Real benefits:** 10-1000× speedup without any configuration or expertise required
+6. **Real benefits:** 10-100× speedup without any configuration or expertise required
 
 **Ready to explore the quantum world?** Start with our [interactive tutorial](notebooks/Ariadne_Interactive_Demo.ipynb) and experience quantum computing made simple!
 
