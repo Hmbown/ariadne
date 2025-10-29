@@ -130,7 +130,8 @@ jobs:
           pip install nbconvert ipykernel jupyter pytest
       - name: Validate Python Examples
         run: |
-          find examples -name "*.py" -print0 | while IFS= read -r -d $'\0' script; do
+          set -e
+          for script in examples/*.py; do
             echo "Running $script"
             timeout 60 python "$script" || { echo "Failed: $script"; exit 1; }
           done
@@ -153,6 +154,7 @@ jobs:
   windows-cuda:
     name: Windows CUDA Tests
     runs-on: windows-latest
+    if: contains(runner.labels, 'gpu')  # Use GPU runner if available
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

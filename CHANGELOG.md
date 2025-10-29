@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.1] - 2025-10-27
+## [0.4.2] - 2025-10-29
 
 ### Added
 - Verified packaging builds cleanly (`sdist` and `wheel`) and metadata passes `twine check`
