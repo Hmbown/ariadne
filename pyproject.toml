@@ -24,7 +24,7 @@ classifiers = [
   "Topic :: System :: Distributed Computing",
 ]
 dependencies = [
-  "qiskit>=2.2.0,<2.4.0",
+  "qiskit>=1.1.0,<1.2.0",
   "qiskit-aer>=0.17.0,<0.18.0",
   "stim>=1.15.0",
   "quimb>=1.11.0",

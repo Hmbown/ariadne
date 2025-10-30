@@ -404,13 +404,17 @@ def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: R
     # Resource checks can be disabled via config or env var for small/local runs
     cfg = get_config()
     disable_checks_env = os.getenv("ARIADNE_DISABLE_RESOURCE_CHECKS", "").lower() in {"1", "true", "yes"}
-    do_resource_checks = bool(getattr(cfg.analysis, "enable_resource_estimation", True)) and not disable_checks_env
+    do_resource_checks = (
+        bool(getattr(cfg.analysis, "enable_resource_estimation", True))
+        and not disable_checks_env
+        and routing_decision.confidence_score > 0  # Do not check for forced backends
+    )
 
     # Check resource availability
     if do_resource_checks:
         can_handle, reason = check_circuit_feasibility(circuit, backend_name)
         if not can_handle:
-            raise ResourceExhaustionError("memory", 0, resource_manager.get_resources().available_memory_mb)
+            raise ResourceExhaustionError(f"memory: {reason}", 0, resource_manager.get_resources().available_memory_mb)
 
     # Initialize result tracking
     fallback_reason = None
@@ -560,10 +564,8 @@ def simulate(circuit: QuantumCircuit, shots: int = 1024, backend: str | None = N
         except ValueError as exc:
             raise ValueError(f"Unknown backend: {backend}") from exc
 
-        # Check if forced backend is available
-        can_handle, reason = check_circuit_feasibility(circuit, backend)
-        if not can_handle:
-            raise CircuitTooLargeError(circuit.num_qubits, circuit.depth(), backend)
+        # Allow backend override without feasibility check.
+        pass
 
         # Create a forced routing decision
         routing_decision = RoutingDecision(
@@ -586,6 +588,9 @@ def simulate(circuit: QuantumCircuit, shots: int = 1024, backend: str | None = N
 
     try:
         return _execute_simulation(circuit, shots, routing_decision)
+    except ResourceExhaustionError as exc:
+        logger.error(f"Resource exhaustion error: {exc}")
+        raise CircuitTooLargeError(circuit.num_qubits, circuit.depth(), backend) from exc
     except Exception as exc:
         logger.error(f"Simulation failed: {exc}")
         raise
