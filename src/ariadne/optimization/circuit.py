@@ -18,10 +18,15 @@ from qiskit.transpiler import PassManager
 from qiskit.transpiler.passes import (
     CommutativeCancellation,
     Optimize1qGates,
-    Optimize2qGates,
     Unroll3qOrMore,
     UnrollCustomDefinitions,
 )
+
+# Handle Qiskit version compatibility for Optimize2qGates
+try:
+    from qiskit.transpiler.passes import Optimize2qGatesDecomposition as Optimize2qGates
+except ImportError:
+    from qiskit.transpiler.passes import Optimize2qGates
 
 try:
     from ariadne.core import get_logger
