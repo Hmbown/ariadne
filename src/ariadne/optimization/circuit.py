@@ -23,10 +23,20 @@ from qiskit.transpiler.passes import (
 )
 
 # Handle Qiskit version compatibility for Optimize2qGates
+# Note: Optimize2qGates was removed in Qiskit 2.0+
 try:
     from qiskit.transpiler.passes import Optimize2qGatesDecomposition as Optimize2qGates
+
+    HAS_OPTIMIZE_2Q = True
 except ImportError:
-    from qiskit.transpiler.passes import Optimize2qGates
+    try:
+        from qiskit.transpiler.passes import Optimize2qGates
+
+        HAS_OPTIMIZE_2Q = True
+    except ImportError:
+        # Optimize2qGates is not available in this Qiskit version
+        HAS_OPTIMIZE_2Q = False
+        Optimize2qGates = None
 
 try:
     from ariadne.core import get_logger
@@ -185,12 +195,13 @@ class GateFusionOptimizer(CircuitOptimizer):
 
         # For now, we'll use Qiskit's built-in optimization passes
         # which include some gate fusion
-        pass_manager = PassManager(
-            [
-                Optimize1qGates(),
-                Optimize2qGates(),
-            ]
-        )
+        passes = [Optimize1qGates()]
+
+        # Only add Optimize2qGates if available (removed in Qiskit 2.0+)
+        if HAS_OPTIMIZE_2Q and Optimize2qGates is not None:
+            passes.append(Optimize2qGates())
+
+        pass_manager = PassManager(passes)
 
         return pass_manager.run(circuit)
 
@@ -247,13 +258,17 @@ class DepthReductionOptimizer(CircuitOptimizer):
         optimized = circuit.copy()
 
         # Apply depth reduction optimizations
-        pass_manager = PassManager(
-            [
-                Optimize1qGates(),
-                Optimize2qGates(),
-                CommutativeCancellation(),
-            ]
-        )
+        passes = [
+            Optimize1qGates(),
+        ]
+
+        # Only add Optimize2qGates if available (removed in Qiskit 2.0+)
+        if HAS_OPTIMIZE_2Q and Optimize2qGates is not None:
+            passes.append(Optimize2qGates())
+
+        passes.append(CommutativeCancellation())
+
+        pass_manager = PassManager(passes)
 
         optimized = pass_manager.run(optimized)
 
