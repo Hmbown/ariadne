@@ -5,7 +5,7 @@ from qiskit.qasm3 import dumps as qasm3_dumps
 from qiskit.qasm3 import loads as qasm3_loads
 
 from ariadne.verify.qcec import assert_equiv
-from examples._util import write_report
+from _util import write_report
 
 
 def build() -> QuantumCircuit:

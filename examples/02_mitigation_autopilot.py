@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ariadne.passes.mitigation import simple_zne
-from examples._util import write_report
+from _util import write_report
 
 
 def noisy_observable(true_value: float, bias: float) -> float:
