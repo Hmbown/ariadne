@@ -1,0 +1,29 @@
+{
+  "comparison": [
+    {
+      "n_qubits": 8,
+      "single_backend": "tn",
+      "single_time": 0.0017212920065503567,
+      "segmented_time": 0.0015334580093622208,
+      "speedup": 1.1224904731928447,
+      "segments": 1
+    },
+    {
+      "n_qubits": 12,
+      "single_backend": "tn",
+      "single_time": 0.0030361250101123005,
+      "segmented_time": 0.0030600410245824605,
+      "speedup": 0.9921844137781051,
+      "segments": 1
+    },
+    {
+      "n_qubits": 16,
+      "single_backend": "tn",
+      "single_time": 0.011013500014087185,
+      "segmented_time": 0.010769500018795952,
+      "speedup": 1.0226565759659576,
+      "segments": 1
+    }
+  ],
+  "timestamp": "2025-10-29 21:38:05"
+}

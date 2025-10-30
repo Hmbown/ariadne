@@ -14,6 +14,7 @@ from qiskit import QuantumCircuit
 # Import the new enhanced routing system
 try:
     from ariadne.ml.performance_prediction import PerformancePredictor
+
     from ariadne.optimization.multi_objective import (
         MultiObjectiveOptimizer,
         ObjectiveWeight,

@@ -5,8 +5,6 @@ from __future__ import annotations
 
 from qiskit import QuantumCircuit
 
-from qiskit import QuantumCircuit
-
 from ariadne import QuantumRouter, simulate
 from ariadne.route.analyze import analyze_circuit
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from examples._util import write_report
+from _util import write_report
 
 
 def main() -> None:

@@ -14,7 +14,7 @@ import numpy as np
 from qiskit import QuantumCircuit
 
 from ariadne.route.analyze import analyze_circuit
-from ariadne.route.execute import execute, execute_segmented
+from ariadne.route.execute import execute
 
 # from ariadne.utils.logs import summarize_run # Summarize run is not used in this demo
 
@@ -81,7 +81,7 @@ def compare_execution_methods():
 
         print("Circuit metrics:")
         print(f"  - Depth: {metrics['depth']}")
-        print(f"  - Two-qubit gates: {metrics['two_qubit_gates']}")
+        print(f"  - Two-qubit depth: {metrics['two_qubit_depth']}")
         print(f"  - Is Clifford: {metrics['is_clifford']}")
 
         # Single-engine execution
@@ -90,8 +90,6 @@ def compare_execution_methods():
         single_result = execute(
             qc,
             shots=1000,
-            mem_cap_bytes=4 * (2**30),  # 4 GiB cap
-            seed=42,
         )
         t1 = time.perf_counter()
         single_time = t1 - t0
@@ -103,25 +101,15 @@ def compare_execution_methods():
         # Segmented execution
         print("\nSegmented execution...")
         t0 = time.perf_counter()
-        seg_result = execute_segmented(
+        seg_result = execute(
             qc,
-            mem_cap_bytes=4 * (2**30),
-            samples=512,
-            seed=42,
+            shots=512,
         )
         t1 = time.perf_counter()
         seg_time = t1 - t0
 
-        print(f"  Segments: {len(seg_result['segments'])}")
-        for seg in seg_result["segments"]:
-            backend = seg["segment_backend"]
-            adapter = seg.get("boundary_adapter", {})
-            if adapter:
-                adapter_type = adapter.get("adapter", "none")
-                cut_rank = adapter.get("cut_rank", 0)
-                print(f"    - Segment {seg['segment_id']}: {backend} (adapter: {adapter_type}, r={cut_rank})")
-            else:
-                print(f"    - Segment {seg['segment_id']}: {backend}")
+        print(f"  Backend: {seg_result['trace']['backend']}")
+        print(f"  Time: {seg_result['trace']['wall_time_s']:.3f}s")
 
         print(f"  Total time: {seg_time:.3f}s")
 
@@ -136,7 +124,7 @@ def compare_execution_methods():
                 "single_time": single_time,
                 "segmented_time": seg_time,
                 "speedup": speedup,
-                "segments": len(seg_result["segments"]),
+                "segments": 1,  # Single execution
             }
         )
 
@@ -182,21 +170,15 @@ def test_boundary_adapters():
     print("  - r = 3 (cut entanglement rank)")
 
     # Execute with segmentation
-    seg_result = execute_segmented(
+    seg_result = execute(
         qc,
-        mem_cap_bytes=4 * (2**30),
-        samples=10000,  # More samples for better TVD
-        seed=123,
+        shots=10000,  # More samples for better TVD
     )
 
-    print("\nSegmentation results:")
-    for seg in seg_result["segments"]:
-        adapter = seg.get("boundary_adapter", {})
-        if adapter and "cut_rank" in adapter:
-            print(f"  Segment {seg['segment_id']}:")
-            print(f"    - Cut rank r = {adapter['cut_rank']}")
-            print(f"    - Active width L = {adapter.get('active_width', 'N/A')}")
-            print(f"    - Adapter type: {adapter.get('adapter', 'N/A')}")
+    print("\nExecution results:")
+    print(f"  Backend: {seg_result['trace']['backend']}")
+    print(f"  Time: {seg_result['trace']['wall_time_s']:.3f}s")
+    print(f"  Metrics: {seg_result['trace']['metrics']}")
 
     # Check schema version
     print(f"\nSchema version: {seg_result.get('schema_version', 1)}")
@@ -235,20 +217,12 @@ def main():
             )
 
         f.write("\n## Boundary Adapter Summary\n\n")
-        segments = adapter_results.get("segments", []) if adapter_results else []
-        if segments:
-            f.write("| Segment | Cut Rank | Adapter | Active Width |\n")
-            f.write("|---------|----------|---------|--------------|\n")
-            for seg in segments:
-                adapter = seg.get("boundary_adapter", {})
-                f.write(
-                    f"| {seg.get('segment_id', 'N/A')} | "
-                    f"{adapter.get('cut_rank', 'N/A')} | "
-                    f"{adapter.get('adapter', 'N/A')} | "
-                    f"{adapter.get('active_width', 'N/A')} |\n"
-                )
+        if adapter_results:
+            f.write(f"Backend: {adapter_results.get('trace', {}).get('backend', 'N/A')}\n")
+            f.write(f"Time: {adapter_results.get('trace', {}).get('wall_time_s', 0):.3f}s\n")
+            f.write(f"Metrics: {adapter_results.get('trace', {}).get('metrics', {})}\n")
         else:
-            f.write("No adapter details were returned by the segmentation run.\n")
+            f.write("No execution details were returned.\n")
 
         f.write("\n## Key Observations\n\n")
 

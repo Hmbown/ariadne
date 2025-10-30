@@ -3,8 +3,7 @@ from __future__ import annotations
 import time
 
 import numpy as np
-
-from examples._util import write_report
+from _util import write_report
 
 
 def main() -> None:
