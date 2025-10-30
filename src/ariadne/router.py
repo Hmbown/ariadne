@@ -108,19 +108,39 @@ def _simulate_qiskit(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
     logger = get_logger("router")
 
     try:
-        from qiskit.providers.basic_provider import BasicProvider
-    except ImportError as exc:  # pragma: no cover - depends on qiskit extras
-        raise BackendUnavailableError("qiskit", "Qiskit provider not available") from exc
+        from qiskit_aer import AerSimulator
+    except ImportError:
+        # Fallback to basic provider if Aer not available
+        try:
+            from qiskit.providers.basic_provider import BasicProvider
+        except ImportError as exc:  # pragma: no cover - depends on qiskit extras
+            raise BackendUnavailableError("qiskit", "Qiskit provider not available") from exc
 
+        try:
+            # Decompose circuit to basic gates for basic_simulator compatibility
+            from qiskit import transpile
+
+            decomposed_circuit = transpile(
+                circuit, basis_gates=["u1", "u2", "u3", "cx", "id"], optimization_level=0
+            )
+            provider = BasicProvider()
+            backend = provider.get_backend("basic_simulator")
+            job = backend.run(decomposed_circuit, shots=shots)
+            counts = job.result().get_counts()
+            return {str(key): value for key, value in counts.items()}
+        except Exception as exc:
+            logger.log_simulation_error(exc, backend="qiskit")
+            raise SimulationError(f"Qiskit simulation failed: {exc}", backend="qiskit") from exc
+
+    # Use Aer simulator which supports more gates
     try:
-        provider = BasicProvider()
-        backend = provider.get_backend("basic_simulator")
+        backend = AerSimulator()
         job = backend.run(circuit, shots=shots)
         counts = job.result().get_counts()
         return {str(key): value for key, value in counts.items()}
     except Exception as exc:
         logger.log_simulation_error(exc, backend="qiskit")
-        raise SimulationError(f"Qiskit simulation failed: {exc}", backend="qiskit") from exc
+        raise SimulationError(f"Qiskit Aer simulation failed: {exc}", backend="qiskit") from exc
 
 
 def _real_tensor_network_simulation(circuit: QuantumCircuit, shots: int) -> dict[str, int]:

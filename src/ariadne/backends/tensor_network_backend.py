@@ -68,18 +68,26 @@ class TensorNetworkBackend:
         try:
             import qiskit.qasm2 as qasm2
             import quimb.tensor as qtn
+            from qiskit import transpile
         except ImportError as exc:  # pragma: no cover - optional dependency
             raise ImportError("Tensor network dependencies not installed") from exc
 
         try:
-            qasm_str = qasm2.dumps(circuit)
+            # Decompose to basic gates supported by OpenQASM 2 and quimb
+            # This handles mcx, p gates and other complex operations
+            decomposed = transpile(
+                circuit,
+                basis_gates=["u1", "u2", "u3", "cx", "id", "h", "x", "y", "z", "s", "t", "sdg", "tdg"],
+                optimization_level=0,
+            )
+            qasm_str = qasm2.dumps(decomposed)
         except Exception as exc:  # pragma: no cover - depends on qiskit feature set
-            raise RuntimeError("Failed to export circuit to OpenQASM 2") from exc
+            raise RuntimeError(f"Failed to decompose/export circuit to OpenQASM 2: {exc}") from exc
 
         try:
             return qtn.Circuit.from_openqasm2_str(qasm_str)
         except Exception as exc:  # pragma: no cover - conversion can fail for unsupported ops
-            raise RuntimeError("Failed to convert circuit to tensor network") from exc
+            raise RuntimeError(f"Failed to convert circuit to tensor network: {exc}") from exc
 
     def _contract_statevector(self, quimb_circuit: Any) -> np.ndarray:
         try:
