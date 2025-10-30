@@ -29,14 +29,16 @@ try:
 
     HAS_OPTIMIZE_2Q = True
 except ImportError:
+    # Try alternate import name
     try:
-        from qiskit.transpiler.passes import Optimize2qGates
+        from qiskit.transpiler.passes import Optimize2qGates  # noqa: F401
 
         HAS_OPTIMIZE_2Q = True
     except ImportError:
         # Optimize2qGates is not available in this Qiskit version
         HAS_OPTIMIZE_2Q = False
-        Optimize2qGates = None
+        # Create a dummy class to avoid NameError
+        Optimize2qGates = type("Optimize2qGates", (), {})
 
 try:
     from ariadne.core import get_logger
