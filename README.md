@@ -277,9 +277,9 @@ We've conducted extensive benchmarking of Ariadne's routing system to validate i
 
 ### Test Results Summary
 
-- **319 tests passing** ✅
-- **32 tests skipped** (optional dependencies not available)
-- **13/13 benchmark tests passed** ✅
+- 319 tests passing
+- 32 tests skipped (optional dependencies not available)
+- 13/13 benchmark tests passed
 
 ### Correctness Validation
 
@@ -446,10 +446,10 @@ for backend, result in comparison.items():
 
 | Feature | Ariadne | Qiskit Aer | Cirq | PennyLane | Stim (Direct) |
 |---------|---------|------------|------|-----------|---------------|
-| **Automatic Backend Selection** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Multiple Backend Support** | ✅ | Limited to one at a time | Limited to one at a time | Limited to one at a time | ✅ (Clifford only) |
-| **Educational Tools** | ✅ | Limited | Limited | ✅ | ❌ |
-| **Cross-Platform** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Automatic Backend Selection | Yes | No | No | No | No |
+| Multiple Backend Support | Yes | Limited to one at a time | Limited to one at a time | Limited to one at a time | Yes (Clifford only) |
+| Educational Tools | Yes | Limited | Limited | Yes | No |
+| Cross-Platform | Yes | Yes | Yes | Yes | Yes |
 
 **When to use Ariadne:**
 - You want automatic backend selection based on circuit analysis
@@ -505,12 +505,12 @@ print('Available backends:', get_available_backends())
 
 ### For Different Audiences
 
-- **🎓 Students**: Start with [educational examples](examples/education/learning_tutorial.py)
-- **🔬 Researchers**: See [research use cases](docs/getting-started/for-researchers.md)
-- **👨‍🏫 Educators**: Check [instructor guide](docs/getting-started/for-instructors.md)
-- **⚙️ Developers**: Read [developer guide](docs/guides/developer_guide.md)
-- **🚀 DevOps**: Follow [deployment guide](docs/getting-started/for-devops.md)
-- **🔧 System Administrators**: Refer to the [Configuration Options](docs/options.md) for detailed tuning and setup.
+- Students: Start with [educational examples](examples/education/learning_tutorial.py)
+- Researchers: See [research use cases](docs/getting-started/for-researchers.md)
+- Educators: Check [instructor guide](docs/getting-started/for-instructors.md)
+- Developers: Read [developer guide](docs/guides/developer_guide.md)
+- DevOps: Follow [deployment guide](docs/getting-started/for-devops.md)
+- System Administrators: Refer to the [Configuration Options](docs/options.md) for detailed tuning and setup.
 
 ---
 
@@ -518,11 +518,11 @@ print('Available backends:', get_available_backends())
 
 We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for:
 
-- 🐛 Bug reports and feature requests
-- 🔧 Adding new backends
-- 📚 Improving documentation
-- 🧪 Adding tests
-- 🎯 Performance improvements
+- Bug reports and feature requests
+- Adding new backends
+- Improving documentation
+- Adding tests
+- Performance improvements
 
 ### Quick Contribution Setup
 
@@ -585,11 +585,11 @@ result = simulate(
 
 ## Project Status
 
-- ✅ **Core Functionality** - 326 tests passing, 25 skipped; comprehensive test suite
-- ✅ **Cross-Platform** - Windows, macOS, Linux support
-- ✅ **Backend Support** - Stim, MPS, tensor network, Qiskit, and other backends
-- ✅ **Educational Tools** - Interactive tutorials and algorithm examples
-- ⚠️ **Hardware Acceleration** - JAX-Metal and CUDA marked experimental
+- Core Functionality - 326 tests passing, 25 skipped; comprehensive test suite
+- Cross-Platform - Windows, macOS, Linux support
+- Backend Support - Stim, MPS, tensor network, Qiskit, and other backends
+- Educational Tools - Interactive tutorials and algorithm examples
+- Hardware Acceleration - JAX-Metal and CUDA marked experimental
 - 🔄 **Active Development** - Continuing improvements to routing algorithms
 
 ---
@@ -610,7 +610,7 @@ Apache 2.0 - see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-[⭐ Star on GitHub](https://github.com/Hmbown/ariadne) •
-[📦 PyPI Package](https://pypi.org/project/ariadne-router/)
+[Star on GitHub](https://github.com/Hmbown/ariadne) •
+[PyPI Package](https://pypi.org/project/ariadne-router/)
 
 </div>

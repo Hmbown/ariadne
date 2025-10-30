@@ -1,10 +1,10 @@
 # ⚡ Ariadne Performance Guide
 
-## 🎯 **Performance Overview**
+## Performance Overview
 
 Ariadne provides intelligent quantum circuit simulation with automatic backend selection and GPU acceleration. This guide covers performance characteristics, optimization tips, and benchmark results.
 
-## 🚀 **Key Performance Features**
+## Key Performance Features
 
 ### **Automatic Backend Selection**
 - **Clifford Circuits** → STIM (infinite capacity) or Qiskit (6.0 capacity)
@@ -18,7 +18,7 @@ Ariadne provides intelligent quantum circuit simulation with automatic backend s
 - **Memory Management**: Efficient GPU memory usage
 - **Cross-Platform**: Works on Windows, Linux, macOS
 
-## 📊 **Benchmark Results**
+## Benchmark Results
 
 ### **Hardware Configuration**
 - **GPU**: NVIDIA GeForce RTX 3080 (10GB, Compute 8.6)
@@ -49,7 +49,7 @@ Ariadne provides intelligent quantum circuit simulation with automatic backend s
 - **Large circuits**: CUDA preferred when memory allows
 - **Adaptive selection**: Backend choice adapts to your hardware and circuit characteristics
 
-## 🔧 **Optimization Tips**
+## Optimization Tips
 
 ### **For Maximum Performance**
 1. **Use large circuits** (16+ qubits) to benefit from GPU acceleration
@@ -69,7 +69,7 @@ Ariadne provides intelligent quantum circuit simulation with automatic backend s
 3. **Profile performance** with different circuit sizes
 4. **Validate results** across different backends
 
-## 🎯 **Performance Characteristics**
+## Performance Characteristics
 
 ### **GPU Acceleration Threshold**
 - **Small circuits** (< 16 qubits): CPU preferred due to GPU overhead
@@ -108,7 +108,7 @@ else:
         return TENSOR_NETWORK  # 9.0 capacity
 ```
 
-## 🚀 **Best Practices**
+## Best Practices
 
 ### **Circuit Design**
 - **Use appropriate gate sets** for your target backend
@@ -128,7 +128,7 @@ else:
 - **Implement proper error handling** for backend failures
 - **Use appropriate logging** for performance monitoring
 
-## 📊 **Benchmarking Best Practices**
+## Benchmarking Best Practices
 
 ### **Creating Reliable Benchmarks**
 1. **Warm up the system** before timing measurements
@@ -184,7 +184,7 @@ def benchmark_circuit(qubits: int, shots: int = 1000, runs: int = 5):
 - **Check memory usage**: Large circuits may fail due to memory constraints
 - **Verify correctness**: Ensure results are consistent across backends
 
-## 📈 **Future Optimizations**
+## Future Optimizations
 
 ### **Planned Improvements**
 - **Multi-GPU support** for even larger circuits

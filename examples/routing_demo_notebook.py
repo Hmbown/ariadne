@@ -38,7 +38,7 @@ def benchmark_circuit(name: str, circuit: QuantumCircuit, shots: int = 1000) -> 
         execution_time = end_time - start_time
         throughput = shots / execution_time if execution_time > 0 else 0
 
-        print("✅ SUCCESS")
+        print("SUCCESS")
         print(f"   Backend: {result.backend_used.value}")
         print(f"   Time: {execution_time:.4f}s")
         print(f"   Throughput: {throughput:.0f} shots/s")
@@ -59,7 +59,7 @@ def benchmark_circuit(name: str, circuit: QuantumCircuit, shots: int = 1000) -> 
 
     except Exception as e:
         end_time = time.time()
-        print(f"❌ FAILED: {e}")
+        print(f"FAILED: {e}")
         return {"success": False, "error": str(e), "explanation": explanation, "execution_time": end_time - start_time}
 
 
@@ -124,17 +124,17 @@ def main():
     results = {}
 
     # Test 1: Large Clifford circuit → Stim
-    print("\n🎯 CLAIM 1: Large Clifford circuits route to Stim")
+    print("\nCLAIM 1: Large Clifford circuits route to Stim")
     large_clifford = create_large_clifford_circuit(35)
     results["large_clifford"] = benchmark_circuit("Large Clifford (35-qubit GHZ)", large_clifford)
 
     # Test 2: Low-entanglement circuit → MPS/TN
-    print("\n🎯 CLAIM 2: Low-entanglement circuits route to MPS/TN")
+    print("\nCLAIM 2: Low-entanglement circuits route to MPS/TN")
     low_ent = create_low_entanglement_circuit(12)
     results["low_entanglement"] = benchmark_circuit("Low-Entanglement QAOA", low_ent)
 
     # Test 3: General circuit → Aer CPU
-    print("\n🎯 CLAIM 3: General circuits fall back to Aer")
+    print("\nCLAIM 3: General circuits fall back to Aer")
     general = create_general_circuit(5)
     results["general"] = benchmark_circuit("General Circuit (T gates)", general)
 
@@ -145,10 +145,10 @@ def main():
 
     for name, result in results.items():
         if result["success"]:
-            print(f"✅ {name}:")
+            print(f"SUCCESS {name}:")
             print(f"   → {result['backend']} ({result['execution_time']:.3f}s, {result['throughput']:.0f} shots/s)")
         else:
-            print(f"❌ {name}: {result['error']}")
+            print(f"FAILED {name}: {result['error']}")
 
     print("\n🔍 ROUTING TRANSPARENCY:")
     for name, result in results.items():
@@ -177,4 +177,4 @@ if __name__ == "__main__":
 
     with open("routing_demo_results.json", "w") as f:
         json.dump(benchmark_results, f, indent=2, default=str)
-    print("\n📊 Results saved to routing_demo_results.json")
+    print("\nResults saved to routing_demo_results.json")

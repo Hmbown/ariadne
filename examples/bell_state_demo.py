@@ -8,7 +8,7 @@ from ariadne import simulate
 
 def main():
     """Demonstrate Bell state creation and measurement."""
-    print("🔮 Ariadne Bell State Demo")
+    print("Ariadne Bell State Demo")
     print("=" * 30)
 
     # Create Bell state |Φ+⟩ = (|00⟩ + |11⟩)/√2

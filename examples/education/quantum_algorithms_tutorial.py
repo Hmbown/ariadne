@@ -5,7 +5,7 @@ Ariadne Quantum Algorithms Tutorial
 This tutorial demonstrates how to use Ariadne to learn and experiment with
 famous quantum algorithms that showcase quantum advantage.
 
-🎯 Learning Objectives:
+Learning Objectives:
 - Understand Deutsch-Jozsa algorithm (exponential speedup)
 - Explore Grover's search algorithm (quadratic speedup)
 - Learn about quantum error correction codes
@@ -31,7 +31,7 @@ def main():
     # Initialize educational tools
     explorer = AlgorithmExplorer()
 
-    print("🎓 Available Quantum Algorithms:")
+    print("Available Quantum Algorithms:")
     algorithms = explorer.list_algorithms()
     print(f"Found {len(algorithms)} algorithms: {', '.join(algorithms[:10])}...")
     print()
@@ -46,7 +46,7 @@ def main():
     error_correction_tutorial()
 
     print("\n" + "=" * 70)
-    print("🎉 TUTORIAL COMPLETE!")
+    print("TUTORIAL COMPLETE")
     print("=" * 70)
     print("Next steps:")
     print("- Try modifying the circuit parameters")
@@ -57,7 +57,7 @@ def main():
 
 def deutsch_jozsa_tutorial(explorer):
     """Tutorial on Deutsch-Jozsa algorithm showing exponential speedup."""
-    print("🔬 SECTION 1: DEUTSCH-JOZSA ALGORITHM")
+    print("SECTION 1: DEUTSCH-JOZSA ALGORITHM")
     print("-" * 40)
 
     # Get algorithm information
@@ -112,11 +112,11 @@ def deutsch_jozsa_tutorial(explorer):
         # Interpret results
         most_common = max(result.counts, key=result.counts.get)
         if most_common == "0" * (dj_circuit.num_qubits - 1):
-            print(f"✅ {func_type.title()} function detected correctly!")
+            print(f"{func_type.title()} function detected correctly!")
         else:
-            print(f"✅ {func_type.title()} function detected correctly!")
+            print(f"{func_type.title()} function detected correctly!")
 
-    print("\n🧠 Quantum Advantage:")
+    print("\nQuantum Advantage:")
     print("- Deutsch-Jozsa determines function type in 1 quantum query")
     print(f"- Classical approach needs {2 ** (3 - 1) + 1} = 5 queries in worst case")
     print("- This demonstrates exponential quantum speedup!")
@@ -199,15 +199,15 @@ def grover_tutorial(explorer):
     most_common = max(result.counts, key=result.counts.get)
     success_rate = result.counts[marked_item] / sum(result.counts.values())
 
-    print("\n📊 Algorithm Performance:")
+    print("\nAlgorithm Performance:")
     print(f"Most frequent result: |{most_common}⟩")
     print(f"Success rate: {success_rate:.3f}")
     if most_common == marked_item:
-        print("✅ Successfully found the marked item!")
+        print("Successfully found the marked item!")
     else:
         print(f"Found {most_common} instead of {marked_item}")
 
-    print("\n🧠 Quantum Advantage:")
+    print("\nQuantum Advantage:")
     print("- Grover's finds an item in √N queries vs N classically")
     print(f"- For {2**n_qubits} items: √{2**n_qubits} = {np.sqrt(2**n_qubits):.1f} vs {2**n_qubits} queries")
     print("- This demonstrates quadratic quantum speedup!")
@@ -215,7 +215,7 @@ def grover_tutorial(explorer):
 
 def error_correction_tutorial():
     """Tutorial on quantum error correction codes."""
-    print("\n🔧 SECTION 3: QUANTUM ERROR CORRECTION")
+    print("\nSECTION 3: QUANTUM ERROR CORRECTION")
     print("-" * 40)
 
     def create_repetition_code(n_repetitions=5):
@@ -291,7 +291,7 @@ def error_correction_tutorial():
 
 def performance_comparison(benchmark_suite):
     """Compare performance across different algorithms."""
-    print("\n📊 SECTION 4: PERFORMANCE COMPARISON")
+    print("\nSECTION 4: PERFORMANCE COMPARISON")
     print("-" * 40)
 
     # Initialize explorer for creating circuits
@@ -303,7 +303,7 @@ def performance_comparison(benchmark_suite):
         ("bell", 2, "bell_state"),
     ]
 
-    print("🚀 Comparing Algorithm Performance:")
+    print("Comparing Algorithm Performance:")
 
     results = {}
     for name, n_qubits, _algorithm_name in algorithms_to_compare:
@@ -364,7 +364,7 @@ def performance_comparison(benchmark_suite):
         plt.tight_layout()
         plt.show()
 
-        print("\n🎯 Performance Insights:")
+        print("\nPerformance Insights:")
         fastest = min(results, key=lambda x: results[x]["time"])
         print(f"Fastest algorithm: {fastest.replace('_', ' ').title()}")
     else:

@@ -143,16 +143,16 @@ def run_example(example_path: Path):
     if example_path.suffix == '.py':
         result = subprocess.run([sys.executable, str(example_path)], capture_output=True, timeout=60)
         if result.returncode != 0:
-            print(f"❌ Failed: {example_path}")
+            print(f"Failed: {example_path}")
             print(result.stderr.decode())
             return False
-        print(f"✅ Passed: {example_path}")
+        print(f"Passed: {example_path}")
     elif example_path.suffix == '.ipynb':
         result = subprocess.run(['jupyter', 'nbconvert', '--to', 'notebook', '--execute', str(example_path), '--allow-errors=false'], timeout=300, capture_output=True)
         if result.returncode != 0:
-            print(f"❌ Failed: {example_path}")
+            print(f"Failed: {example_path}")
             return False
-        print(f"✅ Passed: {example_path}")
+        print(f"Passed: {example_path}")
     return True
 
 if __name__ == "__main__":

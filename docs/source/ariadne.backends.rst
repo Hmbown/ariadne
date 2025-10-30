@@ -125,6 +125,7 @@ ariadne.backends.tensor\_network\_backend module
    :members:
    :show-inheritance:
    :undoc-members:
+   :no-index:
 
 ariadne.backends.universal\_interface module
 --------------------------------------------
@@ -134,10 +135,5 @@ ariadne.backends.universal\_interface module
    :show-inheritance:
    :undoc-members:
 
-Module contents
----------------
-
-.. automodule:: ariadne.backends
-   :members:
-   :show-inheritance:
-   :undoc-members:
+.. Note: Top-level package automodule removed to avoid duplicate indexing of
+.. objects that are already documented in submodule sections.

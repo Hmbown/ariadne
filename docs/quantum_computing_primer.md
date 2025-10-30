@@ -1,8 +1,8 @@
-# 🧠 Quantum Computing Primer for Ariadne Users
+# Quantum Computing Primer for Ariadne Users
 
 **Welcome to the quantum world!** This primer will give you the essential knowledge you need to understand and use Ariadne effectively. No physics degree required!
 
-## 🎯 What You'll Learn
+## What You'll Learn
 
 - **Quantum bits (qubits)** vs classical bits
 - **Superposition** - the quantum "both at once" magic
@@ -226,17 +226,17 @@ print(explain_routing(qc))
 
 ## 9. Next Steps with Ariadne
 
-### 🎓 **Learn More**
+### Learn More
 - Try the [Interactive Tutorial](../notebooks/01_ariadne_advantage_fixed.ipynb)
 - Explore [Educational Examples](../examples/education/)
 - Run [Benchmarks](../benchmarks/) to see the speedup
 
-### 🔬 **Research Applications**
+### Research Applications
 - Simulate [quantum algorithms](examples/education/quantum_algorithms_tutorial.py)
 - Test [error correction codes](examples/)
 - Explore [real research papers](docs/project/CITATIONS.bib)
 
-### 🚀 **Get Started Quickly**
+### Get Started Quickly
 - Read the [Quick Start Guide](QUICK_START.md)
 - Check [Troubleshooting](docs/troubleshooting.md)
 - Join our [Community Discussions](https://github.com/Hmbown/ariadne/discussions)

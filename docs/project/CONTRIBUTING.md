@@ -2,11 +2,11 @@
 
 Thank you for your interest in contributing to Ariadne! We're building the future of intelligent quantum circuit routing, and we'd love your help.
 
-## 🎯 Our Mission
+## Our Mission
 
 Ariadne aims to democratize quantum computing by automatically routing circuits to their optimal simulators. Every contribution, no matter how small, helps achieve this goal.
 
-## 🚀 Quick Start for Contributors
+## Quick Start for Contributors
 
 1. **Fork & Clone**
    ```bash
@@ -46,7 +46,7 @@ Ariadne aims to democratize quantum computing by automatically routing circuits 
 - **Circuit Analysis**: Improve our circuit entropy calculations
 - **Documentation**: Help others understand Ariadne better
 
-### 📚 Documentation
+### Documentation
 - Fix typos, clarify explanations
 - Add examples and tutorials
 - Translate documentation
@@ -58,7 +58,7 @@ Ariadne aims to democratize quantum computing by automatically routing circuits 
 - Add performance benchmarks
 - Validate on different hardware
 
-## 🔧 Development Process
+## Development Process
 
 ### 1. Before You Start
 - Check existing issues and PRs to avoid duplicates
@@ -107,10 +107,10 @@ perf: optimize circuit entropy calculation by 50%
 ### 4. Testing Requirements
 
 Your PR must:
-- ✅ Pass all existing tests
-- ✅ Include tests for new functionality
-- ✅ Maintain or improve code coverage (aim for >90%)
-- ✅ Pass performance benchmarks
+- Pass all existing tests
+- Include tests for new functionality
+- Maintain or improve code coverage (aim for >90%)
+- Pass performance benchmarks
 
 ### 5. Pull Request Process
 
@@ -241,7 +241,7 @@ def test_routing_performance(benchmark):
 - Report security vulnerabilities through [GitHub Security Advisories](https://github.com/Hmbown/ariadne/security/advisories)
 - Use environment variables for sensitive configuration
 
-## 📈 Performance Contributions
+## Performance Contributions
 
 When claiming performance improvements:
 1. Provide reproducible benchmarks
@@ -272,6 +272,6 @@ Contributors are recognized in:
 
 ---
 
-**Thank you for making Ariadne better! 🚀**
+**Thank you for making Ariadne better!**
 
 *"The best way to predict the future is to invent it."* - Alan Kay

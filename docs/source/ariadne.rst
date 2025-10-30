@@ -14,7 +14,6 @@ Subpackages
    ariadne.core
    ariadne.ft
    ariadne.ml
-   ariadne.optimization
    ariadne.passes
    ariadne.performance
    ariadne.plugins

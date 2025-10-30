@@ -227,39 +227,38 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
-  # Temporarily disabled until GitHub Pages is configured
-  # deploy-docs:
-  #   name: Deploy Documentation
-  #   runs-on: ubuntu-latest
-  #   needs: [build]
-  #   if: github.ref == 'refs/heads/main'
-  #   permissions:
-  #     contents: read
-  #     pages: write
-  #     id-token: write
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v5
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v6
-  #       with:
-  #         python-version: ${{ env.PYTHON_VERSION }}
-  #     - name: Install dependencies
-  #       run: |
-  #         python -m pip install --upgrade pip
-  #         pip install -e ".[docs,dev]"
-  #     - name: Generate API documentation stubs
-  #       run: sphinx-apidoc -o docs/source src/ariadne
-  #     - name: Build documentation
-  #       run: |
-  #         cd docs/source
-  #         sphinx-build -b html --keep-going . ../build/html
-  #     - name: Setup Pages
-  #       uses: actions/configure-pages@v5
-  #     - name: Upload artifact
-  #       uses: actions/upload-pages-artifact@v4
-  #       with:
-  #         path: docs/build/html
-  #     - name: Deploy to GitHub Pages
-  #       id: deployment
-  #       uses: actions/deploy-pages@v5
+  deploy-docs:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[docs,dev]"
+      - name: Build documentation
+        run: |
+          sphinx-build -b html --keep-going docs/source docs/build/html
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs/build/html
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

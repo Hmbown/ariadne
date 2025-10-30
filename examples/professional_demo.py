@@ -74,7 +74,7 @@ def create_algorithm_circuits() -> dict[str, QuantumCircuit]:
 
 def main() -> None:
     """Professional demonstration of Ariadne capabilities."""
-    print("🚀 Ariadne: Production Quantum Simulator Router")
+    print("Ariadne: Production Quantum Simulator Router")
     print("=" * 60)
 
     # Get available backends
@@ -85,19 +85,19 @@ def main() -> None:
     circuits = create_algorithm_circuits()
 
     for name, circuit in circuits.items():
-        print(f"🔬 Testing: {name}")
+        print(f"Testing: {name}")
         print(f"   Circuit: {circuit.num_qubits} qubits, {circuit.size()} gates")
 
         # Get Ariadne's automatic choice
         result = simulate(circuit, shots=1000)
         routing_explanation = explain_routing(circuit)
 
-        print(f"   ✅ Auto-selected: {result.backend_used}")
+        print(f"   Auto-selected: {result.backend_used}")
         print(f"   ⚡ Time: {result.execution_time:.4f}s")
-        print(f"   🧠 Reasoning: {routing_explanation}")
+        print(f"   Reasoning: {routing_explanation}")
         print()
 
-    print("📊 Performance Summary:")
+    print("Performance Summary:")
     print("Ariadne automatically optimized each algorithm for maximum performance")
     print("without requiring manual backend selection or configuration.")
 

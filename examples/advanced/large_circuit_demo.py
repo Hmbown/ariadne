@@ -144,7 +144,7 @@ def benchmark_algorithm(algorithm_func, name: str, **kwargs):
 
 def main():
     """Demonstrate advanced quantum algorithms with Ariadne."""
-    print("🚀 Advanced Quantum Algorithm Demonstrations")
+    print("Advanced Quantum Algorithm Demonstrations")
     print("=" * 60)
     print("Showcasing practical quantum computing applications\n")
 
@@ -182,9 +182,9 @@ def main():
     )
 
     print(f"\n{'=' * 60}")
-    print("✅ All advanced examples completed successfully!")
-    print("💡 These algorithms demonstrate real quantum computing applications")
-    print("🔬 QFT: Used in Shor's algorithm, quantum phase estimation")
+    print("All advanced examples completed successfully.")
+    print("These algorithms demonstrate real quantum computing applications")
+    print("QFT: Used in Shor's algorithm, quantum phase estimation")
     print("🔍 Grover: Quadratic speedup for unstructured search")
     print("⚛️ VQE: Finding ground state energy of molecules")
     print("🛡️ QEC: Essential for fault-tolerant quantum computing")

@@ -8,7 +8,7 @@ from ariadne import simulate
 
 def main():
     """Demonstrate Ariadne's intelligent routing for Clifford circuits."""
-    print("🔮 Ariadne Clifford Circuit Demo")
+    print("Ariadne Clifford Circuit Demo")
     print("=" * 40)
 
     # Create a Clifford circuit (H, S, CNOT gates only)

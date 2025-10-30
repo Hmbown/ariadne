@@ -29,7 +29,7 @@ try:
     )
     from ariadne.router import BackendType
 except ImportError as e:
-    print(f"⚠️  Import error: {e}")
+    print(f"Warning: Import error: {e}")
     print("This example requires the enhanced routing modules.")
     print("Make sure you're running from the Ariadne root directory.")
     exit(1)
@@ -87,7 +87,7 @@ def demonstrate_context_detection():
     context = detector.analyze_user_context(circuit_history)
     helper_context = detect_user_context(circuit_history)
 
-    print("📊 Detected Context:")
+    print("Detected Context:")
     print(f"  Workflow Type: {context.workflow_type.value}")
     print(f"  Platform: {context.hardware_profile.platform_name}")
     print(f"  CPU Cores: {context.hardware_profile.cpu_cores}")
@@ -97,12 +97,12 @@ def demonstrate_context_detection():
     print()
 
     if helper_context.workflow_type == WorkflowType.BENCHMARKING:
-        print("📈 Helper detected benchmarking workflow focus")
+        print("Helper detected benchmarking workflow focus")
     else:
-        print(f"📈 Helper detected workflow: {helper_context.workflow_type.value}")
+        print(f"Helper detected workflow: {helper_context.workflow_type.value}")
     print()
 
-    print("🎯 Performance Preferences:")
+    print("Performance Preferences:")
     prefs = context.performance_preferences
     print(f"  Speed Priority: {prefs.speed_priority:.1%}")
     print(f"  Accuracy Priority: {prefs.accuracy_priority:.1%}")
@@ -115,7 +115,7 @@ def demonstrate_context_detection():
 
 def demonstrate_enhanced_routing(context):
     """Demonstrate enhanced multi-strategy routing."""
-    print("🎯 Enhanced Routing Demonstration")
+    print("Enhanced Routing Demonstration")
     print("=" * 50)
 
     circuits = create_example_circuits()
@@ -231,7 +231,7 @@ def demonstrate_routing_explanation():
         explanation = router.explain_decision(circuit)
         print(explanation)
     except Exception as e:
-        print(f"❌ Explanation failed: {e}")
+        print(f"Explanation failed: {e}")
 
         # Fallback: show basic decision
         decision = router.select_optimal_backend(circuit)
@@ -251,7 +251,7 @@ def run_performance_comparison():
 
         basic_router = BasicRouter()
     except ImportError:
-        print("❌ Basic router not available for comparison")
+        print("Basic router not available for comparison")
         return
 
     # Enhanced routing
@@ -283,7 +283,7 @@ def run_performance_comparison():
 
 def main():
     """Run the comprehensive demonstration."""
-    print("🚀 Ariadne Enhanced Routing System Demo")
+    print("Ariadne Enhanced Routing System Demo")
     print("=" * 60)
     print("This demonstration showcases the revolutionary intelligent")
     print("routing system that automatically optimizes quantum circuit")
@@ -310,7 +310,7 @@ def main():
         # 6. Performance Comparison
         run_performance_comparison()
 
-        print("✅ Demonstration completed successfully!")
+        print("Demonstration completed successfully.")
         print()
         print("🌟 Key Achievements:")
         print("  ✓ Intelligent context detection")
@@ -320,10 +320,10 @@ def main():
         print("  ✓ Human-readable decision explanations")
         print("  ✓ Real-time routing decisions (<1ms)")
         print()
-        print("🎯 Ready for global quantum computing democratization!")
+        print("Ready for global quantum computing democratization.")
 
     except Exception as e:
-        print(f"❌ Demo failed: {e}")
+        print(f"Demo failed: {e}")
         print("Please ensure all modules are properly installed.")
 
 

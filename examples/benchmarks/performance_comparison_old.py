@@ -73,7 +73,7 @@ def benchmark_circuit(circuit: QuantumCircuit, shots: int = 1000) -> dict:
 
 def main():
     """Performance comparison demonstration."""
-    print("🚀 Performance Comparison: Ariadne vs Direct Backends")
+    print("Performance Comparison: Ariadne vs Direct Backends")
     print("=" * 60)
 
     # Test different circuit types and sizes

@@ -78,7 +78,7 @@ def analyze_result(result, circuit_name):
 
 def main():
     """Demonstrate Ariadne with various practical examples."""
-    print("🚀 Ariadne Practical Examples")
+    print("Ariadne Practical Examples")
     print("=" * 50)
     print("Demonstrating real-world quantum circuit simulation scenarios\n")
 
@@ -98,8 +98,8 @@ def main():
     analyze_result(result3, "Variational Circuit (10 qubits)")
 
     print("\n" + "=" * 50)
-    print("✅ All examples completed successfully!")
-    print("💡 Tip: Larger circuits with non-Clifford gates benefit most from GPU acceleration")
+    print("All examples completed successfully.")
+    print("Tip: Larger circuits with non-Clifford gates benefit most from GPU acceleration")
 
 
 if __name__ == "__main__":

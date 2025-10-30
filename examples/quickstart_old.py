@@ -31,7 +31,7 @@ def main() -> None:
     print("=" * 50)
 
     # Example 1: Large Clifford circuit (optimal for Stim)
-    print("\n📊 Example 1: 40-qubit GHZ Circuit")
+    print("\nExample 1: 40-qubit GHZ Circuit")
     print("-" * 30)
 
     ghz_circuit = create_ghz_circuit(40)
@@ -40,12 +40,12 @@ def main() -> None:
     # Simulate with Ariadne's automatic routing
     result = simulate(ghz_circuit, shots=1000)
 
-    print(f"✅ Backend selected: {result.backend_used}")
+    print(f"Backend selected: {result.backend_used}")
     print(f"⚡ Execution time: {result.execution_time:.4f}s")
     print(f"🔍 Why this backend: {explain_routing(ghz_circuit)}")
 
     # Example 2: Small general circuit
-    print("\n📊 Example 2: Small General Circuit")
+    print("\nExample 2: Small General Circuit")
     print("-" * 30)
 
     small_circuit = QuantumCircuit(3, 3)
@@ -57,16 +57,16 @@ def main() -> None:
 
     result2 = simulate(small_circuit, shots=1000)
 
-    print(f"✅ Backend selected: {result2.backend_used}")
+    print(f"Backend selected: {result2.backend_used}")
     print(f"⚡ Execution time: {result2.execution_time:.4f}s")
     print(f"🔍 Why this backend: {explain_routing(small_circuit)}")
 
     print("\n" + "=" * 50)
-    print("🎯 Key Takeaway:")
+    print("Key Takeaway:")
     print("Ariadne automatically chose different backends for different")
     print("circuit types, optimizing performance without any user configuration!")
 
-    print("\n📚 Next Steps:")
+    print("\nNext Steps:")
     print("• Check out docs/README.md for advanced features")
     print("• Try your own circuits with simulate(your_circuit)")
     print("• Explore different backends with backend='stim' parameter")

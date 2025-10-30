@@ -66,7 +66,7 @@ def create_non_clifford_circuit(num_qubits: int) -> QuantumCircuit:
 def demonstrate_intelligent_routing():
     """Demonstrate Ariadne's intelligent backend selection."""
 
-    print("🔮 ARIADNE INTELLIGENT ROUTING DEMONSTRATION")
+    print("ARIADNE INTELLIGENT ROUTING DEMONSTRATION")
     print("=" * 60)
     print()
     print("This demo shows how Ariadne automatically selects")
@@ -84,7 +84,7 @@ def demonstrate_intelligent_routing():
     ]
 
     for circuit_name, circuit in test_cases:
-        print(f"📊 Testing: {circuit_name}")
+        print(f"Testing: {circuit_name}")
 
         # Analyze the circuit
         routing_decision = router.select_optimal_backend(circuit)
@@ -95,7 +95,7 @@ def demonstrate_intelligent_routing():
         print(f"   Confidence: {routing_decision.confidence_score:.2f}")
 
         # Time the simulation
-        print("   🚀 Simulating...")
+        print("   Simulating...")
         start_time = time.perf_counter()
 
         try:
@@ -103,7 +103,7 @@ def demonstrate_intelligent_routing():
             end_time = time.perf_counter()
             execution_time = end_time - start_time
 
-            print(f"   ✅ SUCCESS: {execution_time:.4f}s")
+            print(f"   SUCCESS: {execution_time:.4f}s")
             print(f"   Backend used: {result.backend_used.value}")
             print(f"   Total measurements: {sum(result.counts.values())}")
 
@@ -115,17 +115,17 @@ def demonstrate_intelligent_routing():
         except Exception as e:
             end_time = time.perf_counter()
             execution_time = end_time - start_time
-            print(f"   ❌ FAILED: {e}")
+            print(f"   FAILED: {e}")
             print()
 
-    print("🎯 KEY INSIGHTS:")
+    print("KEY INSIGHTS:")
     print("=" * 60)
-    print("✅ Stabilizer circuits automatically route to Stim")
-    print("✅ Non-Clifford circuits route to appropriate backends")
-    print("✅ Polynomial scaling enables large stabilizer simulations")
-    print("✅ Zero configuration required - routing is automatic")
+    print("Stabilizer circuits automatically route to Stim")
+    print("Non-Clifford circuits route to appropriate backends")
+    print("Polynomial scaling enables large stabilizer simulations")
+    print("Zero configuration required - routing is automatic")
     print()
-    print("🔬 TECHNICAL EXPLANATION:")
+    print("TECHNICAL EXPLANATION:")
     print("- Stim uses stabilizer tableau representation")
     print("- O(n²) complexity for Clifford operations")
     print("- Enables efficient simulation of error correction codes")
@@ -135,7 +135,7 @@ def demonstrate_intelligent_routing():
 def demonstrate_backend_comparison():
     """Show performance comparison between backends."""
 
-    print("\n📈 BACKEND PERFORMANCE COMPARISON")
+    print("\nBACKEND PERFORMANCE COMPARISON")
     print("=" * 60)
     print()
 
@@ -163,14 +163,14 @@ def demonstrate_backend_comparison():
                 "backend_used": result.backend_used.value,
             }
 
-            print(f"   ✅ {backend}: {execution_time:.4f}s")
+            print(f"   {backend}: {execution_time:.4f}s")
 
         except Exception as e:
-            print(f"   ❌ {backend}: FAILED - {str(e)[:50]}...")
+            print(f"   {backend}: FAILED - {str(e)[:50]}...")
             results[backend] = {"time": float("inf"), "success": False, "error": str(e)}
 
     print()
-    print("📊 PERFORMANCE SUMMARY:")
+    print("PERFORMANCE SUMMARY:")
     print("=" * 30)
 
     if results["stim"]["success"] and results["qiskit"]["success"]:
@@ -181,9 +181,9 @@ def demonstrate_backend_comparison():
     else:
         for backend, result in results.items():
             if result["success"]:
-                print(f"{backend}: {result['time']:.4f}s ✅")
+                print(f"{backend}: {result['time']:.4f}s")
             else:
-                print(f"{backend}: FAILED ❌")
+                print(f"{backend}: FAILED")
 
 
 def demonstrate_scaling_behavior():
@@ -227,14 +227,14 @@ def demonstrate_scaling_behavior():
             print(f"| {num_qubits:6d} | FAILED   | ERROR   | N/A     |")
 
     print()
-    print("🔬 SCALING ANALYSIS:")
+    print("SCALING ANALYSIS:")
     print("- Stim exhibits polynomial scaling for Clifford circuits")
     print("- Performance remains reasonable even for 100+ qubits")
     print("- This enables simulation of large error correction codes")
 
 
 if __name__ == "__main__":
-    print("🔮 ARIADNE: INTELLIGENT QUANTUM ROUTING DEMO")
+    print("ARIADNE: INTELLIGENT QUANTUM ROUTING DEMO")
     print("=" * 60)
     print()
     print("This demonstration shows Ariadne's intelligent routing")
@@ -254,13 +254,13 @@ if __name__ == "__main__":
     demonstrate_backend_comparison()
     demonstrate_scaling_behavior()
 
-    print("\n🎉 DEMONSTRATION COMPLETE!")
+    print("\nDEMONSTRATION COMPLETE")
     print("=" * 60)
     print()
     print("Key takeaways:")
-    print("✅ Ariadne automatically selects optimal backends")
-    print("✅ Stabilizer circuits get polynomial scaling with Stim")
-    print("✅ No configuration required - just use simulate()")
-    print("✅ Honest performance comparisons show real benefits")
+    print("Ariadne automatically selects optimal backends")
+    print("Stabilizer circuits get polynomial scaling with Stim")
+    print("No configuration required - just use simulate()")
+    print("Honest performance comparisons show real benefits")
     print()
-    print("🔮 Ariadne: The intelligent quantum router for productivity")
+    print("Ariadne: The intelligent quantum router for productivity")

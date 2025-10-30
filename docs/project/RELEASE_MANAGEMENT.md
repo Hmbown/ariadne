@@ -264,7 +264,7 @@ twine upload dist/*
 ```markdown
 # Ariadne v1.2.0 - \"Intelligent Routing\"
 
-## 🚀 New Features
+## New Features
 - Added support for IBM Qiskit Runtime backend
 - Enhanced Clifford circuit detection algorithm
 - New configuration system for advanced users
@@ -279,20 +279,20 @@ twine upload dist/*
 - Corrected error handling for malformed circuits
 - Resolved compatibility issue with latest Qiskit
 
-## 📚 Documentation
+## Documentation
 - Added comprehensive backend integration guide
 - Updated performance benchmarks
 - New tutorials for enterprise users
 
-## ⚠️ Breaking Changes
+## Breaking Changes
 - None in this release
 
-## 🛠️ Technical Details
+## Technical Details
 - Updated minimum Python version to 3.11
 - Added support for NumPy 1.25+
 - Enhanced type annotations throughout codebase
 
-## 📊 Benchmarks
+## Benchmarks
 [Include relevant performance data]
 
 ## 🤝 Contributors
