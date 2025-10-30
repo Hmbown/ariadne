@@ -1,5 +1,6 @@
 """Tests for hardware-specific layouts (IBM heavy-hex, IonQ chains, Rigetti square)."""
 
+import os
 import time
 
 import numpy as np
@@ -9,6 +10,27 @@ from qiskit import QuantumCircuit
 from ariadne.route.analyze import analyze_circuit
 from ariadne.route.mps_analyzer import should_use_mps
 from ariadne.route.topology_analyzer import detect_layout_properties
+
+
+def _running_with_coverage() -> bool:
+    try:
+        import coverage  # type: ignore
+
+        if coverage.Coverage.current():  # pragma: no cover - low-level hook
+            return True
+    except Exception:
+        pass
+
+    coverage_markers = (
+        "PYTEST_COV_SOURCE",
+        "COV_CORE_SOURCE",
+        "COVERAGE_RUN",
+        "COVERAGE_PROCESS_START",
+    )
+    return any(key in os.environ for key in coverage_markers)
+
+
+_PERF_BUDGET = 0.02 if not _running_with_coverage() else 0.12
 
 
 def create_ionq_chain_circuit(n_qubits):
@@ -245,12 +267,12 @@ def test_chain_vs_grid_entanglement():
     start = time.time()
     analyze_circuit(chain_qc)
     chain_analysis_time = time.time() - start
-    assert chain_analysis_time < 0.02, f"Chain analysis took {chain_analysis_time:.4f}s"
+    assert chain_analysis_time < _PERF_BUDGET, f"Chain analysis took {chain_analysis_time:.4f}s"
 
     start = time.time()
     analyze_circuit(grid_qc)
     grid_analysis_time = time.time() - start
-    assert grid_analysis_time < 0.02, f"Grid analysis took {grid_analysis_time:.4f}s"
+    assert grid_analysis_time < _PERF_BUDGET, f"Grid analysis took {grid_analysis_time:.4f}s"
 
 
 def test_heavy_hex_properties():
@@ -277,36 +299,36 @@ def test_performance_on_hardware_topologies():
     start = time.time()
     detect_layout_properties(ionq_qc)
     time_taken = time.time() - start
-    assert time_taken < 0.02, f"IonQ topology detection took {time_taken:.4f}s"
+    assert time_taken < _PERF_BUDGET, f"IonQ topology detection took {time_taken:.4f}s"
 
     start = time.time()
     analyze_circuit(ionq_qc)
     time_taken = time.time() - start
-    assert time_taken < 0.02, f"IonQ circuit analysis took {time_taken:.4f}s"
+    assert time_taken < _PERF_BUDGET, f"IonQ circuit analysis took {time_taken:.4f}s"
 
     # Rigetti square
     rigetti_qc = create_rigetti_square_circuit(4, 4)
     start = time.time()
     detect_layout_properties(rigetti_qc)
     time_taken = time.time() - start
-    assert time_taken < 0.02, f"Rigetti topology detection took {time_taken:.4f}s"
+    assert time_taken < _PERF_BUDGET, f"Rigetti topology detection took {time_taken:.4f}s"
 
     start = time.time()
     analyze_circuit(rigetti_qc)
     time_taken = time.time() - start
-    assert time_taken < 0.02, f"Rigetti circuit analysis took {time_taken:.4f}s"
+    assert time_taken < _PERF_BUDGET, f"Rigetti circuit analysis took {time_taken:.4f}s"
 
     # IBM-like
     ibm_qc = create_ibm_falcon_circuit()
     start = time.time()
     detect_layout_properties(ibm_qc)
     time_taken = time.time() - start
-    assert time_taken < 0.02, f"IBM topology detection took {time_taken:.4f}s"
+    assert time_taken < _PERF_BUDGET, f"IBM topology detection took {time_taken:.4f}s"
 
     start = time.time()
     analyze_circuit(ibm_qc)
     time_taken = time.time() - start
-    assert time_taken < 0.02, f"IBM circuit analysis took {time_taken:.4f}s"
+    assert time_taken < _PERF_BUDGET, f"IBM circuit analysis took {time_taken:.4f}s"
 
 
 def test_weighted_entanglement_thresholds():
@@ -333,12 +355,12 @@ def test_weighted_entanglement_thresholds():
     start = time.time()
     analyze_circuit(low_ent_qc)
     low_time = time.time() - start
-    assert low_time < 0.02, f"Low entanglement analysis took {low_time:.4f}s"
+    assert low_time < _PERF_BUDGET, f"Low entanglement analysis took {low_time:.4f}s"
 
     start = time.time()
     analyze_circuit(high_ent_qc)
     high_time = time.time() - start
-    assert high_time < 0.02, f"High entanglement analysis took {high_time:.4f}s"
+    assert high_time < _PERF_BUDGET, f"High entanglement analysis took {high_time:.4f}s"
 
 
 if __name__ == "__main__":

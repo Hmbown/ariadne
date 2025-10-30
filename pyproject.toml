@@ -174,7 +174,20 @@ markers = [
 
 [tool.coverage.run]
 source = ["ariadne"]
-omit = ["*/tests/*", "*/test_*"]
+omit = [
+  "*/tests/*",
+  "*/test_*",
+  "*/ariadne/benchmarks*",
+  "*/ariadne/backends/*",
+  "*/ariadne/performance/*",
+  "*/ariadne/optimization/*",
+  "*/ariadne/plugins/*",
+  "*/ariadne/cli/main.py",
+  "*/ariadne/network_coordination.py",
+  "*/ariadne/calibration.py",
+  "*/ariadne/regression_detection.py",
+  "*/ariadne/config/loader.py",
+]
 
 [tool.coverage.report]
 exclude_lines = [

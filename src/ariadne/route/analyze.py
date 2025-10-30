@@ -299,6 +299,8 @@ def analyze_circuit(circ: QuantumCircuit) -> dict[str, float | int | bool]:
         "light_cone_width": light_cone_width_estimate(circ),
         "clifford_ratio": clifford_ratio(circ, properties=properties),
         "is_clifford": is_clifford_circuit(circ, properties=properties),
+        "two_qubit_gates": cast(int, properties["two_qubit_gates"]),
+        "total_gates": cast(int, properties["total_gates"]),
     }
 
     # Advanced entropy and complexity metrics
