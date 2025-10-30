@@ -72,13 +72,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Install dependencies
+        shell: bash
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev,viz]"
-          # Windows CUDA check (optional)
-          if [ "${{ runner.os }}" = "windows" ] && [ -d "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA" ]; then
-            pip install -e ".[cuda]"
-          fi
       - name: Install Apple Silicon dependencies
         if: runner.os == 'macOS'
         run: |
@@ -129,6 +126,7 @@ jobs:
           pip install -e ".[dev,viz]"
           pip install nbconvert ipykernel jupyter pytest
       - name: Validate Python Examples
+        shell: bash
         run: |
           find examples -name "*.py" -print0 | while IFS= read -r -d $'\0' script; do
             echo "Running $script"
