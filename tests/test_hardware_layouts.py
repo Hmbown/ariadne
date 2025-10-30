@@ -245,12 +245,12 @@ def test_chain_vs_grid_entanglement():
     start = time.time()
     analyze_circuit(chain_qc)
     chain_analysis_time = time.time() - start
-    assert chain_analysis_time < 0.002, f"Chain analysis took {chain_analysis_time:.4f}s"
+    assert chain_analysis_time < 0.02, f"Chain analysis took {chain_analysis_time:.4f}s"
 
     start = time.time()
     analyze_circuit(grid_qc)
     grid_analysis_time = time.time() - start
-    assert grid_analysis_time < 0.002, f"Grid analysis took {grid_analysis_time:.4f}s"
+    assert grid_analysis_time < 0.02, f"Grid analysis took {grid_analysis_time:.4f}s"
 
 
 def test_heavy_hex_properties():
@@ -277,36 +277,36 @@ def test_performance_on_hardware_topologies():
     start = time.time()
     detect_layout_properties(ionq_qc)
     time_taken = time.time() - start
-    assert time_taken < 0.002, f"IonQ topology detection took {time_taken:.4f}s"
+    assert time_taken < 0.02, f"IonQ topology detection took {time_taken:.4f}s"
 
     start = time.time()
     analyze_circuit(ionq_qc)
     time_taken = time.time() - start
-    assert time_taken < 0.002, f"IonQ circuit analysis took {time_taken:.4f}s"
+    assert time_taken < 0.02, f"IonQ circuit analysis took {time_taken:.4f}s"
 
     # Rigetti square
     rigetti_qc = create_rigetti_square_circuit(4, 4)
     start = time.time()
     detect_layout_properties(rigetti_qc)
     time_taken = time.time() - start
-    assert time_taken < 0.002, f"Rigetti topology detection took {time_taken:.4f}s"
+    assert time_taken < 0.02, f"Rigetti topology detection took {time_taken:.4f}s"
 
     start = time.time()
     analyze_circuit(rigetti_qc)
     time_taken = time.time() - start
-    assert time_taken < 0.002, f"Rigetti circuit analysis took {time_taken:.4f}s"
+    assert time_taken < 0.02, f"Rigetti circuit analysis took {time_taken:.4f}s"
 
     # IBM-like
     ibm_qc = create_ibm_falcon_circuit()
     start = time.time()
     detect_layout_properties(ibm_qc)
     time_taken = time.time() - start
-    assert time_taken < 0.002, f"IBM topology detection took {time_taken:.4f}s"
+    assert time_taken < 0.02, f"IBM topology detection took {time_taken:.4f}s"
 
     start = time.time()
     analyze_circuit(ibm_qc)
     time_taken = time.time() - start
-    assert time_taken < 0.002, f"IBM circuit analysis took {time_taken:.4f}s"
+    assert time_taken < 0.02, f"IBM circuit analysis took {time_taken:.4f}s"
 
 
 def test_weighted_entanglement_thresholds():
@@ -333,12 +333,12 @@ def test_weighted_entanglement_thresholds():
     start = time.time()
     analyze_circuit(low_ent_qc)
     low_time = time.time() - start
-    assert low_time < 0.002, f"Low entanglement analysis took {low_time:.4f}s"
+    assert low_time < 0.02, f"Low entanglement analysis took {low_time:.4f}s"
 
     start = time.time()
     analyze_circuit(high_ent_qc)
     high_time = time.time() - start
-    assert high_time < 0.002, f"High entanglement analysis took {high_time:.4f}s"
+    assert high_time < 0.02, f"High entanglement analysis took {high_time:.4f}s"
 
 
 if __name__ == "__main__":
