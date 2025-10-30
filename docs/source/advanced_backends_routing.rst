@@ -4,7 +4,7 @@ Advanced Backends and Routing
 Ariadne utilizes a sophisticated two-phase routing architecture designed to minimize latency and maximize extensibility, ensuring the fastest possible backend is selected first.
 
 Phase 1: Prioritized Filter Chain (Specialized Triage)
------------------------------------------------------
+------------------------------------------------------
 
 This phase runs a sequence of fast, specialized checks. If a circuit matches a specialized backend's criteria, routing terminates immediately, avoiding the overhead of full circuit analysis and scoring.
 
@@ -13,7 +13,7 @@ This phase runs a sequence of fast, specialized checks. If a circuit matches a s
 3. **Future Specialized Checks:** New specialized backends (e.g., Stabilizer) can be added here without modifying core scoring logic.
 
 Phase 2: General Backend Scoring (Strategy Pattern)
---------------------------------------------------
+---------------------------------------------------
 
 If Phase 1 yields no specialized match, the router proceeds to multi-objective scoring using the full circuit analysis.
 
@@ -24,7 +24,7 @@ If Phase 1 yields no specialized match, the router proceeds to multi-objective s
 This architecture ensures **low latency** for specialized circuits and **high extensibility** for future backends.
 
 The Necessity of Low Entanglement for MPS Efficiency
----------------------------------------------------
+----------------------------------------------------
 
 The Matrix Product State (MPS) backend is a powerful tool for simulating quantum circuits, but its efficiency is fundamentally tied to the circuit's entanglement structure.
 
@@ -47,7 +47,7 @@ The :py:func:`ariadne.route.mps_analyzer.should_use_mps` function uses a dual-st
    :caption: Excerpt from mps_analyzer.py explaining the MPS intuition.
 
 Interpreting the Router Decision Visualization
----------------------------------------------
+----------------------------------------------
 
 The router provides a detailed, step-by-step log of its decision process via the :py:func:`ariadne.visualization.visualize_decision` function. This output is crucial for understanding why a specific backend was chosen.
 

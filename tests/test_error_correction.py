@@ -1,12 +1,12 @@
 import copy
 
+import pytest
+
 from ariadne import simulate
 from ariadne.algorithms import SteaneCode
 from ariadne.algorithms.base import AlgorithmParameters
-
-
-import pytest
 from ariadne.core import CircuitTooLargeError
+
 
 def test_steane_code_routing():
     params = AlgorithmParameters(n_qubits=7)

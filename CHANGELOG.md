@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.3] - 2025-10-30
+
+### Changed
+- Professionalized messaging and documentation: removed brand analogies, neutralized tone across README/examples
+- Added trademark/affiliation disclaimer section to README
+- Cleaned example output and container default command for non-emoji, log-friendly output
+
+### Added
+- Standard OSS polish: CODEOWNERS, SUPPORT.md, CITATION.cff, .editorconfig, Dependabot configuration
+
+### Docs
+- Reduced Sphinx build warnings by correcting RST heading underlines and excluding unstable modules from API docs
+
 ## [0.4.2] - 2025-10-29
 
 ### Added
@@ -42,7 +55,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- **"Google Maps" Positioning**: Enhanced README with clear "Google Maps for Quantum Circuits" tagline and better differentiation from Qiskit Aer
+- **Positioning Language**: Refined README language to clearly describe automatic routing and clarify differentiation from Qiskit Aer, avoiding brand analogies
 - **PyPI Name Clarity**: Changed package name back to `ariadne-router` to avoid conflict with GraphQL Ariadne library
 - **Enhanced CLI Error Handling**: Added friendly error messages for missing optional backends with install instructions (CUDA, JAX-Metal, MPS/TN, Stim)
 - **New CLI Commands**: Added `ariadne run` and `ariadne explain` commands for better user experience

@@ -28,13 +28,6 @@ ariadne.backends.cuda\_backend module
    :show-inheritance:
    :undoc-members:
 
-ariadne.backends.cuda\_kernels module
--------------------------------------
-
-.. automodule:: ariadne.backends.cuda_kernels
-   :members:
-   :show-inheritance:
-   :undoc-members:
 
 ariadne.backends.enhanced\_interface module
 -------------------------------------------
@@ -76,13 +69,6 @@ ariadne.backends.metal\_backend module
    :show-inheritance:
    :undoc-members:
 
-ariadne.backends.metal\_backend\_stub module
---------------------------------------------
-
-.. automodule:: ariadne.backends.metal_backend_stub
-   :members:
-   :show-inheritance:
-   :undoc-members:
 
 ariadne.backends.metal\_shaders module
 --------------------------------------

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Ariadne Routing Demo: Google Maps for Quantum Circuits 🔮
+Ariadne Routing Demo: Intelligent Quantum Circuit Routing
 
 Demonstrates Ariadne's intelligent routing system that automatically selects
 the optimal backend for quantum circuits using Bell Labs-style information theory.
@@ -94,10 +94,9 @@ def demonstrate_routing():
     """Demonstrate Ariadne's intelligent routing capabilities."""
     console.print(
         Panel.fit(
-            "[bold blue]🔮 Ariadne: The Intelligent Quantum Router[/bold blue]\n\n"
-            "[italic]Google Maps for Quantum Circuits[/italic]\n\n"
-            "Watch as Ariadne automatically routes different circuit types to optimal backends!",
-            title="🚀 Demo Start",
+            "[bold blue]Ariadne: Intelligent Quantum Router[/bold blue]\n\n"
+            "Watch as Ariadne automatically routes different circuit types to optimal backends.",
+            title="Demo Start",
             border_style="blue",
         )
     )
@@ -113,7 +112,7 @@ def demonstrate_routing():
     router = QuantumRouter()
 
     # Create results table
-    table = Table(title="🎯 Intelligent Routing Results")
+    table = Table(title="Intelligent Routing Results")
     table.add_column("Circuit Type", style="cyan", no_wrap=True)
     table.add_column("Entropy H(Q)", style="magenta")
     table.add_column("Optimal Backend", style="green")
@@ -167,7 +166,7 @@ def demonstrate_routing():
     console.print(table)
 
     # Show detailed analysis
-    console.print("\n[bold blue]📊 Detailed Analysis[/bold blue]")
+    console.print("\n[bold blue]Detailed Analysis[/bold blue]")
 
     for result in results:
         show_circuit_analysis(result)
@@ -192,9 +191,9 @@ def show_circuit_analysis(result: dict[str, Any]):
 
     # Backend-specific insights
     insights = get_backend_insights(backend, entropy)
-    analysis_text.append(f"\n💡 {insights}", style="blue")
+    analysis_text.append(f"\n{insights}", style="blue")
 
-    console.print(Panel(analysis_text, title=f"🔬 {name} Analysis", border_style="blue"))
+    console.print(Panel(analysis_text, title=f"{name} Analysis", border_style="blue"))
 
 
 def get_backend_insights(backend: BackendType, entropy: float | None) -> str:
@@ -214,9 +213,9 @@ def demonstrate_information_theory():
     """Demonstrate the information theory behind Ariadne's routing."""
     console.print(
         Panel.fit(
-            "[bold blue]🧬 Bell Labs-Style Information Theory[/bold blue]\n\n"
+            "[bold blue]Bell Labs-Style Information Theory[/bold blue]\n\n"
             "Ariadne applies Claude Shannon's principles to quantum simulation routing.",
-            title="📚 Theory Demo",
+            title="Theory Demo",
             border_style="blue",
         )
     )
@@ -253,9 +252,9 @@ def demonstrate_speed_comparison():
     """Demonstrate speed improvements with intelligent routing."""
     console.print(
         Panel.fit(
-            "[bold red]⚡ Performance Comparison[/bold red]\n\n"
-            "See how Ariadne's intelligent routing provides massive speedups.",
-            title="🏃 Speed Demo",
+            "[bold red]Performance Comparison[/bold red]\n\n"
+            "See how Ariadne's intelligent routing provides speed improvements.",
+            title="Speed Demo",
             border_style="red",
         )
     )
@@ -292,10 +291,10 @@ def main():
     """Run the complete Ariadne routing demonstration."""
     console.print(
         Panel.fit(
-            "[bold green]🔮 Welcome to Ariadne: The Intelligent Quantum Router[/bold green]\n\n"
+            "[bold green]Welcome to Ariadne: The Intelligent Quantum Router[/bold green]\n\n"
             "This demo showcases Bell Labs-style information theory applied to quantum simulation.\n"
             "Watch as Ariadne automatically routes circuits to optimal backends!",
-            title="🎭 Ariadne Demo",
+            title="Ariadne Demo",
             border_style="green",
         )
     )
@@ -313,25 +312,25 @@ def main():
         # Final summary
         console.print(
             Panel.fit(
-                "[bold green]🎉 Demo Complete![/bold green]\n\n"
-                "Ariadne successfully demonstrated intelligent routing:\n"
+                "[bold green]Demo Complete[/bold green]\n\n"
+                "Ariadne demonstrated intelligent routing:\n"
                 "• Clifford circuits → Stim (50-100× speedup)\n"
                 "• Mixed circuits → Qiskit (reliable)\n"
                 "• Large circuits → Tensor networks (memory efficient)\n"
                 "• Apple Silicon → JAX/Metal (GPU acceleration)\n\n"
-                "[italic]Experience the power of Bell Labs-style information theory in quantum computing![/italic]",
-                title="✅ Success",
+                "[italic]Bell Labs-style information theory applied to quantum simulation.[/italic]",
+                title="Success",
                 border_style="green",
             )
         )
 
     except ImportError as e:
-        console.print(f"[red]❌ Import Error: {e}[/red]")
-        console.print("[yellow]💡 Install required packages:[/yellow]")
+        console.print(f"[red]Import Error: {e}[/red]")
+        console.print("[yellow]Install required packages:[/yellow]")
         console.print("  pip install qiskit stim jax jax-metal")
     except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
-        console.print("[yellow]💡 Make sure quantum computing libraries are installed[/yellow]")
+        console.print(f"[red]Error: {e}[/red]")
+        console.print("[yellow]Make sure quantum computing libraries are installed[/yellow]")
 
 
 if __name__ == "__main__":

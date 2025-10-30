@@ -17,52 +17,25 @@
 ---
 
 ## Table of Contents
-- [Ariadne](#ariadne)
-  - [Table of Contents](#table-of-contents)
-  - [What is Ariadne?](#what-is-ariadne)
-  - [Performance Highlights](#performance-highlights)
-  - [🎯 Perfect For Your Use Case](#-perfect-for-your-use-case)
-    - [🎓 **Students \& Educators**](#-students--educators)
-    - [🔬 **Researchers**](#-researchers)
-    - [⚙️ **Developers \& Engineers**](#️-developers--engineers)
-  - [Quick Start](#quick-start)
-    - [Installation](#installation)
-    - [Basic Usage](#basic-usage)
-  - [🧠 How Ariadne Works](#-how-ariadne-works)
-    - [Intelligent Routing Engine](#intelligent-routing-engine)
-    - [Backend Selection Logic](#backend-selection-logic)
-    - [Backend Capabilities \& References](#backend-capabilities--references)
-  - [📊 Real Performance Benchmarks](#-real-performance-benchmarks)
-    - [Clifford Circuit Performance (Error Correction)](#clifford-circuit-performance-error-correction)
-    - [Quantum Algorithm Performance](#quantum-algorithm-performance)
-  - [🎯 Comprehensive Benchmark Results](#-comprehensive-benchmark-results)
-    - [Correctness Validation](#-correctness-validation)
-    - [Performance Highlights](#-performance-highlights)
-    - [Routing Distribution](#-routing-distribution)
-    - [Hardware Environment](#-hardware-environment)
-    - [Key Insights](#-key-insights)
-    - [Launch Readiness](#-launch-readiness)
-  - [🎓 Educational Examples](#-educational-examples)
-    - [Learn Quantum Algorithms Step-by-Step](#learn-quantum-algorithms-step-by-step)
-    - [Real Research Applications](#real-research-applications)
-  - [🔧 Advanced Features](#-advanced-features)
-    - [Custom Routing Strategies](#custom-routing-strategies)
-    - [Backend Comparison \& Validation](#backend-comparison--validation)
-  - [🆚 Ariadne vs Other Tools](#-ariadne-vs-other-tools)
-  - [🐳 Docker Usage](#-docker-usage)
-    - [Quick Start with Docker](#quick-start-with-docker)
-    - [Quantum Full Environment (All Platforms)](#quantum-full-environment-all-platforms)
-  - [📚 Documentation \& Learning](#-documentation--learning)
-    - [Quick Learning Path](#quick-learning-path)
-    - [For Different Audiences](#for-different-audiences)
-  - [🤝 Contributing](#-contributing)
-    - [Quick Contribution Setup](#quick-contribution-setup)
-  - [📈 Performance Tuning](#-performance-tuning)
-    - [For Maximum Speed](#for-maximum-speed)
-    - [For Large Circuits](#for-large-circuits)
-  - [🛠️ Troubleshooting](#️-troubleshooting)
-  - [📊 Project Status](#-project-status)
-  - [📄 License](#-license)
+- [What is Ariadne?](#what-is-ariadne)
+- [Performance Highlights](#performance-highlights)
+- [Use Cases](#use-cases)
+- [Quick Start](#quick-start)
+- [How Ariadne Works](#how-ariadne-works)
+  - [Intelligent Routing Engine](#intelligent-routing-engine)
+  - [Backend Selection Logic](#backend-selection-logic)
+  - [Backend Capabilities & References](#backend-capabilities--references)
+- [Performance Benchmarks](#performance-benchmarks)
+- [Comprehensive Benchmark Results](#comprehensive-benchmark-results)
+- [Educational Examples](#educational-examples)
+- [Advanced Features](#advanced-features)
+- [Docker Usage](#docker-usage)
+- [Documentation & Learning](#documentation--learning)
+- [Contributing](#contributing)
+- [Backend Selection](#backend-selection)
+- [Troubleshooting](#troubleshooting)
+- [Project Status](#project-status)
+- [License](#license)
 
 ---
 
@@ -97,19 +70,19 @@ Real benchmark results from the comprehensive test suite (319 tests passing, 32 
 
 ---
 
-## 🎯 Use Cases
+## Use Cases
 
-### 🎓 **Students & Educators**
+### Students & Educators
 - Learn quantum computing without backend complexity
 - Interactive tutorials and educational tools
 - Cross-platform consistency (Windows, macOS, Linux)
 
-### 🔬 **Researchers**
+### Researchers
 - Reproduce published results with automatic backend selection
 - Focus on research rather than simulator configuration
 - Compare results across different backends
 
-### ⚙️ **Developers & Engineers**
+### Developers & Engineers
 - Integrate quantum simulation into existing workflows
 - Consistent interface across different simulation backends
 
@@ -164,7 +137,7 @@ Why: Clifford circuit detected → routed to Stim for optimal performance
 
 ---
 
-## 🧠 How Ariadne Works
+## How Ariadne Works
 
 ### Intelligent Routing Engine
 
@@ -267,7 +240,7 @@ Ariadne supports several quantum simulation backends, each with specific charact
 
 ---
 
-## 📊 Real Performance Benchmarks
+## Performance Benchmarks
 
 ### Clifford Circuit Performance (Error Correction)
 
@@ -298,23 +271,23 @@ result = simulate(vqe_circuit, shots=8192)
 
 ---
 
-## 🎯 Comprehensive Benchmark Results
+## Comprehensive Benchmark Results
 
 We've conducted extensive benchmarking of Ariadne's routing system to validate its correctness, performance, and reliability. Here are the key findings from 319 passing tests (32 skipped):
 
-### ✅ Test Results Summary
+### Test Results Summary
 
 - **319 tests passing** ✅
 - **32 tests skipped** (optional dependencies not available)
 - **13/13 benchmark tests passed** ✅
 
-### ✅ Correctness Validation
+### Correctness Validation
 
 - **Routing Logic**: Ariadne correctly identifies Clifford circuits and routes them to Stim with 100% confidence
 - **Backend Selection**: Successfully selects optimal backend based on circuit characteristics
 - **Result Consistency**: All tests validate correctness of simulation results
 
-### 🚀 Performance Results
+### Performance Results
 
 #### Clifford Circuits (Stim Backend)
 | Circuit Type | Backend | Execution Time | Throughput |
@@ -331,20 +304,20 @@ We've conducted extensive benchmarking of Ariadne's routing system to validate i
 | **VQE Ansatz circuits** | MPS | 0.430s | ~2,325 shots/sec |
 | **QAOA circuits** | PennyLane | 1.371s | ~729 shots/sec |
 
-### 📊 Routing Distribution
+### Routing Distribution
 From benchmark results (13 test circuits):
 - **Stim**: 69.2% (9/13 circuits - Clifford circuits)
 - **MPS**: 15.4% (2/13 circuits - non-Clifford circuits)
 - **Tensor Network**: 7.7% (1/13 circuits - medium non-Clifford circuits)
 - **PennyLane**: 7.7% (1/13 circuits - QAOA circuits)
 
-### 🔧 Hardware Environment
+### Hardware Environment
 - **Platform**: macOS (Apple Silicon)
 - **CPU**: 10-core ARM64
 - **Available Backends**: Stim, Qiskit/Aer, Tensor Networks, MPS
 - **Experimental**: JAX-Metal, CUDA (experimental, marked as such)
 
-### 💡 Key Insights
+### Key Insights
 
 1. **Clifford Circuit Optimization**: Ariadne correctly identifies Clifford circuits and routes them to Stim, achieving excellent throughput (~100,000 shots/sec) for stabilizer circuits.
 
@@ -356,7 +329,7 @@ From benchmark results (13 test circuits):
 
 4. **Transparent Routing**: The `explain_routing()` function provides clear explanations for routing decisions.
 
-### 🎯 Current Status
+### Current Status
 
 Ariadne is actively developing with:
 
@@ -368,7 +341,7 @@ Ariadne is actively developing with:
 
 ---
 
-## 🎓 Educational Examples
+## Educational Examples
 
 **Interactive Topology Demo:** Try [`examples/06_enhanced_routing_demo.ipynb`](examples/06_enhanced_routing_demo.ipynb) for hands-on topology analysis demonstrations.
 
@@ -432,7 +405,7 @@ print(f"VQE results: {result.counts}")
 
 ---
 
-## 🔧 Advanced Features
+## Advanced Features
 
 ### Routing Strategies
 
@@ -469,7 +442,7 @@ for backend, result in comparison.items():
 
 ---
 
-## 🆚 Ariadne vs Other Tools
+## Ariadne vs Other Tools
 
 | Feature | Ariadne | Qiskit Aer | Cirq | PennyLane | Stim (Direct) |
 |---------|---------|------------|------|-----------|---------------|
@@ -491,7 +464,7 @@ for backend, result in comparison.items():
 
 ---
 
-## 🐳 Docker Usage
+## Docker Usage
 
 ### Quick Start with Docker
 
@@ -520,7 +493,7 @@ print('Available backends:', get_available_backends())
 
 ---
 
-## 📚 Documentation & Learning
+## Documentation & Learning
 
 ### Quick Learning Path
 
@@ -541,7 +514,7 @@ print('Available backends:', get_available_backends())
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for:
 
@@ -563,7 +536,7 @@ pytest  # Run tests
 
 ---
 
-## 📈 Backend Selection
+## Backend Selection
 
 ### Understanding Automatic Selection
 
@@ -592,7 +565,7 @@ result = simulate(
 
 ---
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 **Common Issues:**
 
@@ -610,7 +583,7 @@ result = simulate(
 
 ---
 
-## 📊 Project Status
+## Project Status
 
 - ✅ **Core Functionality** - 326 tests passing, 25 skipped; comprehensive test suite
 - ✅ **Cross-Platform** - Windows, macOS, Linux support
@@ -625,7 +598,11 @@ result = simulate(
 
 ---
 
-## 📄 License
+## Trademarks
+
+All product names, logos, and brands are property of their respective owners. Google, Microsoft, Alibaba, IBM and other names used in this repository are for identification purposes only and do not imply endorsement. This project is an independent open source effort and is not affiliated with or sponsored by any of the aforementioned companies.
+
+## License
 
 Apache 2.0 - see [LICENSE](LICENSE) for details.
 
