@@ -4,7 +4,7 @@ Minimal quantum regression test for CI/CD - especially Windows stability.
 This test just verifies that core functionality is available and working.
 """
 
-# type: ignore  # Test script - complex nested dict types not worth annotating
+# type: ignore[unused-ignore]  # Test script - complex nested dict types not worth annotating
 
 import json
 import os
@@ -12,6 +12,7 @@ import platform
 import sys
 import time
 import traceback
+from typing import Any
 
 # Add src directory to Python path
 _root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -45,7 +46,7 @@ def run_quantum_regression_tests() -> int:
     log_environment_details()
 
     # Initialize results
-    results: dict[str, dict[str, dict[str, dict[str, str]]]] = {"results": {"minimal_test": {"backends": {}}}}
+    results: dict[str, Any] = {"results": {"minimal_test": {"backends": {}}}}
 
     try:
         # Test 1: Can we import the core library?
