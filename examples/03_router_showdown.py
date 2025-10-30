@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from _util import write_report
 from qiskit import QuantumCircuit
 
 from ariadne.route.analyze import analyze_circuit
 from ariadne.route.execute import decide_backend
-from _util import write_report
 
 
 def low_treewidth_circuit(n: int = 10) -> QuantumCircuit:

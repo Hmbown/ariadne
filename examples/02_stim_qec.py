@@ -3,7 +3,6 @@ from __future__ import annotations
 import time
 
 import numpy as np
-
 from _util import write_report
 
 

@@ -265,7 +265,8 @@ def demonstrate_speed_comparison():
     # Method 1: Naive Qiskit (always)
     start = time.time()
     from ariadne import simulate
-    result1 = simulate(clifford_circuit, 1000, backend='qiskit')
+
+    result1 = simulate(clifford_circuit, 1000, backend="qiskit")
     qiskit_time = time.time() - start
 
     # Method 2: Intelligent routing

@@ -16,7 +16,6 @@ from typing import Any
 from qiskit import QuantumCircuit
 from qiskit.transpiler import PassManager
 from qiskit.transpiler.passes import (
-    Cancellation,
     CommutativeCancellation,
     Optimize1qGates,
     Optimize2qGates,
@@ -208,7 +207,6 @@ class GateCancellationOptimizer(CircuitOptimizer):
         # Apply gate cancellation
         pass_manager = PassManager(
             [
-                Cancellation(),
                 CommutativeCancellation(),
             ]
         )
@@ -248,7 +246,6 @@ class DepthReductionOptimizer(CircuitOptimizer):
             [
                 Optimize1qGates(),
                 Optimize2qGates(),
-                Cancellation(),
                 CommutativeCancellation(),
             ]
         )
