@@ -42,7 +42,7 @@ jobs:
         continue-on-error: true
         run: safety scan --json --output safety-report.json
       - name: Upload security reports
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: security-reports
@@ -65,7 +65,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Cache dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
@@ -86,14 +86,14 @@ jobs:
         run: |
           pytest tests/ -v --tb=short -n auto --cov=src/ariadne --cov-report=xml --cov-fail-under=60
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml
           flags: ${{ runner.os }}-${{ matrix.python-version }}
           name: codecov-${{ runner.os }}-${{ matrix.python-version }}
       - name: Upload test artifacts
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ runner.os }}-${{ matrix.python-version }}
           path: |
@@ -141,7 +141,7 @@ jobs:
           done
       - name: Upload Example Artifacts
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: example-outputs
           path: |
@@ -181,7 +181,7 @@ jobs:
         run: |
           python benchmarks/run_all_benchmarks.py --quick || true
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: benchmark-results
@@ -206,7 +206,7 @@ jobs:
       - name: Check package
         run: twine check dist/*
       - name: Upload artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
@@ -220,7 +220,7 @@ jobs:
       id-token: write
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
@@ -254,11 +254,11 @@ jobs:
         run: |
           sphinx-build -b html --keep-going docs/source docs/build/html
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v4
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: docs/build/html
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4
