@@ -87,7 +87,10 @@ def make_animation(results: list[tuple[str, str, str]], output_path: str) -> Non
 
     anim = FuncAnimation(fig, update, frames=len(results), init_func=init, blit=True, repeat=True, interval=1600)
 
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    # Only create directory if output_path contains directory components
+    output_dir = os.path.dirname(output_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
     try:
         writer = PillowWriter(fps=1)
         anim.save(output_path, writer=writer)
@@ -99,7 +102,7 @@ def make_animation(results: list[tuple[str, str, str]], output_path: str) -> Non
 
 def main():
     parser = argparse.ArgumentParser(description="Generate a quickstart routing GIF")
-    parser.add_argument("--output", type=str, required=True)
+    parser.add_argument("--output", type=str, required=False, default="quickstart.gif", help="Output GIF filename")
     parser.add_argument("--shots", type=int, default=256)
     args = parser.parse_args()
 

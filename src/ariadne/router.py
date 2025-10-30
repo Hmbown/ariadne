@@ -121,7 +121,9 @@ def _simulate_qiskit(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
             from qiskit import transpile
 
             decomposed_circuit = transpile(
-                circuit, basis_gates=["u1", "u2", "u3", "cx", "id"], optimization_level=0
+                circuit,
+                basis_gates=["u1", "u2", "u3", "cx", "id"],
+                optimization_level=0,
             )
             provider = BasicProvider()
             backend = provider.get_backend("basic_simulator")
@@ -423,7 +425,11 @@ def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: R
 
     # Resource checks can be disabled via config or env var for small/local runs
     cfg = get_config()
-    disable_checks_env = os.getenv("ARIADNE_DISABLE_RESOURCE_CHECKS", "").lower() in {"1", "true", "yes"}
+    disable_checks_env = os.getenv("ARIADNE_DISABLE_RESOURCE_CHECKS", "").lower() in {
+        "1",
+        "true",
+        "yes",
+    }
     do_resource_checks = (
         bool(getattr(cfg.analysis, "enable_resource_estimation", True))
         and not disable_checks_env
@@ -434,7 +440,11 @@ def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: R
     if do_resource_checks:
         can_handle, reason = check_circuit_feasibility(circuit, backend_name)
         if not can_handle:
-            raise ResourceExhaustionError(f"memory: {reason}", 0, resource_manager.get_resources().available_memory_mb)
+            raise ResourceExhaustionError(
+                f"memory: {reason}",
+                0,
+                resource_manager.get_resources().available_memory_mb,
+            )
 
     # Initialize result tracking
     fallback_reason = None

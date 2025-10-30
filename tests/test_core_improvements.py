@@ -153,7 +153,8 @@ class TestResourceManager:
         # Should return True, reason for small circuit
         can_handle, reason = check_circuit_feasibility(circuit, "qiskit")
         assert can_handle
-        assert "sufficient" in reason.lower()
+        # For small circuits it bypasses checks, otherwise it indicates sufficiency
+        assert "sufficient" in reason.lower() or "bypassed" in reason.lower()
 
     def test_resource_requirements_estimation(self) -> None:
         """Test resource requirements estimation."""
