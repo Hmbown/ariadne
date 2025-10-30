@@ -219,7 +219,10 @@ class TestQuantumAlgorithms:
             (lambda: self._create_surface_code_circuit(3, 3), BackendType.STIM),
             (lambda: self._create_teleportation_circuit(), BackendType.STIM),
             # Non-Clifford circuits should use Metal or fallback
-            (lambda: self._create_vqe_ansatz(4), None),  # Could be Metal, CUDA, or Qiskit
+            (
+                lambda: self._create_vqe_ansatz(4),
+                None,
+            ),  # Could be Metal, CUDA, or Qiskit
             (lambda: self._create_parameterized_circuit(4, 3), None),
         ]
 
