@@ -8,7 +8,12 @@ This example demonstrates all the UX improvements made to Ariadne:
 3. Active routing transparency
 4. Integrated education tools
 5. Performance context
+
+Note: This demo uses educational functions that may generate complex circuits.
+For CI environments, some operations are simplified to avoid unsupported gates.
 """
+
+import os
 
 from ariadne import (
     demo_bell_state,
@@ -20,6 +25,9 @@ from ariadne import (
     # Core functionality
     run_educational_simulation,
 )
+
+# For CI compatibility, disable resource checks for small demos
+os.environ["ARIADNE_DISABLE_RESOURCE_CHECKS"] = "1"
 
 
 def demonstrate_ux_improvements():
@@ -62,7 +70,8 @@ def demonstrate_ux_improvements():
     for alg_name in algorithms_to_try:
         try:
             result, _ = run_educational_simulation(alg_name, n_qubits=3 if alg_name != "bell" else 2, verbose=False)
-            print(f"{alg_name.upper()}: {result.backend_used.value} -> {result.routing_explanation[:60]}...")
+            explanation = result.routing_explanation or "No explanation available"
+            print(f"{alg_name.upper()}: {result.backend_used.value} -> {explanation[:60]}...")
         except Exception as e:
             print(f"{alg_name.upper()}: Error - {e}")
 

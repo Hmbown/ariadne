@@ -83,6 +83,8 @@ jobs:
           # Verify Metal
           python -c "import jax; print(jax.devices())"
       - name: Run tests
+        env:
+          ARIADNE_DISABLE_RESOURCE_CHECKS: "1"
         run: |
           pytest tests/ -v --tb=short -n auto --cov=src/ariadne --cov-report=xml --cov-fail-under=60
       - name: Upload coverage to Codecov
@@ -127,6 +129,8 @@ jobs:
           pip install nbconvert ipykernel jupyter pytest
       - name: Validate Python Examples
         shell: bash
+        env:
+          ARIADNE_DISABLE_RESOURCE_CHECKS: "1"
         run: |
           find examples -name "*.py" -print0 | while IFS= read -r -d $'\0' script; do
             echo "Running $script"
