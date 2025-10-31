@@ -1,8 +1,6 @@
 name: Docker Images
 
 on:
-  push:
-    branches: [ main ]
   release:
     types: [published]
   schedule:
