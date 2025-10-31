@@ -249,6 +249,14 @@ class ResourceManager:
                 # For small circuits, allow proceeding with fewer cores
                 if circuit.num_qubits <= 10 and self.resources.available_cpu_cores >= 1:
                     return True, f"Proceeding with {self.resources.available_cpu_cores} core(s)"
+
+                # For larger circuits, treat CPU shortages as a soft constraint when at least one core is available.
+                if self.resources.available_cpu_cores >= 1:
+                    return True, (
+                        "CPU contention detected: required "
+                        f"{requirements.cpu_cores}, available {self.resources.available_cpu_cores}. Proceeding with reduced cores"
+                    )
+
                 return False, (
                     f"Insufficient CPU cores: need {requirements.cpu_cores}, "
                     f"available {self.resources.available_cpu_cores}"

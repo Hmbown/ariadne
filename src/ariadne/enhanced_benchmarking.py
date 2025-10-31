@@ -7,19 +7,34 @@ scalability analysis, and cross-backend validation.
 
 from __future__ import annotations
 
+import csv
 import json
+import statistics
 import time
+from collections import defaultdict
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, Iterable
 
 import matplotlib.pyplot as plt
-import pandas as pd
-import seaborn as sns
 from qiskit import QuantumCircuit
 
 from ariadne import simulate
 from ariadne.algorithms import AlgorithmParameters, get_algorithm
+
+
+def _mean(values: Iterable[float]) -> float:
+    values_list = list(values)
+    if not values_list:
+        return 0.0
+    return statistics.fmean(values_list)
+
+
+def _stdev(values: Iterable[float]) -> float:
+    values_list = list(values)
+    if len(values_list) <= 1:
+        return 0.0
+    return statistics.stdev(values_list)
 
 
 @dataclass
@@ -233,22 +248,15 @@ class EnhancedBenchmarkSuite:
         if not self.results:
             return "No benchmark results available."
 
-        # Convert to DataFrame for analysis
-        data = []
-        for result in self.results:
-            data.append(asdict(result))
-
-        df = pd.DataFrame(data)
-
-        report = []
+        report: list[str] = []
         report.append("# Ariadne Benchmark Report")
         report.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         report.append("")
 
-        # Summary statistics
-        total_tests = len(df)
-        successful_tests = len(df[df["success"]])
-        success_rate = successful_tests / total_tests * 100 if total_tests > 0 else 0
+        total_tests = len(self.results)
+        successful_results = [result for result in self.results if result.success]
+        successful_tests = len(successful_results)
+        success_rate = successful_tests / total_tests * 100 if total_tests > 0 else 0.0
 
         report.append("## Summary Statistics")
         report.append(f"- Total Tests: {total_tests}")
@@ -256,51 +264,62 @@ class EnhancedBenchmarkSuite:
         report.append(f"- Failed: {total_tests - successful_tests}")
         report.append("")
 
-        # Backend comparison
-        report.append("## Backend Performance Comparison")
-        backend_stats = (
-            df[df["success"]]
-            .groupby("backend")
-            .agg({"execution_time": ["mean", "std", "min", "max"], "throughput": ["mean", "std"], "qubits": "mean"})
-            .round(4)
-        )
+        def _summaries(results: list[BenchmarkResult], attribute: str) -> dict[str, dict[str, float]]:
+            grouped: dict[str, list[BenchmarkResult]] = defaultdict(list)
+            for item in results:
+                grouped[getattr(item, attribute)].append(item)
 
-        if not backend_stats.empty:
-            report.append("### Performance by Backend")
-            for backend in backend_stats.index:
-                stats = backend_stats.loc[backend]
-                avg_time = stats["execution_time"]["mean"]
-                avg_throughput = stats["throughput"]["mean"]
-                avg_qubits = int(stats["qubits"]["mean"])
+            summaries: dict[str, dict[str, float]] = {}
+            for key, group in grouped.items():
+                times = [r.execution_time for r in group]
+                throughputs = [r.throughput for r in group]
+                qubits = [float(r.qubits) for r in group]
 
-                report.append(
-                    f"- **{backend}**: Avg Time: {avg_time:.4f}s, Avg Throughput: {avg_throughput:.2f}/s, Avg Qubits: {avg_qubits}"
-                )
+                summaries[key] = {
+                    "avg_time": _mean(times),
+                    "std_time": _stdev(times),
+                    "min_time": min(times) if times else 0.0,
+                    "max_time": max(times) if times else 0.0,
+                    "avg_throughput": _mean(throughputs),
+                    "std_throughput": _stdev(throughputs),
+                    "avg_qubits": _mean(qubits),
+                }
 
-        report.append("")
+            return summaries
 
-        # Algorithm comparison
-        report.append("## Algorithm Performance Comparison")
-        algorithm_stats = (
-            df[df["success"]]
-            .groupby("algorithm")
-            .agg({"execution_time": ["mean", "std", "min", "max"], "throughput": ["mean", "std"], "qubits": "mean"})
-            .round(4)
-        )
+        if successful_results:
+            report.append("## Backend Performance Comparison")
+            backend_stats = _summaries(successful_results, "backend")
+            if backend_stats:
+                report.append("### Performance by Backend")
+                for backend, stats in sorted(backend_stats.items()):
+                    report.append(
+                        "- **{backend}**: Avg Time: {avg_time:.4f}s, Avg Throughput: {avg_throughput:.2f}/s, Avg Qubits: {avg_qubits:.0f}".format(
+                            backend=backend,
+                            avg_time=stats["avg_time"],
+                            avg_throughput=stats["avg_throughput"],
+                            avg_qubits=stats["avg_qubits"],
+                        )
+                    )
 
-        if not algorithm_stats.empty:
-            report.append("### Performance by Algorithm")
-            for algorithm in algorithm_stats.index:
-                stats = algorithm_stats.loc[algorithm]
-                avg_time = stats["execution_time"]["mean"]
-                avg_throughput = stats["throughput"]["mean"]
-                avg_qubits = int(stats["qubits"]["mean"])
+            report.append("")
 
-                report.append(
-                    f"- **{algorithm}**: Avg Time: {avg_time:.4f}s, Avg Throughput: {avg_throughput:.2f}/s, Avg Qubits: {avg_qubits}"
-                )
+            report.append("## Algorithm Performance Comparison")
+            algorithm_stats = _summaries(successful_results, "algorithm")
+            if algorithm_stats:
+                report.append("### Performance by Algorithm")
+                for algorithm, stats in sorted(algorithm_stats.items()):
+                    report.append(
+                        "- **{algorithm}**: Avg Time: {avg_time:.4f}s, Avg Throughput: {avg_throughput:.2f}/s, Avg Qubits: {avg_qubits:.0f}".format(
+                            algorithm=algorithm,
+                            avg_time=stats["avg_time"],
+                            avg_throughput=stats["avg_throughput"],
+                            avg_qubits=stats["avg_qubits"],
+                        )
+                    )
 
-        report.append("")
+            report.append("")
+
         report.append("---")
         report.append("*Report generated by Ariadne Enhanced Benchmark Suite*")
 
@@ -312,52 +331,55 @@ class EnhancedBenchmarkSuite:
             print("No benchmark results to visualize.")
             return
 
-        # Convert to DataFrame
-        data = []
-        for result in self.results:
-            if result.success:  # Only plot successful results
-                data.append(asdict(result))
-
-        if not data:
+        successful_results = [result for result in self.results if result.success]
+        if not successful_results:
             print("No successful benchmark results to visualize.")
             return
-
-        df = pd.DataFrame(data)
 
         # Create comparison plot
         plt.figure(figsize=(12, 8))
 
         # Execution time comparison
         plt.subplot(2, 2, 1)
-        if "execution_time" in df.columns:
-            sns.boxplot(data=df, x="backend", y="execution_time")
+        backend_names = sorted({result.backend for result in successful_results})
+        execution_data = [[r.execution_time for r in successful_results if r.backend == backend] for backend in backend_names]
+        if any(execution_data):
+            plt.boxplot(execution_data, labels=backend_names, showmeans=True)
             plt.title("Execution Time by Backend")
-            plt.xticks(rotation=45)
+            plt.xticks(rotation=45, ha="right")
 
         # Throughput comparison
         plt.subplot(2, 2, 2)
-        if "throughput" in df.columns:
-            sns.boxplot(data=df, x="backend", y="throughput")
+        throughput_data = [[r.throughput for r in successful_results if r.backend == backend] for backend in backend_names]
+        if any(throughput_data):
+            plt.boxplot(throughput_data, labels=backend_names, showmeans=True)
             plt.title("Throughput by Backend")
-            plt.xticks(rotation=45)
+            plt.xticks(rotation=45, ha="right")
 
         # Success rate by backend
         plt.subplot(2, 2, 3)
-        success_rate = df.groupby("backend")["success"].mean()
-        # Convert to lists for type compatibility with matplotlib
-        backend_names = list(success_rate.index)
-        success_values = list(success_rate.values)
-        plt.bar(backend_names, success_values)
+        success_counts = defaultdict(lambda: {"success": 0, "total": 0})
+        for result in self.results:
+            key = result.backend
+            success_counts[key]["total"] += 1
+            if result.success:
+                success_counts[key]["success"] += 1
+
+        success_backends = sorted(success_counts.keys())
+        success_values = [success_counts[backend]["success"] / success_counts[backend]["total"] for backend in success_backends]
+        plt.bar(success_backends, success_values)
         plt.title("Success Rate by Backend")
-        plt.xticks(rotation=45)
+        plt.xticks(rotation=45, ha="right")
         plt.ylabel("Success Rate")
 
         # Algorithm performance
         plt.subplot(2, 2, 4)
-        if "execution_time" in df.columns:
-            sns.boxplot(data=df, x="algorithm", y="execution_time")
+        algorithms = sorted({result.algorithm for result in successful_results})
+        algorithm_execution = [[r.execution_time for r in successful_results if r.algorithm == algorithm] for algorithm in algorithms]
+        if any(algorithm_execution):
+            plt.boxplot(algorithm_execution, labels=algorithms, showmeans=True)
             plt.title("Execution Time by Algorithm")
-            plt.xticks(rotation=45)
+            plt.xticks(rotation=45, ha="right")
 
         plt.tight_layout()
 
@@ -373,12 +395,17 @@ class EnhancedBenchmarkSuite:
             with open(filepath, "w") as f:
                 json.dump(serializable_results, f, indent=2)
         elif format.lower() == "csv":
-            # Convert to DataFrame and save as CSV
-            data = []
-            for result in self.results:
-                data.append(asdict(result))
-            df = pd.DataFrame(data)
-            df.to_csv(filepath, index=False)
+            fieldnames: list[str] = []
+            if self.results:
+                fieldnames = list(asdict(self.results[0]).keys())
+            with open(filepath, "w", newline="") as csvfile:
+                if not fieldnames:
+                    csvfile.write("")
+                else:
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    writer.writeheader()
+                    for result in self.results:
+                        writer.writerow(asdict(result))
         else:
             raise ValueError(f"Unsupported format: {format}. Use 'json' or 'csv'.")
 
