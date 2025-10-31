@@ -159,7 +159,7 @@ msgpack==2.2.0
 msgpack-numpy==0.4.8
 mypy-extensions==1.0.0
 nest-asyncio==1.6.0
-numpy==2.2.4
+numpy==1.26.4
 nvidia-cublas-cu12==12.6.4.1
 nvidia-cuda-cupti-cu12==12.6.80
 nvidia-cuda-nvrtc-cu12==12.6.77
@@ -277,7 +277,7 @@ dependencies = [
     "quimb==1.11.2",
     "cotengra==0.7.5",
     "opt_einsum==3.4.0",
-    "numpy==2.2.4",
+    "numpy==1.26.4",
     "scipy==1.7",  # Keep loose if needed for compatibility
     "networkx==3.0",
     "matplotlib==3.9.5",
