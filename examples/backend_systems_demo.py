@@ -29,8 +29,8 @@ def create_mock_backend(backend_name: str, success_rate: float = 1.0, delay: flo
     """Create a mock backend for demonstration."""
 
     class MockBackend:
-        def __init__(self):
-            self.name = backend_name
+        def __init__(self, name: str, success_rate: float, delay: float):
+            self.name = name
             self.success_rate = success_rate
             self.delay = delay
 
@@ -57,7 +57,7 @@ def create_mock_backend(backend_name: str, success_rate: float = 1.0, delay: flo
                     result[bitstring] = shots // 8
                 return result
 
-    return MockBackend
+    return MockBackend(backend_name, success_rate, delay)
 
 
 def demo_health_checking():
@@ -371,7 +371,7 @@ def demo_fallback_strategy():
     print(f"Average attempts: {stats['average_attempts']}")
     print(f"Average time: {stats['average_time']:.3f}s")
     print(f"Most common backend: {stats['most_common_backend'].value}")
-    print(f"Most common reason: {stats['most_common_reason'].value}")
+    print(f"Most common reason: {stats['most_common_reason']}")
 
 
 def demo_performance_monitoring():

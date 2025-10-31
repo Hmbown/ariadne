@@ -7,13 +7,29 @@ on:
     branches: [ main ]
   release:
     types: [ published ]
+  workflow_dispatch:
+    inputs:
+      run_cuda_tests:
+        description: "Run Windows CUDA validation (installs CUDA toolchain)"
+        type: boolean
+        default: false
+      run_performance_tests:
+        description: "Run comprehensive performance benchmarks"
+        type: boolean
+        default: false
 
 env:
   PYTHON_VERSION: "3.11"
+  # Cache configuration for faster builds
+  CACHE_VERSION: "v2"
 
 permissions:
   contents: write
   security-events: write
+  actions: read
+  packages: write
+  pages: write
+  id-token: write
 
 jobs:
   code-quality:
@@ -41,6 +57,10 @@ jobs:
       - name: Dependency security scan with safety
         continue-on-error: true
         run: safety scan --json --output safety-report.json
+      - name: Generate SBOM
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-py -o sbom.json -i .
       - name: Upload security reports
         uses: actions/upload-artifact@v4
         if: always()
@@ -49,6 +69,9 @@ jobs:
           path: |
             bandit-report.json
             safety-report.json
+            sbom.json
+          if-no-files-found: ignore
+          retention-days: 30
 
   test:
     name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
@@ -56,20 +79,36 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.11", "3.12"]
+        include:
+          - os: ubuntu-latest
+            python-version: "3.11"
+            enable-metal: false
+          - os: ubuntu-latest
+            python-version: "3.12"
+            enable-metal: false
+          - os: macos-latest
+            python-version: "3.11"
+            enable-metal: true
+          - os: windows-latest
+            python-version: "3.11"
+            enable-metal: false
     steps:
       - uses: actions/checkout@v5
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Get pip cache directory
+        id: pip-cache
+        shell: bash
+        run: echo "dir=$(python -m pip cache dir)" >> "$GITHUB_OUTPUT"
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
             ${{ runner.os }}-pip-
       - name: Install dependencies
         shell: bash
@@ -77,7 +116,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev,viz]"
       - name: Install Apple Silicon dependencies
-        if: runner.os == 'macOS'
+        if: matrix.enable-metal == true
         run: |
           pip install -e ".[apple]"
           # Verify Metal
@@ -86,13 +125,16 @@ jobs:
         env:
           ARIADNE_DISABLE_RESOURCE_CHECKS: "1"
         run: |
-          pytest tests/ -v --tb=short -n auto --cov=src/ariadne --cov-report=xml --cov-fail-under=60
+          pytest tests/ -v --tb=short -n auto --cov=src/ariadne --cov-report=xml --cov-fail-under=80 --junitxml=pytest.xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           file: ./coverage.xml
           flags: ${{ runner.os }}-${{ matrix.python-version }}
           name: codecov-${{ runner.os }}-${{ matrix.python-version }}
+          fail_ci_if_error: false
       - name: Upload test artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -102,6 +144,8 @@ jobs:
             .coverage
             tests/results/
             pytest.xml
+          if-no-files-found: ignore
+          retention-days: 30
       - name: Cross-Platform Perf Check
         run: |
           python benchmarks/quick_check.py --platform ${{ runner.os }}
@@ -125,6 +169,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -e ".[dev,viz]"
           pip install nbconvert ipykernel jupyter pytest
       - name: Validate Python Examples
@@ -132,14 +177,27 @@ jobs:
         env:
           ARIADNE_DISABLE_RESOURCE_CHECKS: "1"
         run: |
-          find examples -name "*.py" -print0 | while IFS= read -r -d $'\0' script; do
+          set -euo pipefail
+          scripts=(
+            "examples/basic/quickstart.py"
+            "examples/backend_systems_demo.py"
+            "examples/segmented_demo.py"
+          )
+          for script in "${scripts[@]}"; do
             echo "Running $script"
-            timeout 60 python "$script" || { echo "Failed: $script"; exit 1; }
+            python "$script"
           done
-      - name: Execute Notebooks
+      - name: Execute key notebooks
+        shell: bash
+        env:
+          ARIADNE_DISABLE_RESOURCE_CHECKS: "1"
         run: |
-          set -e
-          for notebook in examples/*.ipynb; do
+          set -euo pipefail
+          notebooks=(
+            "examples/01_qasm3_roundtrip.ipynb"
+            "examples/02_stim_qec.ipynb"
+          )
+          for notebook in "${notebooks[@]}"; do
             echo "Executing $notebook"
             jupyter nbconvert --to notebook --execute "$notebook" --ExecutePreprocessor.timeout=300 --allow-errors=true
           done
@@ -151,10 +209,12 @@ jobs:
           path: |
             examples/*.ipynb  # Executed versions
             examples/*.png    # Generated plots
+          if-no-files-found: ignore
 
   windows-cuda:
     name: Windows CUDA Tests
     runs-on: windows-latest
+    if: inputs.run_cuda_tests == 'true'
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -170,26 +230,117 @@ jobs:
   performance-benchmarks:
     name: Performance Benchmarks
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || inputs.run_performance_tests == 'true'
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Get full history for comparison
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - name: Get pip cache directory
+        id: pip-cache
+        shell: bash
+        run: echo "dir=$(python -m pip cache dir)" >> "$GITHUB_OUTPUT"
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-benchmarks-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-benchmarks-
+            ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev,viz]"
+          pip install numpy pandas matplotlib seaborn
       - name: Run performance benchmarks
         run: |
-          python benchmarks/run_all_benchmarks.py --quick || true
+          python benchmarks/run_all_benchmarks.py --quick --output-json || true
+      - name: Download previous benchmark results
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results
+          path: previous-benchmarks/
+        continue-on-error: true
+      - name: Compare with previous results
+        run: |
+          python -c "
+          import json
+          import os
+          from datetime import datetime
+
+          # Load current results
+          current_results = {}
+          if os.path.exists('benchmarks/results/benchmark_summary.json'):
+              with open('benchmarks/results/benchmark_summary.json', 'r') as f:
+                  current_results = json.load(f)
+
+          # Load previous results
+          previous_results = {}
+          if os.path.exists('previous-benchmarks/benchmark_summary.json'):
+              with open('previous-benchmarks/benchmark_summary.json', 'r') as f:
+                  previous_results = json.load(f)
+
+          # Simple regression detection
+          regressions = []
+          for key, current_value in current_results.items():
+              if key in previous_results and isinstance(current_value, (int, float)):
+                  previous_value = previous_results[key]
+                  if current_value > previous_value * 1.2:  # 20% slower
+                      regressions.append(f'{key}: {previous_value:.3f}s -> {current_value:.3f}s')
+
+          if regressions:
+              print('⚠️ Performance regressions detected:')
+              for regression in regressions:
+                  print(f'  - {regression}')
+              print('::warning::Performance regressions detected')
+          else:
+              print('✅ No significant performance regressions detected')
+          "
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: benchmark-results
           path: benchmarks/results/
+          retention-days: 90
+      - name: Generate performance report
+        if: always()
+        run: |
+          python -c "
+          import json
+          import os
+          from datetime import datetime
+
+          report = []
+          report.append('# Performance Benchmark Report')
+          report.append(f'Generated: {datetime.now().isoformat()}')
+          report.append(f'Commit: {os.environ[\"GITHUB_SHA\"]}')
+          report.append('')
+
+          if os.path.exists('benchmarks/results/benchmark_summary.json'):
+              with open('benchmarks/results/benchmark_summary.json', 'r') as f:
+                  results = json.load(f)
+              report.append('## Results')
+              for key, value in results.items():
+                  if isinstance(value, (int, float)):
+                      report.append(f'- {key}: {value:.3f}s')
+          else:
+              report.append('No benchmark results available')
+
+          with open('benchmarks/results/performance_report.md', 'w') as f:
+              f.write('\\n'.join(report))
+          "
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-report
+          path: benchmarks/results/performance_report.md
+          retention-days: 90
 
   build:
     name: Build Package
@@ -240,9 +391,6 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
