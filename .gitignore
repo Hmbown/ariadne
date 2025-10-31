@@ -73,6 +73,13 @@ venv/
 env/
 ENV/
 
+# IDE and development tools
+.claude/
+.genkit/
+.dev/
+ariadne_plots/
+results/
+
 # Testing
 .pytest_cache/
 .coverage
