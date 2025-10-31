@@ -18,12 +18,13 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    git \
-    curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        git \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash --uid 1000 ariadne
@@ -37,13 +38,13 @@ WORKDIR /home/ariadne
 FROM base AS development
 
 # Install development tools
-RUN apt-get update && apt-get install -y \
-    vim \
-    nano \
-    htop \
-    tree \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        vim \
+        nano \
+        htop \
+        tree \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy source code with proper ownership
 COPY --chown=ariadne:ariadne . ./ariadne/
@@ -124,19 +125,18 @@ CMD ["python", "-c", "import ariadne; print(f'Ariadne v{ariadne.__version__} rea
 FROM base AS quantum-full
 
 # Install additional system dependencies for quantum libraries
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libffi-dev \
-    libssl-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        libffi-dev \
+        libssl-dev \
+        pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
 # Try to install OpenCL if available (optional)
 RUN apt-get update && \
-    (apt-get install -y ocl-icd-opencl-dev || echo "OpenCL not available") && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
+    (apt-get install -y --no-install-recommends ocl-icd-opencl-dev || echo "OpenCL not available") && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy source code
 COPY --chown=ariadne:ariadne . ./ariadne/

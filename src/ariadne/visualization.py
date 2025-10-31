@@ -16,8 +16,16 @@ from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 from matplotlib.figure import Figure
+
+try:  # Optional dependency for backward compatibility
+    import seaborn as sns  # type: ignore[import-not-found]
+except ImportError:  # pragma: no cover - executed when seaborn is unavailable
+    class _SeabornStub:
+        def set_palette(self, *_args: object, **_kwargs: object) -> None:
+            raise RuntimeError("Seaborn is not installed; install the 'viz' extra to enable palette configuration.")
+
+    sns = _SeabornStub()  # type: ignore[assignment]
 
 
 @dataclass
@@ -62,9 +70,17 @@ class ResultAnalyzer:
         try:
             plt.style.use(self.config.style)
         except OSError:
-            # Fallback to default style if seaborn is not available
             plt.style.use("default")
-        sns.set_palette(self.config.color_palette)
+
+        if self.config.color_palette:
+            try:
+                cmap = plt.get_cmap(self.config.color_palette)
+            except ValueError:
+                cmap = None
+
+            if cmap is not None:
+                colors = cmap(np.linspace(0, 1, 10))
+                plt.rcParams["axes.prop_cycle"] = plt.cycler(color=colors)
 
     def analyze_single_result(self, result: Any) -> dict[str, Any]:
         """Analyze a single simulation result."""
