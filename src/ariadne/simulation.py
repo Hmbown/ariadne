@@ -189,14 +189,38 @@ class QuantumSimulator:
 
     def simulate(self, circuit: QuantumCircuit, options: SimulationOptions | None = None) -> EnhancedSimulationResult:
         """
-        Simulate quantum circuit with comprehensive analysis.
+        Simulate a quantum circuit and return an enriched result bundle.
 
-        Args:
-            circuit: Quantum circuit to simulate
-            options: Simulation configuration options
+        Parameters
+        ----------
+        circuit : QuantumCircuit
+            Circuit to simulate.
+        options : SimulationOptions, optional
+            Advanced simulation configuration. When ``None`` a new
+            ``SimulationOptions`` instance is created with defaults.
 
-        Returns:
-            Enhanced simulation result with analysis
+        Returns
+        -------
+        EnhancedSimulationResult
+            Result payload containing counts, analysis metadata, and optional
+            performance annotations.
+
+        Raises
+        ------
+        ValueError
+            If validation of the circuit or options fails (e.g. zero shots).
+        SimulationError
+            If both the primary and fallback execution paths raise exceptions.
+
+        Examples
+        --------
+        >>> from qiskit import QuantumCircuit
+        >>> from ariadne.simulation import QuantumSimulator, SimulationOptions
+        >>> circuit = QuantumCircuit(1)
+        >>> circuit.h(0); circuit.measure_all()
+        >>> result = QuantumSimulator().simulate(circuit, SimulationOptions(shots=128))
+        >>> result.backend_used
+        'qiskit'
         """
 
         # Use default options if none provided

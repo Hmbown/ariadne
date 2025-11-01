@@ -347,9 +347,9 @@ class EnhancedBenchmarkSuite:
             [r.execution_time for r in successful_results if r.backend == backend] for backend in backend_names
         ]
         if any(execution_data):
-            plt.boxplot(execution_data, labels=backend_names, showmeans=True)
+            plt.boxplot(execution_data, showmeans=True)
+            plt.xticks(range(1, len(backend_names) + 1), backend_names, rotation=45, ha="right")
             plt.title("Execution Time by Backend")
-            plt.xticks(rotation=45, ha="right")
 
         # Throughput comparison
         plt.subplot(2, 2, 2)
@@ -357,9 +357,9 @@ class EnhancedBenchmarkSuite:
             [r.throughput for r in successful_results if r.backend == backend] for backend in backend_names
         ]
         if any(throughput_data):
-            plt.boxplot(throughput_data, labels=backend_names, showmeans=True)
+            plt.boxplot(throughput_data, showmeans=True)
+            plt.xticks(range(1, len(backend_names) + 1), backend_names, rotation=45, ha="right")
             plt.title("Throughput by Backend")
-            plt.xticks(rotation=45, ha="right")
 
         # Success rate by backend
         plt.subplot(2, 2, 3)
@@ -386,9 +386,9 @@ class EnhancedBenchmarkSuite:
             [r.execution_time for r in successful_results if r.algorithm == algorithm] for algorithm in algorithms
         ]
         if any(algorithm_execution):
-            plt.boxplot(algorithm_execution, labels=algorithms, showmeans=True)
+            plt.boxplot(algorithm_execution, showmeans=True)
+            plt.xticks(range(1, len(algorithms) + 1), algorithms, rotation=45, ha="right")
             plt.title("Execution Time by Algorithm")
-            plt.xticks(rotation=45, ha="right")
 
         plt.tight_layout()
 

@@ -450,7 +450,30 @@ def _sample_statevector_counts(circuit: QuantumCircuit, shots: int, seed: int | 
 
 
 def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: RoutingDecision) -> SimulationResult:
-    """Execute simulation based on a routing decision, including fallback logic."""
+    """
+    Execute a simulation using the backend chosen by the router.
+
+    Parameters
+    ----------
+    circuit : QuantumCircuit
+        Circuit to execute.
+    shots : int
+        Number of samples to draw from the circuit.
+    routing_decision : RoutingDecision
+        Router output describing the recommended backend and confidence.
+
+    Returns
+    -------
+    SimulationResult
+        Counts, metadata, and routing explanation for the execution.
+
+    Raises
+    ------
+    ResourceExhaustionError
+        Raised when resource checks fail prior to execution.
+    SimulationError
+        Raised if the primary backend and the Qiskit fallback both fail.
+    """
     logger = get_logger("router")
     resource_manager = get_resource_manager()
 
@@ -594,7 +617,40 @@ def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: R
 
 
 def simulate(circuit: QuantumCircuit, shots: int = 1024, backend: str | None = None) -> SimulationResult:
-    """Convenience wrapper that routes and executes ``circuit``."""
+    """
+    Route and execute a quantum circuit on the most appropriate simulator.
+
+    Parameters
+    ----------
+    circuit : QuantumCircuit
+        Circuit to route and execute.
+    shots : int, optional
+        Number of samples to collect, by default 1024.
+    backend : str or None, optional
+        Explicit backend override (e.g. ``"qiskit"``). When ``None`` the router
+        selects the backend automatically.
+
+    Returns
+    -------
+    SimulationResult
+        Execution outcome with counts, metadata, and routing explanation.
+
+    Raises
+    ------
+    ValueError
+        If ``shots`` is negative or the backend override is unknown.
+    SimulationError
+        If the router fails to select an executable backend.
+
+    Examples
+    --------
+    >>> from qiskit import QuantumCircuit
+    >>> qc = QuantumCircuit(2)
+    >>> qc.h(0); qc.cx(0, 1); qc.measure_all()
+    >>> result = simulate(qc, shots=256)
+    >>> result.backend_used
+    <BackendType.QISKIT: 'qiskit'>
+    """
     logger = get_logger("router")
 
     # Validate inputs

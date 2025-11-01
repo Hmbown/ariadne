@@ -134,9 +134,9 @@ class CircuitFamilyDetector:
         """Count gate types in circuit."""
         gate_counts: defaultdict[str, int] = defaultdict(int)
 
-        for instruction, _, _ in circuit.data:
-            if instruction.name not in ["measure", "barrier", "delay"]:
-                gate_counts[instruction.name] += 1
+        for instruction in circuit.data:
+            if instruction.operation.name not in ["measure", "barrier", "delay"]:
+                gate_counts[instruction.operation.name] += 1
 
         return dict(gate_counts)
 
@@ -387,7 +387,29 @@ class ContextDetector:
         backend_usage: dict[BackendType, int] | None = None,
         execution_times: dict[BackendType, list[float]] | None = None,
     ) -> UserContext:
-        """Analyze comprehensive user context from circuit history and usage patterns."""
+        """
+        Build a user context model from recent circuits and performance data.
+
+        Parameters
+        ----------
+        circuit_history : list[QuantumCircuit]
+            Chronological list of circuits executed by the user.
+        backend_usage : dict[BackendType, int], optional
+            Execution counts per backend.
+        execution_times : dict[BackendType, list[float]], optional
+            Historical runtime samples keyed by backend.
+
+        Returns
+        -------
+        UserContext
+            Contextual information describing workflow type, hardware profile,
+            and backend preferences.
+
+        Notes
+        -----
+        The inferred context is cached on disk so that subsequent runs can
+        bootstrap with prior knowledge even when no history is supplied.
+        """
 
         # Analyze circuit patterns
         circuit_patterns = self._analyze_circuit_patterns(circuit_history)
@@ -451,8 +473,8 @@ class ContextDetector:
             circuit_gates = []
             is_clifford = True
 
-            for instruction, _, _ in circuit.data:
-                gate_name = instruction.name
+            for instruction in circuit.data:
+                gate_name = instruction.operation.name
                 if gate_name not in ["measure", "barrier", "delay"]:
                     circuit_gates.append(gate_name)
                     # Simple Clifford check

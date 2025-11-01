@@ -219,14 +219,20 @@ class ResourceManager:
 
     def can_handle_circuit(self, circuit: QuantumCircuit, backend: str) -> tuple[bool, str]:
         """
-        Check if system can handle circuit simulation.
+        Determine whether the host can handle the specified circuit on a backend.
 
-        Args:
-            circuit: Quantum circuit to simulate
-            backend: Backend to use for simulation
+        Parameters
+        ----------
+        circuit : QuantumCircuit
+            Circuit to evaluate.
+        backend : str
+            Identifier of the backend that would execute the circuit.
 
-        Returns:
-            Tuple of (can_handle, reason)
+        Returns
+        -------
+        tuple[bool, str]
+            ``(True, reason)`` when resources are sufficient, otherwise
+            ``(False, explanation)`` describing the limiting factor.
         """
         try:
             # For very small test circuits, bypass resource checks to avoid spurious failures
@@ -280,17 +286,24 @@ class ResourceManager:
 
     def reserve_resources(self, circuit: QuantumCircuit, backend: str) -> ResourceRequirements:
         """
-        Reserve resources for circuit simulation.
+        Reserve the estimated resources needed to execute a circuit.
 
-        Args:
-            circuit: Quantum circuit to simulate
-            backend: Backend to use for simulation
+        Parameters
+        ----------
+        circuit : QuantumCircuit
+            Circuit to analyse.
+        backend : str
+            Planned execution backend.
 
-        Returns:
-            Reserved resource requirements
+        Returns
+        -------
+        ResourceRequirements
+            Snapshot of the resources that were reserved.
 
-        Raises:
-            ResourceExhaustionError: If insufficient resources available
+        Raises
+        ------
+        ResourceExhaustionError
+            If the system cannot accommodate the request.
         """
         can_handle, reason = self.can_handle_circuit(circuit, backend)
         if not can_handle:
@@ -306,10 +319,12 @@ class ResourceManager:
 
     def release_resources(self, requirements: ResourceRequirements) -> None:
         """
-        Release previously reserved resources.
+        Release a prior resource reservation.
 
-        Args:
-            requirements: Resource requirements to release
+        Parameters
+        ----------
+        requirements : ResourceRequirements
+            Reservation payload returned from :meth:`reserve_resources`.
         """
         self.resources.available_memory_mb += requirements.memory_mb
         self.resources.available_cpu_cores += requirements.cpu_cores
@@ -320,13 +335,17 @@ class ResourceManager:
 
     def get_recommendations(self, circuit: QuantumCircuit) -> list[str]:
         """
-        Get recommendations for circuit simulation.
+        Provide practical suggestions before running a circuit.
 
-        Args:
-            circuit: Quantum circuit to analyze
+        Parameters
+        ----------
+        circuit : QuantumCircuit
+            Circuit under consideration.
 
-        Returns:
-            List of recommendations
+        Returns
+        -------
+        list[str]
+            Human-readable hints covering backend selection and system risks.
         """
         recommendations = []
         num_qubits = circuit.num_qubits
@@ -355,7 +374,14 @@ _global_resource_manager: ResourceManager | None = None
 
 
 def get_resource_manager() -> ResourceManager:
-    """Get the global resource manager instance."""
+    """
+    Return the process-wide :class:`ResourceManager` singleton.
+
+    Returns
+    -------
+    ResourceManager
+        Shared resource manager instance reused across simulations.
+    """
     global _global_resource_manager
     if _global_resource_manager is None:
         _global_resource_manager = ResourceManager()
@@ -364,14 +390,19 @@ def get_resource_manager() -> ResourceManager:
 
 def check_circuit_feasibility(circuit: QuantumCircuit, backend: str) -> tuple[bool, str]:
     """
-    Check if circuit simulation is feasible with current resources.
+    Check whether the circuit is executable on the current host.
 
-    Args:
-        circuit: Quantum circuit to check
-        backend: Backend to use
+    Parameters
+    ----------
+    circuit : QuantumCircuit
+        Circuit to evaluate.
+    backend : str
+        Backend identifier expected to run the circuit.
 
-    Returns:
-        Tuple of (feasible, reason)
+    Returns
+    -------
+    tuple[bool, str]
+        ``(True, reason)`` when feasible, otherwise ``(False, explanation)``.
     """
     manager = get_resource_manager()
     return manager.can_handle_circuit(circuit, backend)

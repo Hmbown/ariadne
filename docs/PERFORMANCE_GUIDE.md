@@ -122,6 +122,17 @@ else:
 - **Profile memory usage** for large circuits
 - **Validate backend selection** for different circuit types
 
+### Continuous Performance Regression Monitoring
+Ariadne runs the lightweight `pytest -m performance` suite nightly on Ubuntu (see the `router-performance` job in `.github/workflows/quantum-regression.yml`). The current baseline enforces a 1.5s wall-clock budget for the routed Qiskit fallback path in `tests/performance/test_router_regressions.py`.
+
+When the job fails:
+
+1. Download `performance-results.xml` from the workflow artifacts to inspect failing cases and recorded durations.
+2. Reproduce locally with `pytest tests/performance -m performance --durations=5` to observe the regression and validate that it is deterministic.
+3. If the regression is legitimate, raise an issue linked to the offending change and update the baseline threshold after capturing new reference timings. If the failure is noise-driven, document the environment factors (CPU load, virtualization) before adjusting the ceiling.
+
+All engineers proposing routing or backend changes should monitor this job to ensure we do not silently erode routing latency guarantees.
+
 ### **Production Deployment**
 - **Ensure CUDA availability** for maximum performance
 - **Monitor GPU memory usage** during operation

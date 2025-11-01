@@ -50,17 +50,19 @@ class TestCLI:
 
     def test_cli_explain_command(self):
         """Test CLI explain command."""
-        # explain_routing is imported from ariadne
-        with patch("ariadne.explain_routing") as mock_explain:
+        # Patch the function where it's imported, not where it's defined
+        with patch("ariadne.route.routing_tree.explain_routing") as mock_explain:
             mock_explain.return_value = "Circuit is Clifford, using Stim for speedup"
 
-            # Mock the circuit loading
+            # Mock the circuit loading with a more complete mock
             with patch("qiskit.QuantumCircuit.from_qasm_file") as mock_load:
                 with patch("pathlib.Path.exists", return_value=True):
                     with patch("pathlib.Path.suffix", ".qasm"):
                         mock_circuit = Mock()
                         mock_circuit.num_qubits = 2
                         mock_circuit.depth.return_value = 3
+                        mock_circuit.__len__ = Mock(return_value=3)  # Fix "Mock object is not iterable"
+                        mock_circuit.count_ops.return_value = {"h": 1, "cx": 1}
                         mock_load.return_value = mock_circuit
 
                         with patch("builtins.print"):

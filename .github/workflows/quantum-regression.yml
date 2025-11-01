@@ -8,6 +8,7 @@ on:
   schedule:
     # Run daily at 2 AM UTC
     - cron: '0 2 * * *'
+  workflow_dispatch:
 
 jobs:
   quantum-matrix:
@@ -228,3 +229,33 @@ jobs:
         name: performance-trends
         path: performance_trend_*.json
         retention-days: 365
+
+  router-performance:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Run router performance suite
+      run: |
+        pytest tests/performance -m performance --maxfail=1 --durations=5 --junitxml=performance-results.xml
+
+    - name: Upload performance results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: router-performance-${{ github.run_id }}
+        path: performance-results.xml
+        retention-days: 30

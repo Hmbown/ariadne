@@ -18,7 +18,7 @@ from typing import Any
 
 import numpy as np
 from qiskit import QuantumCircuit
-from qiskit.circuit.library import QFT, QuantumVolume
+from qiskit.circuit.library import QFTGate, QuantumVolume
 from qiskit.circuit.random import random_circuit
 
 
@@ -161,9 +161,9 @@ class QuantumAlgorithmBenchmarks:
 
     def create_qft_circuit(self, num_qubits: int) -> QuantumCircuit:
         """Create Quantum Fourier Transform circuit."""
-        qft = QFT(num_qubits)
+        qft_gate = QFTGate(num_qubits=num_qubits)
         circuit = QuantumCircuit(num_qubits)
-        circuit.compose(qft, inplace=True)
+        circuit.append(qft_gate, range(num_qubits))
         circuit.measure_all()
         return circuit
 
