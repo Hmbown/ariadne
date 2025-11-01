@@ -142,15 +142,16 @@ def test_execute_simulation_fallback_to_qiskit(monkeypatch: pytest.MonkeyPatch) 
 
 
 def test_execute_simulation_resource_exhaustion(monkeypatch: pytest.MonkeyPatch) -> None:
+    import ariadne.router as router
     from ariadne.core import ResourceExhaustionError
 
     circuit = QuantumCircuit(3)
     circuit.h(0)
 
-    # Ensure resource management tries but fails
-    dummy_cfg = SimpleNamespace(analysis=SimpleNamespace(enable_resource_estimation=True))
-    monkeypatch.setattr("ariadne.router.get_config", lambda: dummy_cfg)
-    monkeypatch.setattr("ariadne.router.check_circuit_feasibility", lambda circuit, backend: (False, "too large"))
+    monkeypatch.setattr(
+        router, "get_config", lambda: SimpleNamespace(analysis=SimpleNamespace(enable_resource_estimation=True))
+    )
+    monkeypatch.setattr(router, "check_circuit_feasibility", lambda circuit, backend: (False, "too large"))
 
     with pytest.raises(ResourceExhaustionError):
         _execute_simulation(circuit, 4, _make_routing_decision(BackendType.QISKIT))

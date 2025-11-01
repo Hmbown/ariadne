@@ -79,8 +79,7 @@ def test_execute_simulation_fallback_releases_resources(monkeypatch: pytest.Monk
     assert result.backend_used == BackendType.QISKIT
     assert result.counts == {"0": 8}
     assert result.fallback_reason == "Backend cuda failed: matrix blowup"
-    # Note: We expect resource management to work, but the exact behavior depends on implementation
-    # The key is that the simulation completes successfully with fallback
+    assert manager.reserved and manager.released
 
 
 def test_execute_simulation_adds_metal_warning(monkeypatch: pytest.MonkeyPatch) -> None:
