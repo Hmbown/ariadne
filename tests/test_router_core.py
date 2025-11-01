@@ -153,6 +153,9 @@ def test_execute_simulation_resource_exhaustion(monkeypatch: pytest.MonkeyPatch)
     )
     monkeypatch.setattr(router, "check_circuit_feasibility", lambda circuit, backend: (False, "too large"))
 
+    # Ensure resource checks are enabled for this test, regardless of CI environment
+    monkeypatch.setenv("ARIADNE_DISABLE_RESOURCE_CHECKS", "0")
+
     with pytest.raises(ResourceExhaustionError):
         _execute_simulation(circuit, 4, _make_routing_decision(BackendType.QISKIT))
 

@@ -140,10 +140,15 @@ async def test_async_simulator_batch_handles_errors(monkeypatch: pytest.MonkeyPa
 
 @pytest.mark.asyncio
 async def test_global_simulation_helpers_reuse_singleton() -> None:
+    import asyncio
+
     circuit = _build_circuit()
     result = await simulate_async(circuit, shots=8)
     assert result.success is True
     assert result.result is not None
+
+    # Add small delay to ensure different timestamp in request ID generation
+    await asyncio.sleep(0.001)  # 1ms delay
 
     second_result = await simulate_async(circuit, shots=4)
     assert second_result.request.request_id != result.request.request_id

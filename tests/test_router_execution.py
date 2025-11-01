@@ -65,6 +65,9 @@ def test_execute_simulation_fallback_releases_resources(monkeypatch: pytest.Monk
     monkeypatch.setattr("ariadne.router.get_config", lambda: dummy_cfg)
     monkeypatch.setattr("ariadne.router.check_circuit_feasibility", lambda _c, _b: (True, "ok"))
 
+    # Ensure resource checks are enabled for this test, regardless of CI environment
+    monkeypatch.setenv("ARIADNE_DISABLE_RESOURCE_CHECKS", "0")
+
     manager = _DummyResourceManager()
     monkeypatch.setattr("ariadne.router.get_resource_manager", lambda: manager)
 
