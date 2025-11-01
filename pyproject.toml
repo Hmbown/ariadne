@@ -24,17 +24,17 @@ classifiers = [
   "Topic :: System :: Distributed Computing",
 ]
 dependencies = [
-  "qiskit>=1.1.0,<1.2.0",
+  "qiskit>=1.1.0,<2.0.0",
   "qiskit-aer>=0.17.0,<0.18.0",
   "stim>=1.15.0",
   "quimb>=1.11.0",
   "cotengra>=0.7.0",
   "opt_einsum>=3.4.0",
-  "numpy>=1.26.0,<2.0.0",
-  "scipy>=1.10.0,<1.17.0",
+  "numpy>=1.26.0,<3.0.0",
+  "scipy>=1.10.0,<2.0.0",
   "networkx>=3.0",
   "matplotlib>=3.5.0",
-  "PyYAML>=6.0",
+  "PyYAML>=6.0.3,<7.0",
 ]
 
 [project.urls]

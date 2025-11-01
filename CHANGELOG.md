@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.4] - 2025-11-01
+
+### Security
+- Updated PyYAML from 6.0.1 to 6.0.3 to address security vulnerabilities
+- Updated numpy from 1.26.4 to 2.3.4 with expanded version range (<3.0.0)
+- Updated qiskit from 2.2.1 to 2.2.3 with expanded version range (<2.0.0)
+- Updated scipy from 1.13.1 to 1.16.3 with expanded version range (<2.0.0)
+- Fixed bandit security issues: replaced silent exception handling with proper logging
+- Enhanced subprocess security by using full paths for system commands
+- Added security scanning with bandit to CI pipeline
+
+### Changed
+- Improved error handling in backend modules with proper logging instead of silent exception handling
+- Enhanced security posture for production deployment readiness
+
 ## [0.4.3] - 2025-10-30
 
 ### Changed

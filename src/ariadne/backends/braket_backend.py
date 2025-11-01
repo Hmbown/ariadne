@@ -15,11 +15,14 @@ AWS Braket Features:
 from __future__ import annotations
 
 import importlib.util
+import logging
 import warnings
 from typing import Any
 
 from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
+
+logger = logging.getLogger(__name__)
 
 
 class AWSBraketBackend:
@@ -375,8 +378,8 @@ class AWSBraketBackend:
                 # Add AWS session info (without credentials)
                 info["aws_region"] = self.aws_session.region
 
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to get Braket backend info: {e}")
 
         return info
 

@@ -17,6 +17,7 @@ Cirq Features:
 from __future__ import annotations
 
 import importlib.util
+import logging
 import warnings
 from collections.abc import Callable, Generator
 from typing import Any
@@ -24,6 +25,8 @@ from typing import Any
 import numpy as np
 from qiskit import QuantumCircuit  # type: ignore[import-untyped]
 from qiskit.circuit import Parameter  # type: ignore[import-untyped]
+
+logger = logging.getLogger(__name__)
 
 
 class CirqBackend:
@@ -462,8 +465,8 @@ class CirqBackend:
                     info["device_qubits"] = len(self.device.qubits) if hasattr(self.device, "qubits") else "unknown"
                     info["device_gates"] = str(self.device.gateset) if hasattr(self.device, "gateset") else "unknown"
 
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to get Cirq backend info: {e}")
 
         return info
 

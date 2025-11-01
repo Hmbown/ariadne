@@ -27,8 +27,8 @@ class CPUBackend:
         # Perform a light warm-up to avoid first-call jitter in timing-sensitive tests
         try:
             self._warmup()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"CPU backend warmup failed: {e}")
 
     def simulate(self, circuit: QuantumCircuit, shots: int = 1000) -> dict[str, int]:
         """

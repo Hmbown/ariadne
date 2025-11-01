@@ -76,7 +76,7 @@ FROM development AS testing
 USER root
 
 # Copy test configuration
-COPY --chown=ariadne:ariadne pytest.ini pyproject.toml ./ariadne/
+COPY --chown=ariadne:ariadne pyproject.toml ./ariadne/
 
 # Switch back to non-root user
 USER ariadne

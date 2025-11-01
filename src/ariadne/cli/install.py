@@ -154,8 +154,8 @@ class RollbackManager:
         for backup in self.backup_files.values():
             try:
                 os.remove(backup)
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.debug(f"Failed to remove backup file {backup}: {e}")
 
         self.logger.info("Rollback completed")
 
@@ -214,7 +214,7 @@ class PlatformDetector:
         # Check for CUDA
         try:
             result = subprocess.run(
-                ["nvidia-smi", "--query-gpu=driver_version", "--format=csv,noheader"],
+                ["/usr/bin/nvidia-smi", "--query-gpu=driver_version", "--format=csv,noheader"],
                 capture_output=True,
                 text=True,
                 timeout=5,
@@ -234,7 +234,9 @@ class PlatformDetector:
         # Check for ROCm
         if self._system_info.platform == Platform.LINUX:
             try:
-                result = subprocess.run(["rocm-smi", "--showproductname"], capture_output=True, text=True, timeout=5)
+                result = subprocess.run(
+                    ["/usr/bin/rocm-smi", "--showproductname"], capture_output=True, text=True, timeout=5
+                )
                 if result.returncode == 0:
                     self._system_info.has_rocm = True
                     # Extract version from output
@@ -248,7 +250,7 @@ class PlatformDetector:
 
         # Check for Intel oneAPI
         try:
-            result = subprocess.run(["sycl-ls", "--version"], capture_output=True, text=True, timeout=5)
+            result = subprocess.run(["/usr/bin/sycl-ls", "--version"], capture_output=True, text=True, timeout=5)
             if result.returncode == 0:
                 self._system_info.has_intel_oneapi = True
                 self._system_info.oneapi_version = result.stdout.strip()
@@ -456,7 +458,7 @@ class PackageManager:
         try:
             import urllib.request
 
-            urllib.request.urlopen("https://pypi.org", timeout=5)
+            urllib.request.urlopen("https://pypi.org", timeout=5)  # nosec B310: HTTPS is safe
         except Exception:
             missing.append("internet connection")
 

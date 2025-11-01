@@ -15,12 +15,15 @@ Azure Quantum Features:
 from __future__ import annotations
 
 import importlib.util
+import logging
 import os
 import warnings
 from typing import Any
 
 from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
+
+logger = logging.getLogger(__name__)
 
 
 class AzureQuantumBackend:
@@ -428,8 +431,8 @@ class AzureQuantumBackend:
                 # Add workspace info (without credentials)
                 info["workspace_location"] = getattr(self.workspace, "location", "Unknown")
 
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to get Azure backend info: {e}")
 
         return info
 

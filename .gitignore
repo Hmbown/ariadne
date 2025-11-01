@@ -88,3 +88,9 @@ htmlcov/
 .mypy_cache/
 .ipynb_checkpoints/
 src/ariadne/_version.py
+
+# Internal development files (should not be in public repository)
+AGENTS.md
+KIMI_K2_ONBOARDING.md
+CI_CD_IMPROVEMENTS.md
+.dev/
