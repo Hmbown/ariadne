@@ -62,7 +62,7 @@ class PerformancePredictor:
     memory usage, and cost across different quantum backends.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the performance predictor with backend capabilities."""
         self.backend_capabilities = self._initialize_backend_capabilities()
 
