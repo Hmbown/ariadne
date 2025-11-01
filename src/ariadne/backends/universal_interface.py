@@ -154,6 +154,10 @@ class BackendManager:
             self.register_backend("cirq", CirqUniversalWrapper)
         if importlib.util.find_spec("ariadne.backends.intel_qs_backend") is not None:
             self.register_backend("intel_qs", IntelQSUniversalWrapper)
+        if importlib.util.find_spec("ariadne.backends.braket_backend") is not None:
+            self.register_backend("aws_braket", AWSBraketUniversalWrapper)
+        if importlib.util.find_spec("ariadne.backends.azure_backend") is not None:
+            self.register_backend("azure_quantum", AzureQuantumUniversalWrapper)
 
         # Always available fallback
         self.register_backend("qiskit", QiskitUniversalWrapper)
@@ -439,6 +443,96 @@ class IntelQSUniversalWrapper(UniversalBackend):
             # Dynamic Metrics (Simulation Defaults)
             gate_times={"single_qubit": 1e-9, "two_qubit": 1e-8},
             error_rates={"single_qubit": 1e-10, "two_qubit": 1e-9},
+            connectivity_map=None,
+        )
+
+    def can_simulate(self, circuit: QuantumCircuit, **kwargs: Any) -> tuple[bool, str]:
+        return self.backend.can_simulate(circuit, **kwargs)
+
+
+class AWSBraketUniversalWrapper(UniversalBackend):
+    """Universal wrapper for AWS Braket backend."""
+
+    def __init__(self, **kwargs: Any):
+        from .braket_backend import AWSBraketBackend
+
+        self.backend = AWSBraketBackend(**kwargs)
+
+    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs: Any) -> dict[str, int]:
+        return self.backend.simulate(circuit, shots, **kwargs)
+
+    def get_backend_info(self) -> dict[str, Any]:
+        return self.backend.get_backend_info()
+
+    def get_capabilities(self) -> list[BackendCapability]:
+        caps = [
+            BackendCapability.STATE_VECTOR_SIMULATION,
+            BackendCapability.HARDWARE_INTEGRATION,
+            BackendCapability.PARAMETRIC_CIRCUITS,
+        ]
+        if self.backend.device.type == "SIMULATOR":
+            caps.append(BackendCapability.NOISE_MODELING)
+        return caps
+
+    def get_metrics(self) -> BackendMetrics:
+        return BackendMetrics(
+            max_qubits=34 if self.backend.device.type == "SIMULATOR" else 32,
+            typical_qubits=20,
+            memory_efficiency=0.7,
+            speed_rating=0.6,
+            accuracy_rating=0.9,
+            stability_rating=0.8,
+            capabilities=self.get_capabilities(),
+            hardware_requirements=["AWS Account", "Internet Connection"],
+            estimated_cost_factor=1.5,
+            # Dynamic Metrics (Cloud Defaults)
+            gate_times={"single_qubit": 1e-7, "two_qubit": 1e-6},
+            error_rates={"single_qubit": 1e-4, "two_qubit": 1e-3},
+            connectivity_map=None,
+        )
+
+    def can_simulate(self, circuit: QuantumCircuit, **kwargs: Any) -> tuple[bool, str]:
+        return self.backend.can_simulate(circuit, **kwargs)
+
+
+class AzureQuantumUniversalWrapper(UniversalBackend):
+    """Universal wrapper for Azure Quantum backend."""
+
+    def __init__(self, **kwargs: Any):
+        from .azure_backend import AzureQuantumBackend
+
+        self.backend = AzureQuantumBackend(**kwargs)
+
+    def simulate(self, circuit: QuantumCircuit, shots: int = 1000, **kwargs: Any) -> dict[str, int]:
+        return self.backend.simulate(circuit, shots, **kwargs)
+
+    def get_backend_info(self) -> dict[str, Any]:
+        return self.backend.get_backend_info()
+
+    def get_capabilities(self) -> list[BackendCapability]:
+        caps = [
+            BackendCapability.STATE_VECTOR_SIMULATION,
+            BackendCapability.HARDWARE_INTEGRATION,
+            BackendCapability.PARAMETRIC_CIRCUITS,
+        ]
+        if "simulator" in getattr(self.backend.target, "id", "").lower():
+            caps.append(BackendCapability.NOISE_MODELING)
+        return caps
+
+    def get_metrics(self) -> BackendMetrics:
+        return BackendMetrics(
+            max_qubits=30 if "simulator" in getattr(self.backend.target, "id", "").lower() else 27,
+            typical_qubits=20,
+            memory_efficiency=0.7,
+            speed_rating=0.6,
+            accuracy_rating=0.9,
+            stability_rating=0.8,
+            capabilities=self.get_capabilities(),
+            hardware_requirements=["Azure Account", "Internet Connection"],
+            estimated_cost_factor=1.5,
+            # Dynamic Metrics (Cloud Defaults)
+            gate_times={"single_qubit": 1e-7, "two_qubit": 1e-6},
+            error_rates={"single_qubit": 1e-4, "two_qubit": 1e-3},
             connectivity_map=None,
         )
 

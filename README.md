@@ -31,6 +31,7 @@
 - [Advanced Features](#advanced-features)
 - [Docker Usage](#docker-usage)
 - [Documentation & Learning](#documentation--learning)
+- [Reproducibility & Datasets](#reproducibility--datasets)
 - [Contributing](#contributing)
 - [Backend Selection](#backend-selection)
 - [Troubleshooting](#troubleshooting)
@@ -511,6 +512,31 @@ print('Available backends:', get_available_backends())
 - Developers: Read [developer guide](docs/guides/developer_guide.md)
 - DevOps: Follow [deployment guide](docs/getting-started/for-devops.md)
 - System Administrators: Refer to the [Configuration Options](docs/options.md) for detailed tuning and setup.
+
+---
+
+## Reproducibility & Datasets
+
+Run cross-backend validation from the CLI and export reports:
+
+```bash
+# Validate a pre-generated dataset across backends
+python -m ariadne repro --circuit ghz_20 \
+  --backends qiskit,tensor_network,stim --shots 1024 \
+  --output repro.json --export-csv repro.csv --export-md repro.md --export-html repro.html
+```
+
+Manage standard benchmark datasets (OpenQASM 2.0):
+
+```bash
+# List available datasets (repo or ~/.ariadne/datasets)
+python -m ariadne datasets list
+
+# Generate GHZ/QFT/VQE for sizes 10..50
+python -m ariadne datasets generate --family all --sizes 10,20,30,40,50
+```
+
+See `benchmarks/datasets/README.md` for details.
 
 ---
 

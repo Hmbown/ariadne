@@ -1,15 +1,26 @@
-import argparse
+from __future__ import annotations
+
+import sys
 
 
-def main() -> None:
-    """Main command-line interface for Ariadne."""
-    parser = argparse.ArgumentParser(prog="ariadne", description="Ariadne: The Intelligent Quantum Router.")
-    parser.add_argument("--version", action="version", version="%(prog)s 1.0.0")
-    # Future sub-commands for simulate, route, benchmark, etc. can be added here.
-    parser.parse_args()
+def main() -> int:
+    """Package entry point that defers to the unified CLI.
 
-    print("Welcome to Ariadne. Use --help for options.")
+    This enables usage like:
+      python -m ariadne install --accelerate
+      python -m ariadne benchmark --circuit path/to.qasm
+    """
+    try:
+        # Import here to avoid importing the full CLI on module import
+        from .cli.main import main as cli_main
+    except Exception:
+        # Very small fallback to avoid masking import-time errors
+        # if the CLI cannot be imported for some reason.
+        print("Ariadne CLI is unavailable. Please install optional dependencies or run `ariadne --help`.")
+        return 1
+
+    return cli_main()
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

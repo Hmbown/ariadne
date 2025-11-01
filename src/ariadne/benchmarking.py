@@ -13,8 +13,8 @@ from typing import Any
 
 from qiskit import QuantumCircuit
 
-from . import simulate
 from .algorithms import AlgorithmParameters, get_algorithm
+from .router import simulate
 
 
 def export_benchmark_report(

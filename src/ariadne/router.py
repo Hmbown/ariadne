@@ -301,6 +301,40 @@ def _simulate_braket(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
         raise SimulationError(f"Braket simulation failed: {exc}", backend="braket") from exc
 
 
+def _simulate_aws_braket(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    """Simulate using AWS Braket backend."""
+    logger = get_logger("router")
+
+    try:
+        from .backends.braket_backend import AWSBraketBackend
+    except ImportError as exc:
+        raise BackendUnavailableError("aws_braket", "AWS Braket SDK not installed") from exc
+
+    try:
+        backend = AWSBraketBackend()
+        return dict(backend.simulate(circuit, shots))
+    except Exception as exc:
+        logger.log_simulation_error(exc, backend="aws_braket")
+        raise SimulationError(f"AWS Braket simulation failed: {exc}", backend="aws_braket") from exc
+
+
+def _simulate_azure_quantum(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
+    """Simulate using Azure Quantum backend."""
+    logger = get_logger("router")
+
+    try:
+        from .backends.azure_backend import AzureQuantumBackend
+    except ImportError as exc:
+        raise BackendUnavailableError("azure_quantum", "Azure Quantum SDK not installed") from exc
+
+    try:
+        backend = AzureQuantumBackend()
+        return dict(backend.simulate(circuit, shots))
+    except Exception as exc:
+        logger.log_simulation_error(exc, backend="azure_quantum")
+        raise SimulationError(f"Azure Quantum simulation failed: {exc}", backend="azure_quantum") from exc
+
+
 def _simulate_qsharp(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
     """Simulate using the Q# backend (skeleton, falls back to Qiskit)."""
     logger = get_logger("router")
@@ -492,6 +526,10 @@ def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: R
             counts = _simulate_pyquil(circuit, shots)
         elif backend == BackendType.BRAKET:
             counts = _simulate_braket(circuit, shots)
+        elif backend == BackendType.AWS_BRAKET:
+            counts = _simulate_aws_braket(circuit, shots)
+        elif backend == BackendType.AZURE_QUANTUM:
+            counts = _simulate_azure_quantum(circuit, shots)
         elif backend == BackendType.QSHARP:
             counts = _simulate_qsharp(circuit, shots)
         elif backend == BackendType.OPENCL:
@@ -609,9 +647,61 @@ def simulate(circuit: QuantumCircuit, shots: int = 1024, backend: str | None = N
 
         logger.info(f"Using forced backend: {backend}")
     else:
-        # Use Enhanced Router for optimal selection
+        # Optionally use the predictive model for selection
+        use_predictor = os.getenv("ARIADNE_ROUTING_PREDICT", "").lower() in {"1", "true", "yes"}
+        prefer_hybrid = os.getenv("ARIADNE_ROUTING_HYBRID", "").lower() in {"1", "true", "yes"}
+
         try:
-            routing_decision = enhanced_router.select_optimal_backend(circuit, strategy=RouterType.HYBRID_ROUTER)
+            if use_predictor:
+                from .route.performance_model import find_optimal_backend
+                from .route.routing_tree import get_available_backends
+
+                available = [BackendType(b) for b in get_available_backends() if b in BackendType._value2member_map_]
+                if available:
+                    best_backend, prediction = find_optimal_backend(circuit, available, optimize_for="time")
+                    routing_decision = RoutingDecision(
+                        circuit_entropy=0.0,
+                        recommended_backend=best_backend,
+                        confidence_score=0.8,
+                        expected_speedup=1.0,
+                        channel_capacity_match=1.0,
+                        alternatives=[(b, 0.0) for b in available if b != best_backend],
+                    )
+                else:
+                    routing_decision = enhanced_router.select_optimal_backend(
+                        circuit, strategy=RouterType.HYBRID_ROUTER
+                    )
+            elif prefer_hybrid:
+                # Use the hybrid planner to inform backend choice (advisory, not executing hybrid yet)
+                try:
+                    from .route.performance_prediction import PerformancePredictor
+
+                    predictor = PerformancePredictor()
+                    if predictor.should_use_hybrid_execution(circuit):
+                        plan = predictor.create_hybrid_execution_plan(circuit, shots=shots)
+                        # Pick the most frequent backend in segments as a practical monolithic choice
+                        from collections import Counter
+
+                        backends = [b for _seg, b in plan.segments]
+                        most_common_backend, _ = Counter(backends).most_common(1)[0]
+                        routing_decision = RoutingDecision(
+                            circuit_entropy=0.0,
+                            recommended_backend=most_common_backend,
+                            confidence_score=0.7,
+                            expected_speedup=plan.expected_speedup,
+                            channel_capacity_match=1.0,
+                            alternatives=[(b, 0.0) for b in set(backends) if b != most_common_backend],
+                        )
+                    else:
+                        routing_decision = enhanced_router.select_optimal_backend(
+                            circuit, strategy=RouterType.HYBRID_ROUTER
+                        )
+                except Exception:
+                    routing_decision = enhanced_router.select_optimal_backend(
+                        circuit, strategy=RouterType.HYBRID_ROUTER
+                    )
+            else:
+                routing_decision = enhanced_router.select_optimal_backend(circuit, strategy=RouterType.HYBRID_ROUTER)
         except Exception as exc:
             logger.error(f"Router failed to select backend: {exc}")
             raise SimulationError(f"Router failed: {exc}") from exc

@@ -422,6 +422,14 @@ class EnhancedQuantumRouter:
                 import importlib.util
 
                 return importlib.util.find_spec("braket") is not None
+            elif backend == BackendType.AWS_BRAKET:
+                import importlib.util
+
+                return importlib.util.find_spec("braket") is not None
+            elif backend == BackendType.AZURE_QUANTUM:
+                import importlib.util
+
+                return importlib.util.find_spec("azure.quantum") is not None
             elif backend == BackendType.PYQUIL:
                 import importlib.util
 

@@ -21,6 +21,8 @@ class BackendType(Enum):
     PENNYLANE = "pennylane"
     QULACS = "qulacs"
     BRAKET = "braket"
+    AWS_BRAKET = "aws_braket"
+    AZURE_QUANTUM = "azure_quantum"
     PYQUIL = "pyquil"
     QSHARP = "qsharp"
     OPENCL = "opencl"

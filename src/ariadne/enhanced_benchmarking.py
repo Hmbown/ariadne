@@ -12,15 +12,16 @@ import json
 import statistics
 import time
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any, Iterable
+from typing import Any
 
 import matplotlib.pyplot as plt
 from qiskit import QuantumCircuit
 
-from ariadne import simulate
-from ariadne.algorithms import AlgorithmParameters, get_algorithm
+from .algorithms import AlgorithmParameters, get_algorithm
+from .router import simulate
 
 
 def _mean(values: Iterable[float]) -> float:
@@ -342,7 +343,9 @@ class EnhancedBenchmarkSuite:
         # Execution time comparison
         plt.subplot(2, 2, 1)
         backend_names = sorted({result.backend for result in successful_results})
-        execution_data = [[r.execution_time for r in successful_results if r.backend == backend] for backend in backend_names]
+        execution_data = [
+            [r.execution_time for r in successful_results if r.backend == backend] for backend in backend_names
+        ]
         if any(execution_data):
             plt.boxplot(execution_data, labels=backend_names, showmeans=True)
             plt.title("Execution Time by Backend")
@@ -350,7 +353,9 @@ class EnhancedBenchmarkSuite:
 
         # Throughput comparison
         plt.subplot(2, 2, 2)
-        throughput_data = [[r.throughput for r in successful_results if r.backend == backend] for backend in backend_names]
+        throughput_data = [
+            [r.throughput for r in successful_results if r.backend == backend] for backend in backend_names
+        ]
         if any(throughput_data):
             plt.boxplot(throughput_data, labels=backend_names, showmeans=True)
             plt.title("Throughput by Backend")
@@ -358,7 +363,7 @@ class EnhancedBenchmarkSuite:
 
         # Success rate by backend
         plt.subplot(2, 2, 3)
-        success_counts = defaultdict(lambda: {"success": 0, "total": 0})
+        success_counts: defaultdict[str, dict[str, int]] = defaultdict(lambda: {"success": 0, "total": 0})
         for result in self.results:
             key = result.backend
             success_counts[key]["total"] += 1
@@ -366,7 +371,9 @@ class EnhancedBenchmarkSuite:
                 success_counts[key]["success"] += 1
 
         success_backends = sorted(success_counts.keys())
-        success_values = [success_counts[backend]["success"] / success_counts[backend]["total"] for backend in success_backends]
+        success_values = [
+            success_counts[backend]["success"] / success_counts[backend]["total"] for backend in success_backends
+        ]
         plt.bar(success_backends, success_values)
         plt.title("Success Rate by Backend")
         plt.xticks(rotation=45, ha="right")
@@ -375,7 +382,9 @@ class EnhancedBenchmarkSuite:
         # Algorithm performance
         plt.subplot(2, 2, 4)
         algorithms = sorted({result.algorithm for result in successful_results})
-        algorithm_execution = [[r.execution_time for r in successful_results if r.algorithm == algorithm] for algorithm in algorithms]
+        algorithm_execution = [
+            [r.execution_time for r in successful_results if r.algorithm == algorithm] for algorithm in algorithms
+        ]
         if any(algorithm_execution):
             plt.boxplot(algorithm_execution, labels=algorithms, showmeans=True)
             plt.title("Execution Time by Algorithm")

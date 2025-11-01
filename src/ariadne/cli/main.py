@@ -16,6 +16,21 @@ from typing import TYPE_CHECKING, Any
 
 from qiskit import QuantumCircuit
 
+from .._version import __version__
+from ..backends import (
+    get_health_checker,
+    get_pool_manager,
+)
+from ..config import (
+    ConfigFormat,
+    create_default_template,
+    create_development_template,
+    create_production_template,
+    load_config,
+)
+from ..core import configure_logging, get_logger
+from ..router import simulate
+
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 try:
@@ -77,39 +92,6 @@ def _describe_config_keys(config: object) -> str:
         return ", ".join(sorted(str(key) for key in vars(config)))
 
     return ""
-
-
-try:
-    from ariadne import __version__, simulate
-    from ariadne.backends import (
-        get_health_checker,
-        get_pool_manager,
-    )
-    from ariadne.config import (
-        ConfigFormat,
-        create_default_template,
-        create_development_template,
-        create_production_template,
-        load_config,
-    )
-    from ariadne.core import configure_logging, get_logger
-except ImportError:
-    # Fallback for when running as a script
-    if PROJECT_ROOT not in sys.path:
-        sys.path.append(PROJECT_ROOT)
-    from ariadne import __version__, simulate
-    from ariadne.backends import (
-        get_health_checker,
-        get_pool_manager,
-    )
-    from ariadne.config import (
-        ConfigFormat,
-        create_default_template,
-        create_development_template,
-        create_production_template,
-        load_config,
-    )
-    from ariadne.core import configure_logging, get_logger
 
 
 class ProgressIndicator:
@@ -194,6 +176,9 @@ Examples:
   ariadne config create --template production --output config.yaml
   ariadne status --backend metal
   ariadne benchmark --circuit circuit.qc --shots 1000
+  ariadne install --accelerate
+  ariadne install cuda apple
+  ariadne install --list
             """,
         )
 
@@ -216,11 +201,23 @@ Examples:
         # Explain command (routing transparency)
         self._add_explain_command(subparsers)
 
+        # Predict command (performance estimates)
+        self._add_predict_command(subparsers)
+
         # Benchmark command (performance analysis)
         self._add_benchmark_new_command(subparsers)
 
         # Learn command (educational tools)
         self._add_learn_command(subparsers)
+
+        # Install command
+        self._add_install_command(subparsers)
+
+        # Datasets command (list/generate)
+        self._add_datasets_command(subparsers)
+
+        # Reproducibility command (cross-backend validation)
+        self._add_repro_command(subparsers)
 
         # Backward compatibility - keep original commands with deprecation warnings
         self._add_simulate_command(subparsers)
@@ -256,6 +253,8 @@ Examples:
         parser.add_argument("--config", help="Configuration file path")
 
         parser.add_argument("--explain", action="store_true", help="Show routing explanation")
+        parser.add_argument("--predict-route", action="store_true", help="Use predictor to choose backend")
+        parser.add_argument("--hybrid", action="store_true", help="Prefer hybrid planner (advisory)")
 
     def _add_explain_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the explain command (routing transparency)."""
@@ -327,6 +326,33 @@ Examples:
             "topic", choices=["gates", "algorithms", "applications", "hardware"], help="Topic for the quiz", nargs="?"
         )
 
+    def _add_install_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add install command."""
+        parser = subparsers.add_parser(
+            "install",
+            help="Install optional components for acceleration",
+            description="Install optional components based on system capabilities",
+            epilog="Examples:\n  ariadne install --accelerate\n  ariadne install cuda apple\n  ariadne install --list\n  ariadne install --dry-run --accelerate",
+        )
+
+        parser.add_argument(
+            "--accelerate", action="store_true", help="Install all available acceleration packages for current system"
+        )
+
+        parser.add_argument(
+            "packages",
+            nargs="*",
+            help="Specific packages to install (e.g., cuda apple tensor_network)",
+        )
+
+        parser.add_argument("--list", action="store_true", help="List available packages for current system")
+
+        parser.add_argument(
+            "--dry-run", action="store_true", help="Show what would be installed without actually installing"
+        )
+
+        parser.add_argument("--force", action="store_true", help="Reinstall packages even if already installed")
+
     def _add_simulate_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the simulate command."""
         parser = subparsers.add_parser(
@@ -348,6 +374,19 @@ Examples:
         parser.add_argument("--output", help="Output file for results (JSON format)")
 
         parser.add_argument("--config", help="Configuration file path")
+        parser.add_argument("--predict-route", action="store_true", help="Use predictor to choose backend")
+        parser.add_argument("--hybrid", action="store_true", help="Prefer hybrid planner (advisory)")
+
+    def _add_predict_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add the predict command (performance estimates)."""
+        parser = subparsers.add_parser(
+            "predict",
+            help="Predict performance across backends",
+            description="Estimate time/memory/success rate across available backends and suggest the best",
+        )
+        parser.add_argument("circuit", help="Path to quantum circuit file (QASM or QPY)")
+        parser.add_argument("--backends", help="Comma-separated backends to consider (defaults to available)")
+        parser.add_argument("--optimize-for", choices=["time", "memory", "success"], default="time")
 
     def _add_config_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the config command."""
@@ -495,6 +534,122 @@ Examples:
         info_parser = learning_subparsers.add_parser("info", help="Get detailed information about a learning resource")
         info_parser.add_argument("resource_name", help="Name of the learning resource")
 
+    def _cmd_install(self, args: argparse.Namespace) -> int:
+        """Execute the install command."""
+        try:
+            from .install import Installer
+        except ImportError:
+            if self.logger:
+                self.logger.error("Install module not available")
+            print("Error: Install module not available")
+            return 1
+
+        installer = Installer(dry_run=args.dry_run, force=args.force)
+
+        if args.list:
+            return installer.list_available()
+        elif args.accelerate:
+            return installer.install_accelerate()
+        elif args.packages:
+            return installer.install_specific(args.packages)
+        else:
+            print("No action specified. Use --help for options.")
+            return 1
+
+    def _add_datasets_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add the datasets command (list/generate)."""
+        parser = subparsers.add_parser(
+            "datasets",
+            help="Manage benchmark datasets",
+            description="List or generate benchmark dataset circuits (OpenQASM 2.0)",
+            epilog="Examples:\n  ariadne datasets list\n  ariadne datasets generate --family all --sizes 10,20,30,40,50\n  ariadne datasets generate --family vqe_hea --sizes 10,20 --depth 3\n  ariadne datasets generate --family qft --output-dir ~/.ariadne/datasets",
+        )
+        sub = parser.add_subparsers(dest="datasets_action", help="Dataset actions")
+
+        p_list = sub.add_parser("list", help="List available dataset files")
+        p_list.add_argument("--dir", dest="dir", help="Directory to list (defaults to repo or ~/.ariadne/datasets)")
+
+        p_gen = sub.add_parser("generate", help="Generate dataset circuits")
+        p_gen.add_argument(
+            "--family",
+            choices=["ghz", "qft", "vqe_hea", "all"],
+            default="all",
+            help="Circuit family to generate",
+        )
+        p_gen.add_argument(
+            "--sizes",
+            default="10,20,30,40,50",
+            help="Comma-separated qubit sizes (e.g., 10,20,30)",
+        )
+        p_gen.add_argument(
+            "--depth",
+            type=int,
+            default=2,
+            help="Depth for VQE HEA (ignored for GHZ/QFT)",
+        )
+        p_gen.add_argument("--output-dir", help="Directory to write datasets (defaults to repo or ~/.ariadne/datasets)")
+
+    def _cmd_datasets(self, args: argparse.Namespace) -> int:
+        """Execute the datasets command."""
+        from ..datasets import DEFAULT_SIZES, generate_datasets, resolve_datasets_dir
+
+        if args.datasets_action == "list":
+            target = resolve_datasets_dir(args.dir)
+            files = sorted(target.glob("*.qasm*"))
+            print(f"Dataset directory: {target}")
+            if not files:
+                print("No dataset files found. Use 'ariadne datasets generate' to create some.")
+                return 0
+            for p in files:
+                print(f"- {p.name}")
+            return 0
+
+        if args.datasets_action == "generate":
+            if args.sizes.strip().lower() == "all":
+                sizes = list(DEFAULT_SIZES)
+            else:
+                try:
+                    sizes = [int(s.strip()) for s in args.sizes.split(",") if s.strip()]
+                except ValueError:
+                    print("Invalid --sizes. Use comma-separated integers or 'all'.")
+                    return 2
+
+            written = generate_datasets(
+                families=[args.family],
+                sizes=sizes,
+                depth=getattr(args, "depth", 2),
+                output_dir=args.output_dir,
+            )
+            print(
+                f"Wrote {len(written)} files to {written[0].parent if written else resolve_datasets_dir(args.output_dir)}"
+            )
+            for p in written:
+                print(f"- {p.name}")
+            return 0
+
+        print("No action specified. Use --help for options.")
+        return 1
+
+    def _add_repro_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add the reproducibility (cross-validation) command."""
+        parser = subparsers.add_parser(
+            "repro",
+            help="Cross-validate results across backends",
+            description="Run a circuit across multiple backends and compare distributions",
+            epilog="Examples:\n  ariadne repro --circuit ghz_20\n  ariadne repro --circuit benchmarks/datasets/qft_10.qasm2 --backends qiskit,tensor_network --shots 2000\n  ariadne repro --circuit vqe_hea_d2_10 --tolerance 0.08 --output report.json",
+        )
+        parser.add_argument("--circuit", required=True, help="Dataset name or QASM file path")
+        parser.add_argument("--backends", help="Comma-separated backends (defaults to a sensible set)")
+        parser.add_argument("--shots", type=int, default=1000, help="Number of shots per backend")
+        parser.add_argument("--tolerance", type=float, default=0.05, help="JSD tolerance for consistency")
+        parser.add_argument("--metric", choices=["jsd"], default="jsd", help="Distance metric")
+        parser.add_argument("--output", help="Write full JSON report to file")
+        parser.add_argument("--export-csv", dest="export_csv", help="Export pairwise distances to CSV path")
+        parser.add_argument("--export-md", dest="export_md", help="Export a Markdown summary to path")
+        parser.add_argument("--export-html", dest="export_html", help="Export an HTML summary to path")
+        parser.add_argument("--json", action="store_true", help="Print JSON report to stdout")
+        parser.add_argument("--pretty", action="store_true", help="Pretty-print a summary")
+
     def _cmd_run(self, args: argparse.Namespace) -> int:
         """Execute the run command (unified simulation)."""
         # This is essentially the same as simulate but with better UX
@@ -517,7 +672,7 @@ Examples:
             return 1
 
         try:
-            from ariadne import explain_routing
+            from ..route.routing_tree import explain_routing
 
             print(f"\nRouting Analysis for {args.circuit}:")
             print("=" * 50)
@@ -525,10 +680,9 @@ Examples:
             explanation = explain_routing(circuit)
             print(explanation)
 
-            if args.verbose:
+            if getattr(args, "verbose", False):
                 print("\nDetailed Technical Analysis:")
                 print("-" * 30)
-                # Add more technical details in verbose mode
                 print("Circuit properties:")
                 print(f"  Qubits: {circuit.num_qubits}")
                 print(f"  Depth: {circuit.depth()}")
@@ -549,6 +703,131 @@ Examples:
             if self.logger:
                 self.logger.error(f"Routing explanation failed: {e}")
             return 1
+
+    def _cmd_repro(self, args: argparse.Namespace) -> int:
+        """Execute the reproducibility command."""
+        import json
+
+        try:
+            from ..reproducibility import cross_validate, default_backends
+        except Exception:
+            if self.logger:
+                self.logger.error("Reproducibility module not available")
+            print("Error: reproducibility module not available")
+            return 1
+
+        bk = None
+        if args.backends:
+            bk = [b.strip() for b in args.backends.split(",") if b.strip()]
+        else:
+            bk = default_backends()
+
+        try:
+            from typing import Any, cast
+
+            report: dict[str, Any] = cross_validate(
+                args.circuit,
+                backends=bk,
+                shots=args.shots,
+                tolerance=args.tolerance,
+                metric=args.metric,
+            )
+        except Exception as e:
+            if self.logger:
+                self.logger.error(f"Reproducibility failed: {e}")
+            return 1
+
+        if args.output:
+            try:
+                Path(args.output).write_text(json.dumps(report, indent=2))
+                print(f"Wrote report to {args.output}")
+            except Exception as e:
+                print(f"Failed to write output: {e}")
+
+        # Optional exports
+        if args.export_csv:
+            try:
+                import csv
+
+                with open(args.export_csv, "w", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerow(["pair", "distance"])
+                    distances = cast(dict[str, float], report.get("distances", {}))
+                    for k, v in sorted(distances.items()):
+                        writer.writerow([k, f"{v:.6f}"])
+                print(f"Wrote CSV to {args.export_csv}")
+            except Exception as e:
+                print(f"Failed to write CSV: {e}")
+
+        if args.export_md:
+            try:
+                lines = []
+                lines.append("# Reproducibility Report")
+                lines.append("")
+                lines.append(f"- Circuit: `{args.circuit}`")
+                lines.append(f"- Backends: {', '.join(bk)}")
+                lines.append(f"- Metric: {report['metric']}")
+                lines.append(f"- Tolerance: {report['tolerance']}")
+                lines.append(f"- Consistent: {report['consistent']}")
+                lines.append(f"- Max distance: {report['max_distance']:.6f}")
+                distances = cast(dict[str, float], report.get("distances", {}))
+                if distances:
+                    lines.append("")
+                    lines.append("## Pairwise distances")
+                    for k, v in sorted(distances.items()):
+                        lines.append(f"- {k}: {v:.6f}")
+                Path(args.export_md).write_text("\n".join(lines))
+                print(f"Wrote Markdown to {args.export_md}")
+            except Exception as e:
+                print(f"Failed to write Markdown: {e}")
+
+        if args.export_html:
+            try:
+                html = []
+                html.append("<!DOCTYPE html>")
+                html.append('<html lang="en"><head><meta charset="utf-8"><title>Reproducibility Report</title>')
+                html.append(
+                    "<style>body{font-family:system-ui,Arial,sans-serif;margin:24px} table{border-collapse:collapse} td,th{border:1px solid #ddd;padding:6px 10px} th{background:#f6f8fa}</style>"
+                )
+                html.append("</head><body>")
+                html.append("<h1>Reproducibility Report</h1>")
+                html.append(
+                    f"<p><b>Circuit:</b> <code>{args.circuit}</code><br>"
+                    f"<b>Backends:</b> {', '.join(bk)}<br>"
+                    f"<b>Metric:</b> {report['metric']} &nbsp; <b>Tolerance:</b> {report['tolerance']}<br>"
+                    f"<b>Consistent:</b> {report['consistent']} &nbsp; <b>Max distance:</b> {report['max_distance']:.6f}</p>"
+                )
+                distances = cast(dict[str, float], report.get("distances", {}))
+                if distances:
+                    html.append("<h2>Pairwise distances</h2>")
+                    html.append("<table><thead><tr><th>Pair</th><th>Distance</th></tr></thead><tbody>")
+                    for k, v in sorted(distances.items()):
+                        html.append(f"<tr><td>{k}</td><td>{v:.6f}</td></tr>")
+                    html.append("</tbody></table>")
+                html.append("</body></html>")
+                Path(args.export_html).write_text("\n".join(html), encoding="utf-8")
+                print(f"Wrote HTML to {args.export_html}")
+            except Exception as e:
+                print(f"Failed to write HTML: {e}")
+
+        if args.json:
+            print(json.dumps(report, indent=2))
+        else:
+            # concise summary
+            print("Reproducibility Report")
+            print("=" * 23)
+            print(f"Circuit: {args.circuit}")
+            print(f"Backends: {', '.join(bk)}")
+            print(f"Metric: {report['metric']} | Tolerance: {report['tolerance']}")
+            print(f"Consistent: {report['consistent']}")
+            print(f"Max distance: {report['max_distance']:.4f}")
+            distances = cast(dict[str, float], report.get("distances", {}))
+            if args.pretty and distances:
+                print("\nPairwise distances:")
+                for k, v in sorted(distances.items()):
+                    print(f"- {k}: {v:.4f}")
+
+        return 0
 
     def _cmd_simulate(self, args: argparse.Namespace) -> int:
         """Execute the simulate command."""
@@ -585,6 +864,12 @@ Examples:
         progress.start()
 
         try:
+            # Enable optional predictor/hybrid modes via environment flags
+            if getattr(args, "predict_route", False):
+                os.environ["ARIADNE_ROUTING_PREDICT"] = "1"
+            if getattr(args, "hybrid", False):
+                os.environ["ARIADNE_ROUTING_HYBRID"] = "1"
+
             kwargs = {"shots": args.shots}
             if args.backend:
                 kwargs["backend"] = self._resolve_backend_name(args.backend)
@@ -643,6 +928,64 @@ Examples:
 
             print("\n💡 Try using automatic backend selection (remove --backend flag)")
             return 1
+
+    def _cmd_predict(self, args: argparse.Namespace) -> int:
+        """Execute the predict command (performance estimates)."""
+        try:
+            circuit = self._load_circuit(args.circuit)
+        except Exception as e:
+            print(f"Failed to load circuit: {e}")
+            return 1
+
+        try:
+            from ..route.performance_model import PerformancePredictor
+            from ..route.routing_tree import get_available_backends
+            from ..types import BackendType
+        except Exception as e:
+            print(f"Failed to import prediction modules: {e}")
+            return 1
+
+        predictor = PerformancePredictor()
+        if args.backends:
+            names = [b.strip() for b in args.backends.split(",") if b.strip()]
+        else:
+            names = get_available_backends()
+
+        candidates: list[BackendType] = []
+        for n in names:
+            try:
+                candidates.append(BackendType(n))
+            except Exception:
+                pass
+
+        if not candidates:
+            print("No valid backends to consider.")
+            return 0
+
+        results: list[tuple[BackendType, float, float, float]] = []
+        for b in candidates:
+            pred = predictor.predict_performance(circuit, b)
+            results.append((b, pred.predicted_time, pred.predicted_memory_mb, pred.predicted_success_rate))
+
+        # Choose based on optimize_for
+        if args.optimize_for == "time":
+            best = min(results, key=lambda r: r[1])
+        elif args.optimize_for == "memory":
+            best = min(results, key=lambda r: r[2])
+        else:
+            best = max(results, key=lambda r: r[3])
+
+        print("Predicted Performance")
+        print("=====================")
+        print(f"Circuit: {args.circuit}")
+        print(f"Backends considered: {', '.join(b.value for b, *_ in results)}")
+        print("")
+        print("Backend           Time (s)   Memory (MB)   Success")
+        for b, t, m, s in results:
+            print(f"{b.value:<16} {t:>8.3f}   {m:>11.1f}   {s:>6.2f}")
+        print("")
+        print(f"Recommended ({args.optimize_for}): {best[0].value}")
+        return 0
 
     def _cmd_config(self, args: argparse.Namespace) -> int:
         """Execute the config command."""
@@ -906,14 +1249,14 @@ Examples:
         from ariadne.benchmarking import export_benchmark_report
 
         # Parse algorithms
+        algorithms = ["bell", "qaoa", "vqe", "stabilizer"]  # default
         try:
             from ..algorithms import list_algorithms
 
-            available_algorithms = list_algorithms()
-            algorithms = available_algorithms[:4]  # Use first 4 as default
+            _available = list_algorithms()
         except Exception:
             # Fallback to original algorithms if module not available
-            algorithms = ["bell", "qaoa", "vqe", "stabilizer"]  # default
+            pass
 
         if args.algorithms:
             algorithms = [alg.strip() for alg in args.algorithms.split(",") if alg.strip()]
@@ -1125,6 +1468,7 @@ Examples:
                 print("Image output not implemented in this demo")
 
             return 0
+
         except Exception as e:
             if self.logger:
                 self.logger.error(f"Education visualization failed: {e}")

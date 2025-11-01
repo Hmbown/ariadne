@@ -19,13 +19,14 @@ import numpy as np
 from matplotlib.figure import Figure
 
 try:  # Optional dependency for backward compatibility
-    import seaborn as sns  # type: ignore[import-not-found]
+    import seaborn as sns
 except ImportError:  # pragma: no cover - executed when seaborn is unavailable
+
     class _SeabornStub:
         def set_palette(self, *_args: object, **_kwargs: object) -> None:
             raise RuntimeError("Seaborn is not installed; install the 'viz' extra to enable palette configuration.")
 
-    sns = _SeabornStub()  # type: ignore[assignment]
+    sns: Any = _SeabornStub()  # noqa: F811
 
 
 @dataclass
