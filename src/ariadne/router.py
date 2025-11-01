@@ -107,6 +107,11 @@ def _simulate_stim(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
 def _simulate_qiskit(circuit: QuantumCircuit, shots: int) -> dict[str, int]:
     logger = get_logger("router")
 
+    # Ensure circuit has measurements - required for getting counts
+    if circuit.num_clbits == 0:
+        circuit = circuit.copy()
+        circuit.measure_all()
+
     try:
         from qiskit_aer import AerSimulator
     except ImportError:
@@ -584,11 +589,12 @@ def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: R
                 backend=backend_name,
             ) from exc
 
-    elapsed = perf_counter() - start
+    finally:
+        # Always release resources if they were reserved
+        if reserved_resources and do_resource_checks:
+            resource_manager.release_resources(reserved_resources)
 
-    # Release resources
-    if reserved_resources and do_resource_checks:
-        resource_manager.release_resources(reserved_resources)
+    elapsed = perf_counter() - start
 
     # Log completion
     logger.log_simulation_complete(elapsed, shots, backend=backend_name)
