@@ -26,7 +26,7 @@ except ImportError:  # pragma: no cover - executed when seaborn is unavailable
         def set_palette(self, *_args: object, **_kwargs: object) -> None:
             raise RuntimeError("Seaborn is not installed; install the 'viz' extra to enable palette configuration.")
 
-    sns: Any = _SeabornStub()  # noqa: F811
+    sns = _SeabornStub()
 
 
 @dataclass

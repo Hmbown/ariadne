@@ -11,7 +11,7 @@ from collections.abc import Iterable, Sequence
 from pathlib import Path
 
 from qiskit import QuantumCircuit
-from qiskit.circuit.library import QFT
+from qiskit.circuit.library import QFTGate
 
 DEFAULT_SIZES: tuple[int, ...] = (10, 20, 30, 40, 50)
 
@@ -53,7 +53,7 @@ def ghz_circuit(n: int) -> QuantumCircuit:
 
 def qft_circuit(n: int) -> QuantumCircuit:
     qc = QuantumCircuit(n, n)
-    qc.append(QFT(n), range(n))
+    qc.append(QFTGate(num_qubits=n), range(n))
     qc.measure_all()
     return qc
 
