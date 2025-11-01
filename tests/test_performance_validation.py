@@ -325,7 +325,7 @@ class TestPerformanceStability:
         # busy CI runners with extremely short runtimes do not fail due to scheduler noise.
         if coefficient_of_variation >= _CV_THRESHOLD and max_deviation >= 0.002:
             pytest.fail(
-                "Execution times too variable: " f"CV={coefficient_of_variation:.3f}, deviation={max_deviation:.3f}s"
+                f"Execution times too variable: CV={coefficient_of_variation:.3f}, deviation={max_deviation:.3f}s"
             )
 
     def test_memory_stability(self) -> None:
