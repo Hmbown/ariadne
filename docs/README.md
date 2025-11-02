@@ -5,6 +5,7 @@ Comprehensive documentation for the Ariadne Intelligent Quantum Router.
 ## 📖 Table of Contents
 
 ### Getting Started
+- [Getting Started Guide](GETTING_STARTED.md) — comprehensive introduction with step-by-step examples.
 - [Quick Start](quickstart.md) — run your first routed simulation in minutes.
 - [Installation Summary](installation_summary.md) — environment-specific copy/paste commands.
 - [Comprehensive Installation](comprehensive_installation.md) — detailed platform coverage and optional extras.
