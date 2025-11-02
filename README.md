@@ -96,7 +96,7 @@ pip install ariadne-router[cuda]
 pip install ariadne-router[quantum_platforms]
 ```
 
-> **Note:** The package installs as `ariadne-router` but imports as `ariadne`. This avoids conflicts with the [Ariadne GraphQL library](https://ariadnegraphql.org/). If you use both, consider using separate virtual environments.
+> **Note:** The package installs as `ariadne-router` but imports as `ariadne`. This may conflict with the [Ariadne GraphQL library](https://ariadnegraphql.org/) at the import level, since both use the same import name (`ariadne`). If you use both, consider using separate virtual environments.
 
 ### Basic Example
 
