@@ -228,7 +228,7 @@ from ariadne.enhanced_benchmarking import EnhancedBenchmarkSuite
 
 suite = EnhancedBenchmarkSuite()
 comparison = suite.benchmark_backend_comparison(
-    circuit=your_circuit,
+    circuit=qc,
     backends=['auto', 'qiskit', 'stim'],
     shots=1000
 )
