@@ -354,7 +354,6 @@ Now that you've learned the basics, here's what to explore next:
 
 ### For Students & Educators
 - Explore the [educational examples](../examples/education/)
-- Try the [interactive Colab notebook](https://colab.research.google.com/github/Hmbown/ariadne/blob/main/notebooks/01_ariadne_advantage_fixed.ipynb)
 - Review the [quantum computing primer](quantum_computing_primer.md)
 
 ### For Researchers
