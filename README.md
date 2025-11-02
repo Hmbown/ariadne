@@ -96,7 +96,11 @@ pip install ariadne-router[cuda]
 pip install ariadne-router[quantum_platforms]
 ```
 
-> **Note:** The package installs as `ariadne-router` but imports as `ariadne`. This may conflict with the [Ariadne GraphQL library](https://ariadnegraphql.org/) at the import level, since both use the same import name (`ariadne`). If you use both, consider using separate virtual environments.
+> **Note:** The package installs as `ariadne-router` but imports as `ariadne`. This conflicts with the [Ariadne GraphQL library](https://ariadnegraphql.org/) at the import level. If you use both libraries, use separate virtual environments or consider importing as:
+> ```python
+> import ariadne_router as ariadne  # Alternative import style
+> # Or use separate venvs for each project
+> ```
 
 ### Basic Example
 
@@ -122,8 +126,8 @@ print(f"Explanation: {explain_routing(qc)}")
 **Output:**
 ```
 Backend: stim
-Time: 0.012s
-Explanation: Clifford circuit detected → routed to Stim for optimal performance
+Time: 0.023s
+Explanation: Clifford circuit detected → routed to Stim (stabilizer circuit optimization)
 ```
 
 ---
@@ -207,13 +211,13 @@ Based on this analysis, Ariadne selects the optimal backend:
 
 | Circuit Type | Backend | When Used | Typical Performance |
 |-------------|---------|-----------|-------------------|
-| **Clifford** | Stim | H, S, CNOT, Pauli gates only | ~100,000+ shots/sec |
-| **Low Entanglement** | MPS | Entanglement grows slowly | ~1,000-2,500 shots/sec |
-| **Structured** | Tensor Networks | Specific topology patterns | Varies by circuit |
-| **General** | Qiskit Aer | Universal fallback | Varies by circuit |
+| **Clifford** | Stim | H, S, CNOT, Pauli gates only | Fast for stabilizer circuits |
+| **Low Entanglement** | MPS | Entanglement grows slowly | Efficient for χ < 100 |
+| **Structured** | Tensor Networks | Specific topology patterns | Varies by structure |
+| **General** | Qiskit Aer | Universal fallback | Reliable baseline |
 | **Hardware Accelerated** | JAX-Metal / CUDA | When available (experimental) | Platform dependent |
 
-**Performance benchmarks measured on Apple Silicon M4 Max. Actual results vary by hardware, circuit type, and available backends.**
+**Performance varies by hardware, circuit type, and available backends.**
 
 ### Supported Backends
 
@@ -393,26 +397,19 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed release notes.
 
 ---
 
-## Comparison with Other Tools
+## When to Use Ariadne
 
-| Feature | Ariadne | Direct Simulator Use |
-|---------|---------|---------------------|
-| Automatic backend selection | ✓ | Manual |
-| Multiple simulators | ✓ | One at a time |
-| Educational tools | ✓ | Varies |
-| Hardware acceleration | ✓ (optional) | Depends on simulator |
-| Unified API | ✓ | Different APIs |
+**Good fit:**
+- Learning quantum algorithms without simulator expertise
+- Teaching quantum computing (consistent interface)
+- Research requiring cross-backend validation
+- Prototyping where "fast enough" matters more than maximum performance
 
-**When to use Ariadne:**
-- You want automatic optimization without manual backend selection
-- You're teaching or learning quantum computing
-- You need to compare results across different simulation methods
-- You want a consistent interface across multiple backends
-
-**When NOT to use Ariadne:**
-- You need fine-grained control over specific simulator parameters
-- You're researching simulator algorithms themselves
-- You have strict performance requirements for a specific backend
+**Not recommended:**
+- Fine-grained simulator parameter control needed
+- Researching simulator algorithms themselves
+- Production workloads with strict latency requirements
+- When you already have an optimal simulator setup
 
 ---
 

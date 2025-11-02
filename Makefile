@@ -1,4 +1,4 @@
-.PHONY: test install dev-install lint format clean help docker-build-prod docker-build-dev docker-push-prod docker-push-dev docker-run-prod compose-dev compose-test release-check
+.PHONY: test install dev-install lint format clean help docker-build-prod docker-build-dev docker-push-prod docker-push-dev docker-run-prod compose-dev compose-test release-check bench
 
 help:
 	@echo "Ariadne Development Commands"
@@ -18,6 +18,7 @@ help:
 	@echo "  make compose-test        Run test compose service"
 	@echo "  make publish-testpypi    Upload dist/* to TestPyPI (requires env vars)"
 	@echo "  make publish-pypi        Upload dist/* to PyPI (requires env vars)"
+	@echo "  make bench               Run reproducible benchmarks"
 	@echo "  make build-release       Build with explicit VERSION via setuptools_scm"
 
 # Container image coordinates (override OWNER on invocation)
@@ -110,3 +111,7 @@ compose-dev:
 
 compose-test:
 	docker-compose up --abort-on-container-exit ariadne-test
+
+
+bench: ## Run reproducible benchmarks for HN post
+python benchmarks/create_benchmark_table.py
