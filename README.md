@@ -207,7 +207,7 @@ For more examples, see the [examples directory](examples/) and [educational tuto
 
 ```python
 # Override automatic selection when needed
-result = simulate(circuit, backend='stim', shots=1000)
+result = simulate(qc, backend='stim', shots=1000)
 ```
 
 ### Routing Strategies
