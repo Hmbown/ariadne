@@ -218,7 +218,7 @@ from ariadne import RoutingStrategy, ComprehensiveRoutingTree
 router = ComprehensiveRoutingTree()
 
 # Use specific routing strategies
-result = router.simulate(circuit, strategy=RoutingStrategy.SPEED_FIRST)
+result = router.simulate(qc, strategy=RoutingStrategy.SPEED_FIRST)
 ```
 
 ### Backend Comparison
