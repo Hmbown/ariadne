@@ -138,6 +138,71 @@ Ariadne analyzes your quantum circuit using:
 4. **Resource Estimation**: Considers circuit depth, width, and gate count
 5. **Hardware Detection**: Checks for available accelerators (Apple Silicon, CUDA)
 
+### Routing Decision Tree
+
+Here's how Ariadne's intelligent routing engine makes decisions:
+
+```mermaid
+graph TD
+    A[Quantum Circuit] --> B{Circuit Type?};
+    B --> C{Clifford?};
+    B --> D{General?};
+
+    C --> E{Stim available?};
+    E -->|Yes| F[Stim Backend];
+    E -->|No| G[Qiskit Backend];
+
+    D --> H{Circuit Size?};
+    H --> I{"Small (<= 20 qubits)"};
+    H --> J{"Medium (21-35 qubits)"};
+    H --> K{"Large (> 35 qubits)"};
+
+    I --> L{Hardware?};
+    L -->|Apple Silicon with JAX/Metal| M[JAX/Metal Backend];
+    L -->|NVIDIA GPU with CUDA| N[CUDA Backend];
+    L -->|CPU or other| O{Optional Backends?};
+    O -->|Cirq| P[Cirq Backend];
+    O -->|Qulacs| Q[Qulacs Backend];
+    O -->|PennyLane| R[PennyLane Backend];
+    O -->|None| G;
+
+    J --> S{Entanglement?};
+    S --> T{Low};
+    S --> U{High};
+
+    T --> V{MPS available?};
+    V -->|Yes| W[MPS Backend];
+    V -->|No| X{Tensor Network available?};
+    X -->|Yes| Y[Tensor Network Backend];
+    X -->|No| G;
+
+    U --> Z{Hardware?};
+    Z -->|NVIDIA GPU with CUDA| N;
+    Z -->|Apple Silicon with JAX/Metal| M;
+    Z -->|CPU or other| AA{Optional Backends?};
+    AA -->|OpenCL| AB[OpenCL Backend];
+    AA -->|Cirq| P;
+    AA -->|Qulacs| Q;
+    AA -->|None| G;
+
+    K --> AC{Entanglement?};
+    AC --> AD{Low};
+    AC --> AE{High};
+
+    AD --> AF{MPS available?};
+    AF -->|Yes| W;
+    AF -->|No| X;
+
+    AE --> AG{Specialized Backends?};
+    AG -->|Tensor Network| Y;
+    AG -->|DDSIM| AH[DDSIM Backend];
+    AG -->|Braket| AI[Braket Backend];
+    AG -->|Q#| AJ[Q# Backend];
+    AG -->|None| G;
+```
+
+### Backend Selection Summary
+
 Based on this analysis, Ariadne selects the optimal backend:
 
 | Circuit Type | Backend | When Used | Typical Performance |
