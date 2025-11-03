@@ -58,7 +58,7 @@ jobs:
         continue-on-error: true
         run: safety scan --json --output safety-report.json
       - name: Upload security reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: security-reports
@@ -132,7 +132,7 @@ jobs:
           fail_ci_if_error: false
       - name: Upload test artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-results-${{ runner.os }}-${{ matrix.python-version }}
           path: |
@@ -200,7 +200,7 @@ jobs:
           done
       - name: Upload Example Artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: example-outputs
           path: |
@@ -298,7 +298,7 @@ jobs:
               print('✅ No significant performance regressions detected')
           "
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: benchmark-results
@@ -332,7 +332,7 @@ jobs:
               f.write('\\n'.join(report))
           "
       - name: Upload performance report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: performance-report
@@ -358,7 +358,7 @@ jobs:
       - name: Check package
         run: twine check dist/*
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dist
           path: dist/
@@ -455,7 +455,7 @@ jobs:
           print('Reproducibility passed with max distance =', data['max_distance'])
           PY
       - name: Upload reproducibility artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: reproducibility-report
@@ -476,7 +476,7 @@ jobs:
             --export-md benchmarks/results/repro_qft10.md \
             --export-html benchmarks/results/repro_qft10.html
       - name: Upload QFT reproducibility artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: reproducibility-qft10
