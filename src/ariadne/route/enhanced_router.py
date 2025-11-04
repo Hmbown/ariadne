@@ -128,17 +128,27 @@ class SpeedOptimizerStrategy(QuantumRouterStrategy):
         speed_score = base_speeds.get(backend, 1.0)
 
         # Clifford circuit optimization
-        if analysis["is_clifford"] and backend == BackendType.STIM:
-            speed_score = 10.0
-        elif not analysis["is_clifford"] and backend == BackendType.STIM:
+        if analysis["is_clifford"]:
+            if backend == BackendType.STIM:
+                speed_score = 10.0
+            elif backend == BackendType.DDSIM:
+                # DDSIM is also good for Clifford circuits as a fallback
+                speed_score = 9.0
+            elif backend == BackendType.QISKIT:
+                # Qiskit can handle Clifford circuits well
+                speed_score = 7.0
+        elif backend == BackendType.STIM:
+            # STIM can only handle Clifford circuits
             speed_score = 0.0
 
-        # Hardware acceleration
-        if backend == BackendType.JAX_METAL and context.hardware_profile.apple_silicon:
-            speed_score *= 1.8
-        elif backend == BackendType.CUDA and context.hardware_profile.cuda_capable:
-            speed_score *= 2.0
-        elif backend == BackendType.CUDA and not context.hardware_profile.cuda_capable:
+        # Hardware acceleration (but don't let it override Clifford optimizations)
+        if not analysis["is_clifford"]:
+            if backend == BackendType.JAX_METAL and context.hardware_profile.apple_silicon:
+                speed_score *= 1.8
+            elif backend == BackendType.CUDA and context.hardware_profile.cuda_capable:
+                speed_score *= 2.0
+
+        if backend == BackendType.CUDA and not context.hardware_profile.cuda_capable:
             speed_score = 0.0
 
         return RouteScore(
@@ -176,9 +186,17 @@ class AccuracyOptimizerStrategy(QuantumRouterStrategy):
 
         accuracy_score = base_accuracy.get(backend, 5.0)
 
-        if analysis["is_clifford"] and backend == BackendType.STIM:
-            accuracy_score = 10.0
-        elif not analysis["is_clifford"] and backend == BackendType.STIM:
+        if analysis["is_clifford"]:
+            if backend == BackendType.STIM:
+                accuracy_score = 10.0
+            elif backend == BackendType.DDSIM:
+                # DDSIM is also accurate for Clifford circuits
+                accuracy_score = 9.5
+            elif backend == BackendType.QISKIT:
+                # Qiskit is accurate for Clifford circuits
+                accuracy_score = 8.5
+        elif backend == BackendType.STIM:
+            # STIM can only handle Clifford circuits
             accuracy_score = 0.0
 
         return RouteScore(
@@ -258,10 +276,14 @@ class EnhancedQuantumRouter:
                 BackendType.PENNYLANE,
                 lambda circ: hasattr(circ, "parameters") and len(circ.parameters) > 0,
             ),
-            # Prefer MPS if either the MPS analyzer or topology suggests it
+            # Prefer MPS if either the MPS analyzer or topology suggests it, BUT NOT for Clifford circuits
+            # (Clifford circuits should use STIM when available, or fall through to Phase 2 scoring)
             (
                 BackendType.MPS,
-                lambda circ: (should_use_mps(circ) or _topology_prefers_mps(circ)),
+                lambda circ: (
+                    not is_clifford_circuit(circ)  # Exclude Clifford circuits from MPS fast-path
+                    and (should_use_mps(circ) or _topology_prefers_mps(circ))
+                ),
             ),
             # Prefer Tensor Network when analysis recommends it
             (
@@ -391,9 +413,13 @@ class EnhancedQuantumRouter:
         """Check backend availability."""
         try:
             if backend == BackendType.STIM:
-                import importlib.util
+                # Try to actually import stim instead of just checking spec
+                try:
+                    import stim  # noqa: F401
 
-                return importlib.util.find_spec("stim") is not None
+                    return True
+                except ImportError:
+                    return False
             elif backend == BackendType.JAX_METAL:
                 return self.user_context.hardware_profile.apple_silicon
             elif backend == BackendType.CUDA:

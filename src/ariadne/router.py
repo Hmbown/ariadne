@@ -454,6 +454,83 @@ def _sample_statevector_counts(circuit: QuantumCircuit, shots: int, seed: int | 
 # Core Execution Logic
 
 
+def _generate_routing_explanation(
+    circuit: QuantumCircuit, backend_used: BackendType, routing_decision: RoutingDecision
+) -> str:
+    """
+    Generate a routing explanation that matches the actual routing decision.
+
+    Parameters
+    ----------
+    circuit : QuantumCircuit
+        The circuit that was routed.
+    backend_used : BackendType
+        The backend that was actually used.
+    routing_decision : RoutingDecision
+        The routing decision made by the router.
+
+    Returns
+    -------
+    str
+        A detailed explanation of the routing decision.
+    """
+    import platform
+
+    from .route.analyze import analyze_circuit, is_clifford_circuit
+    from .route.mps_analyzer import should_use_mps
+    from .route.routing_tree import get_routing_tree
+
+    # Get backend availability from routing tree
+    tree = get_routing_tree()
+    backend_availability_lines = "\n".join(
+        f"- {backend.value}: {'✅' if available else '❌'}"
+        for backend, available in tree.backend_availability.items()
+    )
+
+    # Get circuit analysis details
+    analysis_details = analyze_circuit(circuit)
+    analysis_summary = "\n".join(f"- {key}: {value}" for key, value in analysis_details.items())
+
+    # Format alternatives
+    alternatives_text = (
+        "\n".join(f"  - {backend.value}: confidence {score:.2f}" for backend, score in routing_decision.alternatives)
+        if routing_decision.alternatives
+        else "  (no alternatives)"
+    )
+
+    explanation = f"""
+Routing Decision Explanation:
+============================
+
+Circuit Properties:
+- Qubits: {circuit.num_qubits}
+- Gates: {len(circuit)}
+- Depth: {circuit.depth()}
+- Is Clifford: {is_clifford_circuit(circuit)}
+- Estimated Entanglement: {"Low" if should_use_mps(circuit) else "High"}
+
+Hardware Environment:
+- Platform: {platform.system()} {platform.machine()}
+- Apple Silicon: {platform.system() == "Darwin" and platform.machine() in ["arm64", "aarch64"]}
+- CUDA Available: {tree.backend_availability.get(BackendType.CUDA, False)}
+
+Backend Availability:
+{backend_availability_lines}
+
+Selected Backend: {backend_used.value}
+Confidence: {routing_decision.confidence_score:.2f}
+Expected Speedup: {routing_decision.expected_speedup:.2f}x
+Channel Capacity Match: {routing_decision.channel_capacity_match:.2f}
+Alternatives:
+{alternatives_text}
+
+Analysis Details:
+{analysis_summary}
+        """
+
+    return explanation
+
+
 def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: RoutingDecision) -> SimulationResult:
     """
     Execute a simulation using the backend chosen by the router.
@@ -605,10 +682,8 @@ def _execute_simulation(circuit: QuantumCircuit, shots: int, routing_decision: R
     elif backend == BackendType.CUDA and not is_cuda_available():
         warnings_list.append("CUDA backend selected but CUDA not available")
 
-    # Generate routing explanation
-    from .route.routing_tree import explain_routing
-
-    routing_explanation = explain_routing(circuit)
+    # Generate routing explanation that matches the actual decision
+    routing_explanation = _generate_routing_explanation(circuit, backend, routing_decision)
 
     return SimulationResult(
         counts=counts,
