@@ -85,9 +85,9 @@ class TestMPSBackendRigor:
         # Check that empirical probabilities match reference within reasonable tolerance
         for i, (emp_prob, ref_prob) in enumerate(zip(empirical_probs, reference_probs, strict=False)):
             if ref_prob > 0.1:  # Only check significant probabilities
-                assert (
-                    abs(emp_prob - ref_prob) < 0.1
-                ), f"Probability mismatch for state {i:03b}: empirical={emp_prob:.4f}, reference={ref_prob:.4f}"
+                assert abs(emp_prob - ref_prob) < 0.1, (
+                    f"Probability mismatch for state {i:03b}: empirical={emp_prob:.4f}, reference={ref_prob:.4f}"
+                )
 
     def test_mps_handles_high_entanglement_with_truncation(self) -> None:
         """
