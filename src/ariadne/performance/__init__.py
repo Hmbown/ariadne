@@ -30,6 +30,14 @@ from .memory import (
     get_memory_stats,
     optimize_memory,
 )
+from .metrics import (
+    BenchmarkMetricsAggregator,
+    BenchmarkSummary,
+    ExecutionTelemetry,
+    format_duration,
+    format_memory,
+    measure_simulation_run,
+)
 from .parallel import (
     DistributedSimulator,
     ExecutionMode,
@@ -39,14 +47,6 @@ from .parallel import (
     ParallelSimulator,
     get_parallel_simulator,
     simulate_parallel,
-)
-from .metrics import (
-    BenchmarkMetricsAggregator,
-    BenchmarkSummary,
-    ExecutionTelemetry,
-    format_duration,
-    format_memory,
-    measure_simulation_run,
 )
 
 __all__ = [

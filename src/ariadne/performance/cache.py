@@ -250,9 +250,7 @@ class MemoryCacheBackend(CacheBackend):
     def get_statistics(self) -> dict[str, Any]:
         """Return detailed statistics about the cache backend."""
 
-        utilization = (
-            self._current_memory_bytes / self.max_memory_bytes if self.max_memory_bytes > 0 else 0.0
-        )
+        utilization = self._current_memory_bytes / self.max_memory_bytes if self.max_memory_bytes > 0 else 0.0
 
         return {
             "name": self.__class__.__name__,
@@ -340,7 +338,7 @@ class IntelligentCache:
         self._stats["sets"] += 1
         if hasattr(self.backend, "eviction_count"):
             try:
-                self._stats["evictions"] = getattr(self.backend, "eviction_count")
+                self._stats["evictions"] = self.backend.eviction_count
             except Exception as e:
                 # Fallback: keep previous value if backend doesn't expose eviction count
                 self.logger.debug(f"Failed to get eviction_count from backend: {e}")

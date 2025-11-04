@@ -31,7 +31,6 @@ from ..config import (
     load_config,
 )
 from ..core import configure_logging, get_logger
-from ..router import simulate
 from ..performance import (
     BenchmarkMetricsAggregator,
     format_duration,
@@ -39,6 +38,7 @@ from ..performance import (
     get_simulation_cache,
     measure_simulation_run,
 )
+from ..router import simulate
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -1620,7 +1620,7 @@ Examples:
 
             for iteration in range(1, args.iterations + 1):
                 result, telemetry = measure_simulation_run(
-                    lambda: simulate(circuit, shots=args.shots, backend=backend_type.value),
+                    lambda backend=backend_type.value: simulate(circuit, shots=args.shots, backend=backend),
                     backend=backend_type.value,
                     iteration=iteration,
                     shots=args.shots,
@@ -1654,10 +1654,7 @@ Examples:
             results[backend_type.value] = summary_dict
 
             if summary.successes:
-                print(
-                    f"  Success rate: {summary.successes}/{summary.iterations} "
-                    f"({summary.success_rate:.2%})"
-                )
+                print(f"  Success rate: {summary.successes}/{summary.iterations} ({summary.success_rate:.2%})")
                 print(f"  Average time: {format_duration(summary.avg_time_s)}")
                 print(f"  Min time: {format_duration(summary.min_time_s)}")
                 print(f"  Max time: {format_duration(summary.max_time_s)}")

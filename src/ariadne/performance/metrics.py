@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from statistics import mean, median, pstdev
-from typing import Any, Callable, Iterable
-
 import time
 import tracemalloc
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass
+from statistics import mean, median, pstdev
+from typing import Any
 
 
 @dataclass
@@ -113,11 +113,7 @@ class BenchmarkMetricsAggregator:
         else:
             avg_time = min_time = max_time = median_time = std_time = throughput = None
 
-        peak_memory_kb = (
-            max(sample.peak_memory_kb for sample in self._telemetry)
-            if self._telemetry
-            else None
-        )
+        peak_memory_kb = max(sample.peak_memory_kb for sample in self._telemetry) if self._telemetry else None
 
         success_rate = len(successes) / iterations if iterations else 0.0
 
