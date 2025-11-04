@@ -111,7 +111,6 @@ class BenchmarkMetricsAggregator:
             std_time = pstdev(durations) if len(durations) > 1 else 0.0
             throughput = self.shots / avg_time if avg_time > 0 else None
         else:
-            durations = []
             avg_time = min_time = max_time = median_time = std_time = throughput = None
 
         peak_memory_kb = (
