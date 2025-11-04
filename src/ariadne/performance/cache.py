@@ -340,7 +340,7 @@ class IntelligentCache:
         self._stats["sets"] += 1
         if hasattr(self.backend, "eviction_count"):
             try:
-                self._stats["evictions"] = getattr(self.backend, "eviction_count")
+                self._stats["evictions"] = self.backend.eviction_count  # type: ignore[attr-defined]
             except Exception as e:
                 # Fallback: keep previous value if backend doesn't expose eviction count
                 self.logger.debug(f"Failed to get eviction_count from backend: {e}")

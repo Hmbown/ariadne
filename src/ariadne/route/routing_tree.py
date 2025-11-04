@@ -8,6 +8,7 @@ routing strategies and backends available in Ariadne into a unified decision fra
 from __future__ import annotations
 
 import platform
+import sys
 from dataclasses import dataclass, field
 from enum import Enum
 from importlib.util import find_spec
@@ -90,6 +91,9 @@ class ComprehensiveRoutingTree:
 
         def _safe_find_spec(module_name: str) -> bool:
             """Safely check if a module exists without raising exceptions."""
+            if module_name in sys.modules:
+                return True
+
             try:
                 return find_spec(module_name) is not None
             except (ModuleNotFoundError, ValueError, ImportError, AttributeError):

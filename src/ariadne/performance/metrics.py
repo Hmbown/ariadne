@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from statistics import mean, median, pstdev
-from typing import Any, Callable, Iterable
-
 import time
 import tracemalloc
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass
+from statistics import mean, median, pstdev
+from typing import Any
 
 
 @dataclass

@@ -31,7 +31,6 @@ from ..config import (
     load_config,
 )
 from ..core import configure_logging, get_logger
-from ..router import simulate
 from ..performance import (
     BenchmarkMetricsAggregator,
     format_duration,
@@ -39,6 +38,7 @@ from ..performance import (
     get_simulation_cache,
     measure_simulation_run,
 )
+from ..router import simulate
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -1613,15 +1613,20 @@ Examples:
         results = {}
 
         for backend_type in backends:
-            print(f"\nBenchmarking {backend_type.value}...")
+            backend_value = backend_type.value
+            print(f"\nBenchmarking {backend_value}...")
 
-            aggregator = BenchmarkMetricsAggregator(backend=backend_type.value, shots=args.shots)
+            aggregator = BenchmarkMetricsAggregator(backend=backend_value, shots=args.shots)
             counts_preview: dict[str, Any] | None = None
 
             for iteration in range(1, args.iterations + 1):
                 result, telemetry = measure_simulation_run(
-                    lambda: simulate(circuit, shots=args.shots, backend=backend_type.value),
-                    backend=backend_type.value,
+                    lambda backend=backend_value: simulate(
+                        circuit,
+                        shots=args.shots,
+                        backend=backend,
+                    ),
+                    backend=backend_value,
                     iteration=iteration,
                     shots=args.shots,
                 )
@@ -1651,7 +1656,7 @@ Examples:
             if counts_preview:
                 summary_dict["counts_preview"] = counts_preview
 
-            results[backend_type.value] = summary_dict
+            results[backend_value] = summary_dict
 
             if summary.successes:
                 print(
