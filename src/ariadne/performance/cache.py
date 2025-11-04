@@ -376,8 +376,8 @@ class IntelligentCache:
         if hasattr(self.backend, "get_statistics"):
             try:
                 stats["backend"] = self.backend.get_statistics()
-            except Exception:
-                self.logger.debug("Unable to collect backend cache statistics", exc_info=True)
+            except Exception as e:
+                self.logger.debug(f"Unable to collect backend cache statistics: {e}")
 
         return stats
 
