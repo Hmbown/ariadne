@@ -130,6 +130,8 @@ class MemoryCacheBackend(CacheBackend):
         self._cache: dict[str, CacheEntry] = {}
         self._access_order: list[str] = []  # For LRU
         self._current_memory_bytes = 0
+        self._peak_memory_bytes = 0
+        self._eviction_count = 0
 
         self.logger = get_logger("memory_cache")
 
@@ -189,6 +191,8 @@ class MemoryCacheBackend(CacheBackend):
         self._cache[key] = entry
         self._access_order.append(key)
         self._current_memory_bytes += size
+        if self._current_memory_bytes > self._peak_memory_bytes:
+            self._peak_memory_bytes = self._current_memory_bytes
 
     def delete(self, key: str) -> bool:
         """Delete a value from the cache."""
@@ -210,6 +214,8 @@ class MemoryCacheBackend(CacheBackend):
         self._cache.clear()
         self._access_order.clear()
         self._current_memory_bytes = 0
+        self._peak_memory_bytes = 0
+        self._eviction_count = 0
 
     def keys(self) -> list[str]:
         """Get all keys in the cache."""
@@ -221,6 +227,8 @@ class MemoryCacheBackend(CacheBackend):
 
     def _evict_if_needed(self, new_entry_size: int) -> None:
         """Evict entries if needed to make space."""
+        evicted_entries = 0
+
         # Check memory limit
         while self._current_memory_bytes + new_entry_size > self.max_memory_bytes or len(self._cache) >= self.max_size:
             if not self._cache:
@@ -232,8 +240,36 @@ class MemoryCacheBackend(CacheBackend):
                 entry = self._cache[lru_key]
                 self._current_memory_bytes -= entry.size
                 del self._cache[lru_key]
+                evicted_entries += 1
 
                 self.logger.debug(f"Evicted cache entry: {lru_key}")
+
+        if evicted_entries:
+            self._eviction_count += evicted_entries
+
+    def get_statistics(self) -> dict[str, Any]:
+        """Return detailed statistics about the cache backend."""
+
+        utilization = (
+            self._current_memory_bytes / self.max_memory_bytes if self.max_memory_bytes > 0 else 0.0
+        )
+
+        return {
+            "name": self.__class__.__name__,
+            "entries": len(self._cache),
+            "max_entries": self.max_size,
+            "current_memory_bytes": self._current_memory_bytes,
+            "peak_memory_bytes": self._peak_memory_bytes,
+            "max_memory_bytes": self.max_memory_bytes,
+            "memory_utilization": utilization,
+            "evictions": self._eviction_count,
+        }
+
+    @property
+    def eviction_count(self) -> int:
+        """Return the number of evictions performed by this backend."""
+
+        return self._eviction_count
 
 
 class IntelligentCache:
@@ -302,6 +338,12 @@ class IntelligentCache:
 
         self.backend.set(key, value, ttl)
         self._stats["sets"] += 1
+        if hasattr(self.backend, "eviction_count"):
+            try:
+                self._stats["evictions"] = getattr(self.backend, "eviction_count")
+            except Exception:
+                # Fallback: keep previous value if backend doesn't expose eviction count
+                pass
         self.logger.debug(f"Cache set: {key}")
 
     def delete(self, key: str) -> bool:
@@ -329,7 +371,15 @@ class IntelligentCache:
         total_requests = self._stats["hits"] + self._stats["misses"]
         hit_rate = self._stats["hits"] / total_requests if total_requests > 0 else 0.0
 
-        return {**self._stats, "hit_rate": hit_rate, "size": self.backend.size()}
+        stats = {**self._stats, "hit_rate": hit_rate, "size": self.backend.size()}
+
+        if hasattr(self.backend, "get_statistics"):
+            try:
+                stats["backend"] = self.backend.get_statistics()
+            except Exception:
+                self.logger.debug("Unable to collect backend cache statistics", exc_info=True)
+
+        return stats
 
     def add_invalidation_rule(self, rule: Callable[[str, Any], bool]) -> None:
         """
@@ -517,6 +567,11 @@ class SimulationCache:
         self.cache._invalidation_rules.pop()
 
         return count
+
+    def get_statistics(self) -> dict[str, Any]:
+        """Expose cache statistics including backend memory usage."""
+
+        return self.cache.get_stats()
 
     def _backend_health_rule(self, key: str, value: Any) -> bool:
         """Rule to invalidate cache entries when backend health is poor."""

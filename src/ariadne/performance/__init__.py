@@ -40,6 +40,14 @@ from .parallel import (
     get_parallel_simulator,
     simulate_parallel,
 )
+from .metrics import (
+    BenchmarkMetricsAggregator,
+    BenchmarkSummary,
+    ExecutionTelemetry,
+    format_duration,
+    format_memory,
+    measure_simulation_run,
+)
 
 __all__ = [
     # Caching
@@ -74,4 +82,11 @@ __all__ = [
     "ParallelSimulator",
     "get_parallel_simulator",
     "simulate_parallel",
+    # Metrics / telemetry
+    "BenchmarkMetricsAggregator",
+    "BenchmarkSummary",
+    "ExecutionTelemetry",
+    "format_duration",
+    "format_memory",
+    "measure_simulation_run",
 ]

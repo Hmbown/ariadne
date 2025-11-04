@@ -32,6 +32,13 @@ from ..config import (
 )
 from ..core import configure_logging, get_logger
 from ..router import simulate
+from ..performance import (
+    BenchmarkMetricsAggregator,
+    format_duration,
+    format_memory,
+    get_simulation_cache,
+    measure_simulation_run,
+)
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -1538,6 +1545,35 @@ Examples:
         else:
             print("No active pools")
 
+        # Show cache status
+        print("\nSimulation Cache:")
+        print("-" * 30)
+
+        cache = get_simulation_cache()
+        cache_stats = cache.get_statistics()
+        hits = cache_stats.get("hits", 0)
+        misses = cache_stats.get("misses", 0)
+        hit_rate = cache_stats.get("hit_rate", 0.0)
+
+        print(f"  Entries: {cache_stats.get('size', 0)}")
+        print(f"  Requests: {hits + misses} (hits: {hits}, misses: {misses}, hit rate: {hit_rate:.2%})")
+        print(f"  Sets: {cache_stats.get('sets', 0)}")
+        print(f"  Evictions: {cache_stats.get('evictions', 0)}")
+
+        backend_stats = cache_stats.get("backend", {})
+        if backend_stats:
+            current_bytes = backend_stats.get("current_memory_bytes", 0)
+            peak_bytes = backend_stats.get("peak_memory_bytes", 0)
+            max_bytes = backend_stats.get("max_memory_bytes", 0)
+            utilization = backend_stats.get("memory_utilization", 0.0)
+            print(
+                "  Memory: "
+                f"{current_bytes / 1024:.1f} KB (peak {peak_bytes / 1024:.1f} KB, "
+                f"limit {max_bytes / (1024 * 1024):.1f} MB, utilization {utilization:.2%})"
+            )
+        else:
+            print("  Memory: n/a")
+
         return 0
 
     def _cmd_benchmark(self, args: argparse.Namespace) -> int:
@@ -1579,52 +1615,60 @@ Examples:
         for backend_type in backends:
             print(f"\nBenchmarking {backend_type.value}...")
 
-            try:
-                # Run benchmark iterations
-                times = []
-                success_count = 0
+            aggregator = BenchmarkMetricsAggregator(backend=backend_type.value, shots=args.shots)
+            counts_preview: dict[str, Any] | None = None
 
-                for i in range(args.iterations):
-                    try:
-                        start_time = time.time()
-                        result = simulate(circuit, shots=args.shots, backend=backend_type.value)
-                        end_time = time.time()
+            for iteration in range(1, args.iterations + 1):
+                result, telemetry = measure_simulation_run(
+                    lambda: simulate(circuit, shots=args.shots, backend=backend_type.value),
+                    backend=backend_type.value,
+                    iteration=iteration,
+                    shots=args.shots,
+                )
 
-                        times.append(end_time - start_time)
-                        success_count += 1
+                aggregator.add(telemetry)
 
-                        print(f"  Iteration {i + 1}: {end_time - start_time:.4f}s")
-                        if i == 0:
+                if telemetry.success:
+                    print(
+                        f"  Iteration {iteration}: {format_duration(telemetry.duration_s)} "
+                        f"(peak {format_memory(telemetry.peak_memory_kb)})"
+                    )
+                    if counts_preview is None and result is not None and hasattr(result, "counts"):
+                        try:
                             counts_preview = dict(list(result.counts.items())[:3])
-                            print(f"    Sample counts: {counts_preview}")
-                    except Exception as e:
-                        print(f"  Iteration {i + 1}: Failed - {e}")
-
-                # Calculate statistics
-                if times:
-                    avg_time = sum(times) / len(times)
-                    min_time = min(times)
-                    max_time = max(times)
-
-                    results[backend_type.value] = {
-                        "success_rate": success_count / args.iterations,
-                        "avg_time": avg_time,
-                        "min_time": min_time,
-                        "max_time": max_time,
-                        "iterations": args.iterations,
-                        "shots": args.shots,
-                    }
-
-                    print(f"  Success rate: {success_count}/{args.iterations} ({success_count / args.iterations:.2%})")
-                    print(f"  Average time: {avg_time:.4f}s")
-                    print(f"  Min time: {min_time:.4f}s")
-                    print(f"  Max time: {max_time:.4f}s")
-                    print(f"  Throughput: {args.shots / avg_time:.0f} shots/s")
+                        except Exception:
+                            counts_preview = None
+                        else:
+                            if counts_preview:
+                                print(f"    Sample counts: {counts_preview}")
                 else:
-                    print("  All iterations failed")
+                    print(f"  Iteration {iteration}: Failed - {telemetry.error}")
 
-            except Exception as e:
-                print(f"  Benchmark failed: {e}")
+            summary = aggregator.summary()
+            summary_dict = summary.to_dict()
+            summary_dict["shots"] = args.shots
+            summary_dict["iterations_detail"] = [sample.to_dict() for sample in aggregator.telemetry]
+            if counts_preview:
+                summary_dict["counts_preview"] = counts_preview
+
+            results[backend_type.value] = summary_dict
+
+            if summary.successes:
+                print(
+                    f"  Success rate: {summary.successes}/{summary.iterations} "
+                    f"({summary.success_rate:.2%})"
+                )
+                print(f"  Average time: {format_duration(summary.avg_time_s)}")
+                print(f"  Min time: {format_duration(summary.min_time_s)}")
+                print(f"  Max time: {format_duration(summary.max_time_s)}")
+                print(f"  Median time: {format_duration(summary.median_time_s)}")
+                if summary.std_time_s is not None:
+                    print(f"  Std dev: {format_duration(summary.std_time_s)}")
+                print(f"  Peak memory: {format_memory(summary.peak_memory_kb)}")
+                if summary.throughput_shots_per_s is not None:
+                    print(f"  Throughput: {summary.throughput_shots_per_s:.0f} shots/s")
+            else:
+                print("  All iterations failed")
 
         # Save results if requested
         if args.output and results:
@@ -1637,10 +1681,17 @@ Examples:
             print("-" * 30)
 
             # Sort by average time
-            sorted_results = sorted(results.items(), key=lambda x: x[1]["avg_time"])
+            sorted_results = sorted(
+                results.items(),
+                key=lambda x: (x[1].get("avg_time_s") or float("inf")),
+            )
 
             for backend, stats in sorted_results:
-                print(f"{backend}: {stats['avg_time']:.4f}s avg, {stats['throughput']:.0f} shots/s")
+                avg_time = stats.get("avg_time_s")
+                throughput = stats.get("throughput_shots_per_s")
+                avg_str = format_duration(avg_time)
+                throughput_str = f"{throughput:.0f} shots/s" if throughput is not None else "n/a"
+                print(f"{backend}: {avg_str} avg, {throughput_str}")
 
         return 0
 
