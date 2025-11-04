@@ -1568,8 +1568,8 @@ Examples:
             utilization = backend_stats.get("memory_utilization", 0.0)
             print(
                 "  Memory: "
-                f"{current_bytes / 1024:.1f} KB (peak {peak_bytes / 1024:.1f} KB, "
-                f"limit {max_bytes / (1024 * 1024):.1f} MB, utilization {utilization:.2%})"
+                f"{format_memory(current_bytes / 1024)} (peak {format_memory(peak_bytes / 1024)}, "
+                f"limit {format_memory(max_bytes / 1024)}, utilization {utilization:.2%})"
             )
         else:
             print("  Memory: n/a")
