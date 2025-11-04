@@ -79,7 +79,7 @@ Alternatively, let Ariadne automatically select an available backend:
   2. Sufficient memory for tensor operations
 
 To install:
-  pip install tensornetwork
+  pip install ariadne-router[quantum_platforms]
 
 Alternatively, let Ariadne automatically select an available backend:
   result = simulate(circuit)  # Don't specify backend_type"""
@@ -90,7 +90,7 @@ Alternatively, let Ariadne automatically select an available backend:
   2. Sufficient memory for MPS operations
 
 To install:
-  pip install qtealeaves
+  pip install ariadne-router[advanced]
 
 Alternatively, let Ariadne automatically select an available backend:
   result = simulate(circuit)  # Don't specify backend_type"""
@@ -100,6 +100,12 @@ Alternatively, let Ariadne automatically select an available backend:
             return """To resolve this issue:
   1. Check if the backend is installed correctly
   2. Verify your system meets the requirements
+
+To install common quantum backends:
+  pip install ariadne-router[quantum_platforms]  # TensorNetwork, PennyLane, etc.
+  pip install ariadne-router[advanced]           # MPS, Cirq, Qulacs, etc.
+  pip install ariadne-router[apple]              # Apple Silicon acceleration
+  pip install ariadne-router[cuda]               # NVIDIA GPU acceleration
 
 Alternatively, let Ariadne automatically select an available backend:
   result = simulate(circuit)  # Don't specify backend_type

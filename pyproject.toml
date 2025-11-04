@@ -4,10 +4,12 @@ description = "Intelligent quantum simulator router with automatic backend selec
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 dynamic = ["version"]
-license = "Apache-2.0"
 authors = [
   { name = "Hunter Bown", email = "hunter@shannonlabs.dev" }
 ]
+
+[project.license]
+text = "Apache-2.0"
 keywords = ["quantum", "simulator", "education", "benchmarking", "reproducibility", "ci-cd", "quantum-algorithms"]
 classifiers = [
   "Development Status :: 4 - Beta",

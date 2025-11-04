@@ -12,17 +12,25 @@ All notable changes to this project will be documented in this file.
 - Common pitfalls section to README addressing import confusion and platform-specific issues
 - Enhanced backend error messages with installation guidance and alternative suggestions
 - Hello Quantum minimal examples for quick getting started
+- Comprehensive test suite for v0.4.5 features
 
 ### Changed
-- Enhanced BackendUnavailableError with actionable installation instructions
+- Enhanced BackendUnavailableError with actionable installation instructions using ariadne-router[extras] format
 - Improved CLI user experience with more discoverable commands
 - Better error messages throughout CLI and simulation interfaces
 - Updated examples with clearer usage patterns
+- Configuration file loading now provides helpful error messages for malformed files
+- Quickstart demonstrations now show correct measurement results (|00⟩, |11⟩ instead of |0000⟩, |1100⟩)
+- Eliminated duplicate log entries in CLI output
 
 ### Fixed
+- **Critical:** Updated license field to PEP 621 compliant format for successful pip installation
 - QFTGate import issue for Qiskit 1.1.2+ compatibility (changed to QFT)
 - Import confusion between ariadne-router package and ariadne import namespace
 - Enhanced user onboarding with step-by-step guidance
+- Doctor command now recommends ariadne-router[extras] packages instead of raw dependencies
+- All installation commands consistently use ariadne-router[extras] format
+- Fixed type annotations and enum comparisons for mypy compatibility
 
 ## [0.4.4] - 2025-11-01
 

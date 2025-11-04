@@ -637,8 +637,12 @@ Examples:
                 "import jax; from jax.lib import xla_bridge",
                 "Apple Silicon acceleration - run: pip install ariadne-router[apple]",
             ),
-            ("tensor_network", "import tensornetwork", "Tensor network simulation - run: pip install tensornetwork"),
-            ("mps", "import qtealeaves", "Matrix product state simulation - run: pip install qtealeaves"),
+            (
+                "tensor_network",
+                "import tensornetwork",
+                "Tensor network simulation - run: pip install ariadne-router[quantum_platforms]",
+            ),
+            ("mps", "import qtealeaves", "Matrix product state simulation - run: pip install ariadne-router[advanced]"),
         ]
 
         for name, test_code, description in backend_tests:
@@ -841,7 +845,8 @@ Examples:
                 qc = QuantumCircuit(2, 2)
                 qc.h(0)
                 qc.cx(0, 1)
-                qc.measure_all()
+                qc.measure(0, 0)
+                qc.measure(1, 1)
                 print("Creating Bell state (maximally entangled 2-qubit state)...")
 
             elif algorithm == "ghz":
@@ -849,7 +854,9 @@ Examples:
                 qc.h(0)
                 qc.cx(0, 1)
                 qc.cx(1, 2)
-                qc.measure_all()
+                qc.measure(0, 0)
+                qc.measure(1, 1)
+                qc.measure(2, 2)
                 print("Creating GHZ state (3-qubit entangled state)...")
 
             elif algorithm == "grover":
@@ -861,7 +868,8 @@ Examples:
                 qc.z([0, 1])  # Phase flip
                 qc.cz(0, 1)  # Controlled-Z
                 qc.h([0, 1])  # Hadamard
-                qc.measure_all()
+                qc.measure(0, 0)
+                qc.measure(1, 1)
                 print("Running Grover's search for marked state |11⟩...")
 
             elif algorithm == "qft":
@@ -874,7 +882,9 @@ Examples:
                 qc.cp(3.14159 / 2, 1, 2)
                 qc.h(2)
                 qc.swap(0, 2)
-                qc.measure_all()
+                qc.measure(0, 0)
+                qc.measure(1, 1)
+                qc.measure(2, 2)
                 print("Applying Quantum Fourier Transform...")
 
             elif algorithm == "vqe":
@@ -887,7 +897,8 @@ Examples:
                 qc.cx(0, 1)
                 qc.ry(math.pi / 8, 0)
                 qc.ry(math.pi / 8, 1)
-                qc.measure_all()
+                qc.measure(0, 0)
+                qc.measure(1, 1)
                 print("Running VQE circuit (hydrogen molecule simulation)...")
 
             else:

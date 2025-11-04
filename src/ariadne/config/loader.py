@@ -704,12 +704,18 @@ def load_config_file() -> dict[str, Any]:
                     # Try YAML first for .ariadnerc (common convention)
                     try:
                         file_config = loader._load_file(str(config_path), ConfigFormat.YAML)
-                    except Exception:
+                    except Exception as yaml_error:
                         # Fallback to JSON if YAML parsing fails
                         try:
                             file_config = loader._load_file(str(config_path), ConfigFormat.JSON)
-                        except Exception:
-                            continue  # Skip this file if both formats fail
+                        except Exception as json_error:
+                            import warnings
+
+                            warnings.warn(
+                                f"Failed to parse config file {config_path}: YAML error: {yaml_error}, JSON error: {json_error}. Using defaults.",
+                                stacklevel=2,
+                            )
+                            continue
                 elif config_path.suffix == ".json":
                     file_config = loader._load_file(str(config_path), ConfigFormat.JSON)
                 else:
@@ -719,7 +725,10 @@ def load_config_file() -> dict[str, Any]:
                 loader._merge_config(config, file_config)
                 break  # Use first found config file
 
-            except Exception:
+            except Exception as e:
+                import warnings
+
+                warnings.warn(f"Failed to load config file {config_path}: {e}. Using defaults.", stacklevel=2)
                 continue  # Skip files that can't be loaded
 
     return config

@@ -46,6 +46,7 @@ class AriadneLogger:
         """
         self.logger = logging.getLogger(f"ariadne.{name}")
         self.logger.setLevel(level)
+        self.logger.propagate = False  # Prevent duplicate logging
         self._context = LogContext()
 
         # Avoid duplicate handlers
