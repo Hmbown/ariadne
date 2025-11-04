@@ -1,4 +1,5 @@
 """Ensure the local src directory is available on sys.path for subprocesses."""
+
 from __future__ import annotations
 
 import sys

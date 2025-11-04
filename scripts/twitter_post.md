@@ -9,7 +9,7 @@
 ⚡ Results: 100x faster for Clifford circuits, 10-50x for low-entanglement
 
 🎓 Built for education with interactive tutorials + 15 quantum algorithms
-🔬 Research-ready with cross-backend validation tools  
+🔬 Research-ready with cross-backend validation tools
 🐳 Production-ready with Docker support & comprehensive testing
 
 Try it: `pip install ariadne-router`
@@ -44,7 +44,7 @@ result = simulate(qc, shots=1000)
 # 23ms vs 2.3s on general backends! 🚀
 ```
 
-### Tweet 4 - Educational Focus  
+### Tweet 4 - Educational Focus
 🎓 Built for quantum education:
 - Interactive circuit builder with step-by-step explanations
 - 15+ quantum algorithms (Grover, Deutsch-Jozsa, VQE, etc.)
@@ -64,7 +64,7 @@ result = simulate(qc, shots=1000)
 
 Especially interested in:
 - Other backends to integrate
-- Educational use cases  
+- Educational use cases
 - Performance optimization ideas
 - Research collaboration opportunities
 

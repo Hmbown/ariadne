@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.5] - 2025-11-04
+
+### Added
+- `ariadne doctor` diagnostic command for comprehensive system health checks
+- `ariadne version` subcommand with detailed version and dependency information
+- `ariadne quickstart` interactive command for new users with algorithm demonstrations
+- Configuration file support (~/.ariadnerc and ./.ariadnerc) with YAML and JSON formats
+- Common pitfalls section to README addressing import confusion and platform-specific issues
+- Enhanced backend error messages with installation guidance and alternative suggestions
+- Hello Quantum minimal examples for quick getting started
+
+### Changed
+- Enhanced BackendUnavailableError with actionable installation instructions
+- Improved CLI user experience with more discoverable commands
+- Better error messages throughout CLI and simulation interfaces
+- Updated examples with clearer usage patterns
+
+### Fixed
+- QFTGate import issue for Qiskit 1.1.2+ compatibility (changed to QFT)
+- Import confusion between ariadne-router package and ariadne import namespace
+- Enhanced user onboarding with step-by-step guidance
+
 ## [0.4.4] - 2025-11-01
 
 ### Security

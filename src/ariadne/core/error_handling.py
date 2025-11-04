@@ -35,7 +35,77 @@ class BackendUnavailableError(AriadneError):
         super().__init__(message, details)
 
     def __str__(self) -> str:
-        return f"Backend '{self.backend_name}' unavailable: {self.reason}"
+        """Generate detailed error message with installation guidance."""
+        base_msg = f"Backend '{self.backend_name}' unavailable: {self.reason}"
+
+        # Installation guidance based on backend type
+        guidance = self._get_installation_guidance()
+
+        if guidance:
+            return f"{base_msg}\n\n{guidance}"
+
+        return base_msg
+
+    def _get_installation_guidance(self) -> str:
+        """Get installation and usage guidance for the backend."""
+        backend_lower = self.backend_name.lower()
+
+        if "cuda" in backend_lower:
+            return """The CUDA backend requires:
+  1. NVIDIA GPU with compute capability ≥ 3.5
+  2. CUDA toolkit 12.x or later
+  3. CuPy library
+
+To install:
+  pip install ariadne-router[cuda]
+
+Alternatively, let Ariadne automatically select an available backend:
+  result = simulate(circuit)  # Don't specify backend_type"""
+
+        elif "metal" in backend_lower or "jax" in backend_lower:
+            return """The Metal backend requires:
+  1. Apple Silicon Mac (M1, M2, M3, or M4)
+  2. JAX with Metal support
+
+To install:
+  pip install ariadne-router[apple]
+
+Alternatively, let Ariadne automatically select an available backend:
+  result = simulate(circuit)  # Don't specify backend_type"""
+
+        elif "tensor" in backend_lower:
+            return """The TensorNetwork backend requires:
+  1. TensorNetwork library
+  2. Sufficient memory for tensor operations
+
+To install:
+  pip install tensornetwork
+
+Alternatively, let Ariadne automatically select an available backend:
+  result = simulate(circuit)  # Don't specify backend_type"""
+
+        elif "mps" in backend_lower:
+            return """The MPS backend requires:
+  1. Matrix Product State simulation library
+  2. Sufficient memory for MPS operations
+
+To install:
+  pip install qtealeaves
+
+Alternatively, let Ariadne automatically select an available backend:
+  result = simulate(circuit)  # Don't specify backend_type"""
+
+        else:
+            # Generic guidance
+            return """To resolve this issue:
+  1. Check if the backend is installed correctly
+  2. Verify your system meets the requirements
+
+Alternatively, let Ariadne automatically select an available backend:
+  result = simulate(circuit)  # Don't specify backend_type
+
+To see available backends on your system:
+  ariadne doctor"""
 
 
 class CircuitTooLargeError(AriadneError):

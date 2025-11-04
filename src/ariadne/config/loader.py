@@ -668,3 +668,105 @@ def load_config(
 
     # Load configuration
     return loader.load(environment=environment, schema_name=schema_name)
+
+
+def load_config_file() -> dict[str, Any]:
+    """
+    Load Ariadne configuration from user config files.
+
+    Search order: ./.ariadnerc, ~/.ariadnerc, defaults
+    Supports YAML and JSON formats.
+
+    Returns:
+        Merged configuration dictionary
+    """
+    config: dict[str, Any] = {}
+
+    # Configuration file search paths
+    search_paths = [
+        Path.cwd() / ".ariadnerc",
+        Path.cwd() / ".ariadne.yaml",
+        Path.cwd() / ".ariadne.yml",
+        Path.cwd() / ".ariadne.json",
+        Path.home() / ".ariadnerc",
+        Path.home() / ".ariadne.yaml",
+        Path.home() / ".ariadne.yml",
+        Path.home() / ".ariadne.json",
+    ]
+
+    loader = ProgressiveConfigLoader()
+
+    for config_path in search_paths:
+        if config_path.exists():
+            try:
+                # Auto-detect format and load
+                if config_path.suffix in [".yaml", ".yml"] or config_path.name == ".ariadnerc":
+                    # Try YAML first for .ariadnerc (common convention)
+                    try:
+                        file_config = loader._load_file(str(config_path), ConfigFormat.YAML)
+                    except Exception:
+                        # Fallback to JSON if YAML parsing fails
+                        try:
+                            file_config = loader._load_file(str(config_path), ConfigFormat.JSON)
+                        except Exception:
+                            continue  # Skip this file if both formats fail
+                elif config_path.suffix == ".json":
+                    file_config = loader._load_file(str(config_path), ConfigFormat.JSON)
+                else:
+                    continue  # Skip unknown extensions
+
+                # Merge configuration
+                loader._merge_config(config, file_config)
+                break  # Use first found config file
+
+            except Exception:
+                continue  # Skip files that can't be loaded
+
+    return config
+
+
+def create_user_config_template() -> ConfigTemplate:
+    """Create a user configuration template with common settings."""
+    template = ConfigTemplate(name="user", description="User configuration for Ariadne")
+
+    # Backend preferences
+    template.add_section(
+        name="backend_preferences",
+        data={
+            "prefer_hardware_acceleration": True,
+            "fallback_order": ["stim", "mps", "tensor_network", "qiskit"],
+        },
+        description="Backend selection preferences",
+    )
+
+    # Logging settings
+    template.add_section(
+        name="logging",
+        data={
+            "level": "INFO",
+            "show_routing_explanations": True,
+        },
+        description="Logging configuration",
+    )
+
+    # Performance settings
+    template.add_section(
+        name="performance",
+        data={
+            "cache_circuit_analysis": True,
+            "parallel_shots": "auto",
+        },
+        description="Performance optimization settings",
+    )
+
+    # Warning settings
+    template.add_section(
+        name="warnings",
+        data={
+            "suboptimal_backend": True,
+            "memory_intensive": True,
+        },
+        description="Warning preferences",
+    )
+
+    return template

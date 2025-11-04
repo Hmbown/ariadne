@@ -132,6 +132,107 @@ Explanation: Clifford circuit detected → routed to Stim (stabilizer circuit op
 
 ---
 
+## Common Pitfalls
+
+### ✗ Import Name Confusion
+
+**Problem:** The package is named `ariadne-router` but imports as `ariadne`
+```python
+# ✗ Wrong
+import ariadne-router  # This won't work
+
+# ✓ Correct
+import ariadne
+from ariadne import simulate
+```
+
+**Solution:** Always use `ariadne` in imports, not `ariadne-router`.
+
+### ✗ Conflict with Ariadne GraphQL
+
+**Problem:** Both `ariadne` (GraphQL) and `ariadne-router` use the same import name
+```python
+# ✗ This creates conflicts if both packages are installed
+import ariadne  # Which package is this?
+```
+
+**Solutions:**
+```python
+# ✓ Option 1: Use separate virtual environments (recommended)
+pip install ariadne-router  # In quantum project venv
+
+# ✓ Option 2: Qualified imports
+import ariadne.router as quantum_router
+result = quantum_router.simulate(circuit)
+
+# ✓ Option 3: Direct function imports
+from ariadne import simulate
+```
+
+### ✗ Wrong Backend Installation
+
+**Problem:** Installing wrong packages for hardware acceleration
+```bash
+# ✗ Wrong - this tries to install GraphQL extras that don't exist
+pip install ariadne[metal]
+
+# ✓ Correct - this installs quantum router with hardware acceleration
+pip install ariadne-router[apple]  # For Apple Silicon
+pip install ariadne-router[cuda]   # For NVIDIA GPUs
+```
+
+### ✗ Missing Measurements
+
+**Problem:** Forgetting to add measurements to circuits
+```python
+# ✗ Circuit with no measurements
+qc = QuantumCircuit(2)
+qc.h(0)
+qc.cx(0, 1)
+result = simulate(qc)  # This will give a warning
+
+# ✓ Circuit with measurements
+qc = QuantumCircuit(2, 2)
+qc.h(0)
+qc.cx(0, 1)
+qc.measure_all()  # or qc.measure(0, 0), qc.measure(1, 1)
+result = simulate(qc)
+```
+
+**Note:** Ariadne will automatically add `measure_all()` if no measurements are present, but it's better to be explicit.
+
+### ✗ Manual Backend Selection Overuse
+
+**Problem:** Always specifying backends manually defeats the purpose of Ariadne
+```python
+# ✗ Misses the point - you're doing the routing manually
+result = simulate(qc, backend_type='qiskit')
+
+# ✓ Let Ariadne choose the optimal backend
+result = simulate(qc)  # Ariadne will pick the best backend
+print(f"Ariadne chose: {result.backend_used}")
+```
+
+**When to manually specify backends:**
+- Debugging specific backend behavior
+- Benchmarking backend performance
+- Reproducing results that require a specific simulator
+
+### ✗ Platform-Specific Issues
+
+**Problem:** Installing Metal backend on non-Apple Silicon
+```bash
+# ✗ This will install but won't work on Intel/AMD
+pip install ariadne-router[apple]  # On non-Apple Silicon
+
+# Check your system first
+ariadne doctor  # This shows what acceleration is available
+```
+
+**Fix:** Use `ariadne doctor` to see what backends work on your system.
+
+---
+
 ## How It Works
 
 Ariadne analyzes your quantum circuit using:

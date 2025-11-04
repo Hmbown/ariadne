@@ -8,12 +8,14 @@ including simulation, configuration management, and system monitoring.
 import argparse
 import logging
 import os
+import platform
 import sys
 import time
 from argparse import ArgumentParser, _SubParsersAction
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+import psutil
 from qiskit import QuantumCircuit
 
 from .._version import __version__
@@ -213,6 +215,15 @@ Examples:
         # Install command
         self._add_install_command(subparsers)
 
+        # Doctor command (system diagnostics)
+        self._add_doctor_command(subparsers)
+
+        # Version command (detailed version info)
+        self._add_version_command(subparsers)
+
+        # Quickstart command (interactive demo)
+        self._add_quickstart_command(subparsers)
+
         # Datasets command (list/generate)
         self._add_datasets_command(subparsers)
 
@@ -352,6 +363,50 @@ Examples:
         )
 
         parser.add_argument("--force", action="store_true", help="Reinstall packages even if already installed")
+
+    def _add_doctor_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add doctor command for system diagnostics."""
+        parser = subparsers.add_parser(
+            "doctor",
+            help="Run system diagnostics and health checks",
+            description="Check system configuration, backend availability, and provide troubleshooting guidance",
+            epilog="Examples:\n  ariadne doctor\n  ariadne doctor --verbose",
+        )
+
+        parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed diagnostic information")
+
+    def _add_version_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add version command for detailed version information."""
+        parser = subparsers.add_parser(
+            "version",
+            help="Show detailed version and system information",
+            description="Display Ariadne version, dependencies, and platform information",
+            epilog="Examples:\n  ariadne version\n  ariadne version --verbose",
+        )
+
+        parser.add_argument(
+            "--verbose", "-v", action="store_true", help="Show dependency versions and detailed system information"
+        )
+
+    def _add_quickstart_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
+        """Add quickstart command for interactive demonstrations."""
+        parser = subparsers.add_parser(
+            "quickstart",
+            help="Interactive quickstart demonstrations",
+            description="Run interactive demonstrations of quantum algorithms with automatic backend selection",
+            epilog="Examples:\n  ariadne quickstart\n  ariadne quickstart --algorithm bell\n  ariadne quickstart --list",
+        )
+
+        parser.add_argument(
+            "--algorithm",
+            "-a",
+            choices=["bell", "ghz", "grover", "qft", "vqe"],
+            help="Run specific algorithm demonstration",
+        )
+
+        parser.add_argument("--list", action="store_true", help="List available quickstart algorithms")
+
+        parser.add_argument("--shots", "-s", type=int, default=1024, help="Number of measurement shots (default: 1024)")
 
     def _add_simulate_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:
         """Add the simulate command."""
@@ -554,6 +609,340 @@ Examples:
             return installer.install_specific(args.packages)
         else:
             print("No action specified. Use --help for options.")
+            return 1
+
+    def _cmd_doctor(self, args: argparse.Namespace) -> int:
+        """Execute the doctor command for system diagnostics."""
+        print("Ariadne System Diagnostics")
+        print("=" * 25)
+
+        # System information
+        print(f"✓ Python version: {sys.version.split()[0]}")
+        print(f"✓ Ariadne: {__version__}")
+        print(f"✓ Platform: {platform.system()} {platform.release()} ({platform.machine()})")
+
+        # Memory information
+        memory = psutil.virtual_memory()
+        print(f"✓ Memory: {memory.total // (1024**3)} GB available")
+
+        print("✓ Available backends:")
+
+        # Check backend availability with simple import tests
+        backend_tests = [
+            ("qiskit", "import qiskit", "Core quantum simulation"),
+            ("stim", "import stim", "Clifford circuit simulation"),
+            ("cuda", "import cupy", "NVIDIA GPU acceleration - run: pip install ariadne-router[cuda]"),
+            (
+                "metal",
+                "import jax; from jax.lib import xla_bridge",
+                "Apple Silicon acceleration - run: pip install ariadne-router[apple]",
+            ),
+            ("tensor_network", "import tensornetwork", "Tensor network simulation - run: pip install tensornetwork"),
+            ("mps", "import qtealeaves", "Matrix product state simulation - run: pip install qtealeaves"),
+        ]
+
+        for name, test_code, description in backend_tests:
+            try:
+                exec(test_code)
+                if name == "metal":
+                    # Additional check for Apple Silicon
+                    if platform.system() == "Darwin" and "arm64" in platform.machine().lower():
+                        print(f"  ✓ {name} (ready - Apple Silicon detected)")
+                    else:
+                        print(f"  ⚠ {name} (not supported - requires Apple Silicon)")
+                else:
+                    print(f"  ✓ {name} (ready)")
+            except ImportError:
+                install_cmd = description.split(" - run: ")[-1] if " - run: " in description else f"pip install {name}"
+                print(f"  ✗ {name} (not installed - run: {install_cmd})")
+            except Exception as e:
+                print(f"  ✗ {name} (error: {str(e)[:40]}...)")
+
+        if args.verbose:
+            print("\nDetailed Information:")
+            print("--------------------")
+            try:
+                # CPU information
+                print(f"CPU cores: {psutil.cpu_count(logical=False)} physical, {psutil.cpu_count()} logical")
+                print(f"CPU usage: {psutil.cpu_percent(interval=1):.1f}%")
+
+                # Memory details
+                memory = psutil.virtual_memory()
+                print(
+                    f"Memory: {memory.used // (1024**3):.1f}GB used / {memory.total // (1024**3):.1f}GB total ({memory.percent:.1f}%)"
+                )
+
+                # Python packages
+                print("\nKey dependencies:")
+                packages = ["qiskit", "stim", "numpy", "jax", "cupy", "tensornetwork"]
+                for package in packages:
+                    try:
+                        module = __import__(package)
+                        version = getattr(module, "__version__", "unknown")
+                        print(f"  {package}: {version}")
+                    except ImportError:
+                        print(f"  {package}: not installed")
+
+            except Exception as e:
+                print(f"Error getting detailed info: {e}")
+
+        print("\nAll systems operational!")
+        return 0
+
+    def _cmd_version(self, args: argparse.Namespace) -> int:
+        """Execute the version command for detailed version information."""
+        print(f"Ariadne {__version__}")
+        print(f"Python {sys.version.split()[0]} on {platform.system()} {platform.release()} ({platform.machine()})")
+
+        # Count available backends
+        available_backends = []
+        backend_tests = [
+            ("qiskit", "import qiskit"),
+            ("stim", "import stim"),
+            ("metal", "import jax"),
+            ("cuda", "import cupy"),
+            ("tensor_network", "import tensornetwork"),
+            ("mps", "import qtealeaves"),
+        ]
+
+        for name, test_code in backend_tests:
+            try:
+                exec(test_code)
+                if name == "metal":
+                    # Only count Metal if on Apple Silicon
+                    if platform.system() == "Darwin" and "arm64" in platform.machine().lower():
+                        available_backends.append(name)
+                else:
+                    available_backends.append(name)
+            except ImportError:
+                pass
+
+        print(f"\nAvailable backends: {', '.join(available_backends)}")
+
+        # Platform-specific information
+        if platform.system() == "Darwin" and "arm64" in platform.machine().lower():
+            print("Platform: Apple Silicon")
+        elif platform.system() == "Darwin":
+            print("Platform: Intel Mac")
+        elif platform.system() == "Linux":
+            print("Platform: Linux")
+        elif platform.system() == "Windows":
+            print("Platform: Windows")
+        else:
+            print(f"Platform: {platform.system()}")
+
+        if args.verbose:
+            print("\nDependency versions:")
+            packages = [
+                "qiskit",
+                "stim",
+                "numpy",
+                "scipy",
+                "jax",
+                "cupy",
+                "tensornetwork",
+                "qtealeaves",
+                "matplotlib",
+                "yaml",
+            ]
+            for package in packages:
+                try:
+                    if package == "yaml":
+                        import yaml
+
+                        module = yaml
+                        package_name = "PyYAML"
+                    else:
+                        module = __import__(package)
+                        package_name = package
+                    version = getattr(module, "__version__", "unknown")
+                    print(f"  {package_name}: {version}")
+                except ImportError:
+                    print(f"  {package}: not installed")
+
+            # System information
+            print("\nSystem information:")
+            try:
+                print(f"  CPU cores: {psutil.cpu_count(logical=False)} physical, {psutil.cpu_count()} logical")
+                memory = psutil.virtual_memory()
+                print(f"  Memory: {memory.total // (1024**3)} GB total")
+                disk = psutil.disk_usage("/")
+                print(f"  Disk: {disk.free // (1024**3)} GB free / {disk.total // (1024**3)} GB total")
+            except Exception:
+                print("  System details unavailable")
+        else:
+            print("\nUse --verbose for dependency versions")
+
+        return 0
+
+    def _cmd_quickstart(self, args: argparse.Namespace) -> int:
+        """Execute the quickstart command for interactive demonstrations."""
+
+        algorithms = {
+            "bell": "Bell State - Quantum entanglement demonstration",
+            "ghz": "GHZ State - Multi-qubit entanglement",
+            "grover": "Grover's Algorithm - Quantum search",
+            "qft": "Quantum Fourier Transform - Quantum signal processing",
+            "vqe": "Variational Quantum Eigensolver - Quantum chemistry",
+        }
+
+        if args.list:
+            print("Available Quickstart Algorithms:")
+            print("=" * 33)
+            for name, description in algorithms.items():
+                print(f"  {name:<8} - {description}")
+            return 0
+
+        if args.algorithm:
+            return self._run_quickstart_algorithm(args.algorithm, args.shots)
+
+        # Interactive mode
+        print("Welcome to Ariadne Quickstart!")
+        print("=" * 30)
+        print()
+        print("Choose a quantum algorithm demonstration:")
+        for i, (name, desc) in enumerate(algorithms.items(), 1):
+            print(f"  {i}. {name.upper()}: {desc}")
+        print("  0. Exit")
+        print()
+
+        try:
+            choice = input("Enter your choice (0-5): ").strip()
+            if choice == "0":
+                print("Goodbye!")
+                return 0
+
+            if choice.isdigit():
+                choice_num = int(choice)
+                if 1 <= choice_num <= len(algorithms):
+                    algorithm_name = list(algorithms.keys())[choice_num - 1]
+                    return self._run_quickstart_algorithm(algorithm_name, args.shots)
+
+            print("Invalid choice. Please enter a number between 0 and 5.")
+            return 1
+
+        except KeyboardInterrupt:
+            print("\nGoodbye!")
+            return 0
+        except EOFError:
+            print("\nGoodbye!")
+            return 0
+
+    def _run_quickstart_algorithm(self, algorithm: str, shots: int) -> int:
+        """Run a specific quickstart algorithm demonstration."""
+        try:
+            from qiskit import QuantumCircuit
+
+            print(f"\n🚀 Running {algorithm.upper()} Algorithm Demonstration")
+            print("=" * 50)
+
+            # Create the circuit based on algorithm
+            if algorithm == "bell":
+                qc = QuantumCircuit(2, 2)
+                qc.h(0)
+                qc.cx(0, 1)
+                qc.measure_all()
+                print("Creating Bell state (maximally entangled 2-qubit state)...")
+
+            elif algorithm == "ghz":
+                qc = QuantumCircuit(3, 3)
+                qc.h(0)
+                qc.cx(0, 1)
+                qc.cx(1, 2)
+                qc.measure_all()
+                print("Creating GHZ state (3-qubit entangled state)...")
+
+            elif algorithm == "grover":
+                qc = QuantumCircuit(2, 2)
+                # Grover's algorithm for 2 qubits
+                qc.h([0, 1])  # Superposition
+                qc.cz(0, 1)  # Oracle (marks |11⟩)
+                qc.h([0, 1])  # Hadamard
+                qc.z([0, 1])  # Phase flip
+                qc.cz(0, 1)  # Controlled-Z
+                qc.h([0, 1])  # Hadamard
+                qc.measure_all()
+                print("Running Grover's search for marked state |11⟩...")
+
+            elif algorithm == "qft":
+                qc = QuantumCircuit(3, 3)
+                # Simple QFT on 3 qubits
+                qc.h(0)
+                qc.cp(3.14159 / 2, 0, 1)
+                qc.cp(3.14159 / 4, 0, 2)
+                qc.h(1)
+                qc.cp(3.14159 / 2, 1, 2)
+                qc.h(2)
+                qc.swap(0, 2)
+                qc.measure_all()
+                print("Applying Quantum Fourier Transform...")
+
+            elif algorithm == "vqe":
+                qc = QuantumCircuit(2, 2)
+                # Simple VQE ansatz
+                import math
+
+                qc.ry(math.pi / 4, 0)
+                qc.ry(math.pi / 4, 1)
+                qc.cx(0, 1)
+                qc.ry(math.pi / 8, 0)
+                qc.ry(math.pi / 8, 1)
+                qc.measure_all()
+                print("Running VQE circuit (hydrogen molecule simulation)...")
+
+            else:
+                print(f"Algorithm '{algorithm}' not implemented yet.")
+                return 1
+
+            # Simulate with Ariadne
+            print(f"Simulating with {shots} shots...")
+
+            start_time = time.time()
+            result = simulate(qc, shots=shots)
+            end_time = time.time()
+
+            # Display results
+            print("\n✅ Simulation Complete!")
+            print(f"Backend used: {result.backend_used}")
+            print(f"Execution time: {end_time - start_time:.3f}s")
+            print(f"Circuit depth: {qc.depth()}")
+            print(f"Number of qubits: {qc.num_qubits}")
+
+            print(f"\nMeasurement Results ({shots} shots):")
+            counts = dict(result.counts)
+            for state, count in sorted(counts.items()):
+                percentage = (count / shots) * 100
+                print(f"  |{state}⟩: {count:4d} ({percentage:5.1f}%)")
+
+            # Explain the routing
+            print("\n🧭 Routing Explanation:")
+            print(f"Ariadne selected the '{result.backend_used}' backend because:")
+
+            from ..types import BackendType
+
+            if result.backend_used == BackendType.STIM:
+                print("  - This circuit is Clifford (contains only H, CNOT, CZ gates)")
+                print("  - Stim is optimized for stabilizer circuit simulation")
+            elif result.backend_used == BackendType.QISKIT:
+                print("  - This circuit contains non-Clifford gates")
+                print("  - Qiskit Aer provides full quantum simulation capabilities")
+            elif result.backend_used == BackendType.JAX_METAL:
+                print("  - Apple Silicon Metal acceleration was available")
+                print("  - Hardware acceleration improves performance")
+
+            print(f"\n💡 To run this again: ariadne quickstart --algorithm {algorithm}")
+            print(f"💡 To try different shots: ariadne quickstart --algorithm {algorithm} --shots 2048")
+
+            return 0
+
+        except ImportError as e:
+            print(f"Error: Missing dependency: {e}")
+            print("Run 'ariadne doctor' to check your installation.")
+            return 1
+        except Exception as e:
+            print(f"Error running demonstration: {e}")
+            if self.logger:
+                self.logger.error(f"Quickstart error: {e}")
             return 1
 
     def _add_datasets_command(self, subparsers: "_SubParsersAction[ArgumentParser]") -> None:

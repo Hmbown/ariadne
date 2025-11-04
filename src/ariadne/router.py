@@ -776,3 +776,48 @@ def simulate(circuit: QuantumCircuit, shots: int = 1024, backend: str | None = N
     except Exception as exc:
         logger.error(f"Simulation failed: {exc}")
         raise
+
+
+def simulate_and_explain(
+    circuit: QuantumCircuit,
+    shots: int = 1024,
+    **kwargs: Any,
+) -> tuple[SimulationResult, str]:
+    """
+    Simulate circuit and get routing explanation.
+
+    This convenience function combines simulation with detailed routing explanation,
+    perfect for understanding why Ariadne selected a particular backend.
+
+    Parameters
+    ----------
+    circuit : QuantumCircuit
+        Quantum circuit to simulate
+    shots : int, optional
+        Number of measurement shots (default: 1024)
+    **kwargs
+        Additional arguments passed to simulate()
+
+    Returns
+    -------
+    tuple[SimulationResult, str]
+        Tuple containing (simulation_result, routing_explanation)
+
+    Examples
+    --------
+    >>> from qiskit import QuantumCircuit
+    >>> qc = QuantumCircuit(2, 2)
+    >>> qc.h(0); qc.cx(0, 1); qc.measure_all()
+    >>> result, explanation = simulate_and_explain(qc, shots=1000)
+    >>> print(f"Backend used: {result.backend_used}")
+    >>> print(f"Explanation: {explanation}")
+    """
+    from .route.routing_tree import explain_routing
+
+    # Get routing explanation before simulation
+    explanation = explain_routing(circuit)
+
+    # Perform simulation
+    result = simulate(circuit, shots=shots, **kwargs)
+
+    return result, explanation

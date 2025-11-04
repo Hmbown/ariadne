@@ -59,7 +59,7 @@ from .route.enhanced_router import EnhancedQuantumRouter
 from .route.routing_tree import ComprehensiveRoutingTree, explain_routing, get_available_backends, show_routing_tree
 
 # Main simulation interface
-from .router import simulate
+from .router import simulate, simulate_and_explain
 from .types import BackendCapacity, BackendType, RoutingDecision, SimulationResult
 
 # Create alias for backward compatibility
@@ -93,6 +93,7 @@ except ImportError:
 __all__ = [
     # Core functionality
     "simulate",
+    "simulate_and_explain",
     "BackendType",
     "RoutingDecision",
     "SimulationResult",

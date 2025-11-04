@@ -7,7 +7,7 @@ I've been working on solving a common problem in quantum computing research and 
 ## The Problem
 Quantum computing has amazing simulators like Stim (for Clifford circuits), MPS backends (for low entanglement), and Qiskit Aer (general purpose). But researchers and students often:
 - Stick to one backend they know, missing huge performance gains
-- Waste time manually testing different simulators  
+- Waste time manually testing different simulators
 - Get inconsistent results when collaborating across different setups
 
 ## The Solution
@@ -36,7 +36,7 @@ result = simulate(qc, shots=1000)
 - **Production tested**: 319 tests, comprehensive CI/CD, Docker support
 
 ## Current Status
-- Version 0.4.4 on PyPI as `ariadne-router` 
+- Version 0.4.4 on PyPI as `ariadne-router`
 - Supports 5+ backends with optional GPU/Apple Silicon acceleration
 - Used by several university quantum computing courses
 - Apache 2.0 licensed

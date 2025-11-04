@@ -7,7 +7,7 @@ for quantum computing education and research.
 
 import numpy as np
 from qiskit import QuantumCircuit
-from qiskit.circuit.library import QFTGate
+from qiskit.circuit.library import QFT
 
 from .base import AlgorithmMetadata, QuantumAlgorithm
 
@@ -123,7 +123,7 @@ class QuantumFourierTransform(QuantumAlgorithm):
         circuit = QuantumCircuit(self.params.n_qubits, self.params.n_qubits)
 
         # Apply QFT using Qiskit's new API
-        qft = QFTGate(num_qubits=self.params.n_qubits)
+        qft = QFT(num_qubits=self.params.n_qubits)
         circuit.append(qft, range(self.params.n_qubits))
 
         # Add measurements for educational purposes
@@ -198,7 +198,7 @@ class QuantumPhaseEstimation(QuantumAlgorithm):
                 circuit.cp(np.pi, i, self.params.n_qubits - 1)  # Controlled-Z rotation
 
         # Apply inverse QFT to estimation qubits
-        qft_gate = QFTGate(num_qubits=n_estimation).inverse()
+        qft_gate = QFT(num_qubits=n_estimation).inverse()
         circuit.append(qft_gate, range(n_estimation))
 
         # Measure all qubits
