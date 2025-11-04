@@ -341,9 +341,9 @@ class IntelligentCache:
         if hasattr(self.backend, "eviction_count"):
             try:
                 self._stats["evictions"] = getattr(self.backend, "eviction_count")
-            except Exception:
+            except Exception as e:
                 # Fallback: keep previous value if backend doesn't expose eviction count
-                pass
+                self.logger.debug(f"Failed to get eviction_count from backend: {e}")
         self.logger.debug(f"Cache set: {key}")
 
     def delete(self, key: str) -> bool:
