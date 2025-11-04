@@ -99,8 +99,13 @@ class ComprehensiveRoutingTree:
         # Always available
         availability[BackendType.QISKIT] = True
 
-        # Check Stim
-        availability[BackendType.STIM] = _safe_find_spec("stim")
+        # Check Stim - try to actually import it
+        try:
+            import stim  # noqa: F401
+
+            availability[BackendType.STIM] = True
+        except ImportError:
+            availability[BackendType.STIM] = False
 
         # Check CUDA
         availability[BackendType.CUDA] = _safe_find_spec("cupy")
