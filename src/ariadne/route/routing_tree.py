@@ -91,7 +91,7 @@ class ComprehensiveRoutingTree:
 
         def _safe_find_spec(module_name: str) -> bool:
             """Safely check if a module exists without raising exceptions."""
-            if module_name in sys.modules:
+            if sys.modules.get(module_name) is not None:
                 return True
 
             try:
